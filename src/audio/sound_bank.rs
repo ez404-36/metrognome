@@ -32,6 +32,7 @@ impl SoundBank {
         }
     }
 
+    #[cfg_attr(feature = "ui", allow(dead_code))]
     pub fn from_wav_files(
         normal_path: &std::path::Path,
         accent_path: &std::path::Path,

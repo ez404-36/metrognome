@@ -1,3 +1,4 @@
+#[cfg(not(feature = "ui"))]
 use anyhow::Context;
 
 #[cfg(feature = "ui")]

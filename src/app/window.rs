@@ -1,6 +1,7 @@
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
+    sync::Arc,
     time::Duration,
 };
 
@@ -136,35 +137,38 @@ fn build_header(
 }
 
 fn choose_wav(window: &adw::ApplicationWindow, engine: &Rc<RefCell<AudioEngine>>, accent: bool) {
-    let dialog = gtk::FileChooserNative::builder()
-        .transient_for(window)
-        .action(gtk::FileChooserAction::Open)
-        .modal(true)
-        .build();
+    let dialog = gtk::FileDialog::new();
+    dialog.set_title(if accent {
+        "Choose accent WAV"
+    } else {
+        "Choose normal WAV"
+    });
     let engine = engine.clone();
 
-    dialog.connect_response(move |dialog, response| {
-        if response == gtk::ResponseType::Accept {
-            let path = dialog.file().and_then(|file| file.path());
-
-            if let Some(path) = path {
+    dialog.open(
+        Some(window),
+        None::<&gtk::gio::Cancellable>,
+        move |result| match result {
+            Ok(file) => {
+                let Some(path) = file.path() else {
+                    return;
+                };
                 let result = if accent {
                     engine.borrow().set_accent_wav(&path)
                 } else {
                     engine.borrow().set_normal_wav(&path)
                 };
-
                 if let Err(error) = result {
                     eprintln!("Could not load WAV: {error:#}");
                 }
             }
-        }
-    });
-
-    dialog.show();
+            Err(error) if error.matches(gtk::gio::IOErrorEnum::Cancelled) => {}
+            Err(error) => eprintln!("Could not open file chooser: {error}"),
+        },
+    );
 }
 
-fn build_pattern_row(params: &Rc<SharedParams>) -> gtk::FlowBox {
+fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::FlowBox {
     let flow = gtk::FlowBox::new();
     flow.set_orientation(gtk::Orientation::Horizontal);
     flow.set_min_children_per_line(4);
@@ -211,7 +215,7 @@ fn build_pattern_row(params: &Rc<SharedParams>) -> gtk::FlowBox {
     flow
 }
 
-fn build_tempo_card(params: &Rc<SharedParams>) -> gtk::Box {
+fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
     let card = gtk::Box::new(gtk::Orientation::Vertical, 18);
     card.add_css_class("metro-card");
 
@@ -305,7 +309,7 @@ fn build_tempo_card(params: &Rc<SharedParams>) -> gtk::Box {
     card
 }
 
-fn build_beat_dots(params: &Rc<SharedParams>) -> gtk::Box {
+fn build_beat_dots(params: &Arc<SharedParams>) -> gtk::Box {
     let dots = gtk::Box::new(gtk::Orientation::Horizontal, 10);
     dots.set_halign(gtk::Align::Center);
     let buttons = Rc::new(RefCell::new(Vec::<gtk::ToggleButton>::new()));
@@ -351,7 +355,7 @@ fn replace_beat_buttons(
     row: &gtk::Box,
     buttons: &Rc<RefCell<Vec<gtk::ToggleButton>>>,
     rebuilding: &Rc<Cell<bool>>,
-    params: &Rc<SharedParams>,
+    params: &Arc<SharedParams>,
 ) {
     for child in row.observe_children().into_iter().flatten() {
         if let Some(button) = child.downcast_ref::<gtk::ToggleButton>() {
@@ -393,7 +397,7 @@ fn replace_beat_buttons(
     rebuilding.set(false);
 }
 
-fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Rc<SharedParams>) -> gtk::Box {
+fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>) -> gtk::Box {
     let row = gtk::Box::new(gtk::Orientation::Horizontal, 24);
     row.set_halign(gtk::Align::Center);
     row.set_valign(gtk::Align::Center);
@@ -449,7 +453,7 @@ fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Rc<SharedParams>) 
 
 fn load_css() {
     let provider = CssProvider::new();
-    provider.load_from_data(crate::app::style::CSS.as_bytes());
+    provider.load_from_string(crate::app::style::CSS);
 
     if let Some(display) = gtk::gdk::Display::default() {
         gtk::style_context_add_provider_for_display(
