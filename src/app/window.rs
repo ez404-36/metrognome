@@ -416,6 +416,9 @@ fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>)
 
     let tap = gtk::Button::with_label("Tap");
     tap.add_css_class("tap-button");
+    tap.add_css_class("circular");
+    tap.set_width_request(52);
+    tap.set_height_request(52);
     let play = gtk::Button::from_icon_name("media-playback-start");
     play.add_css_class("play-button");
     play.add_css_class("suggested-action");

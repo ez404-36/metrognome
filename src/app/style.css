@@ -40,10 +40,14 @@
 .tap-button {
   min-width: 52px;
   min-height: 52px;
-  border-radius: 999px;
+  border-radius: 9999px;
   padding: 0;
   font-weight: 600;
   font-size: 11px;
+}
+
+.tap-button.circular {
+  border-radius: 9999px;
 }
 
 .beat-toggle {
