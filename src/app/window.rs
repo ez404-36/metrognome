@@ -308,10 +308,8 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
 
     let volume_row = gtk::Box::new(gtk::Orientation::Horizontal, 12);
     let low_volume = gtk::Image::from_icon_name("audio-volume-low-symbolic");
-    let high_volume = gtk::Image::from_icon_name("audio-volume-high-symbolic");
     volume_row.append(&low_volume);
     volume_row.append(&volume);
-    volume_row.append(&high_volume);
 
     card.append(&top);
     card.append(&slider);
@@ -411,9 +409,9 @@ fn replace_beat_buttons(
     rebuilding.set(false);
 }
 
-fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>) -> gtk::Box {
-    let row = gtk::Box::new(gtk::Orientation::Horizontal, 24);
-    row.set_halign(gtk::Align::Center);
+fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>) -> gtk::CenterBox {
+    let row = gtk::CenterBox::new();
+    row.set_hexpand(true);
     row.set_valign(gtk::Align::Center);
 
     let tap = gtk::Button::with_label("Tap");
@@ -421,6 +419,11 @@ fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>)
     let play = gtk::Button::from_icon_name("media-playback-start");
     play.add_css_class("play-button");
     play.add_css_class("suggested-action");
+
+    let tap_wrapper = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    tap_wrapper.set_halign(gtk::Align::End);
+    tap_wrapper.set_margin_end(64);
+    tap_wrapper.append(&tap);
 
     let tap_times = Rc::new(RefCell::new(Vec::<std::time::Instant>::new()));
     let params_for_tap = params.clone();
@@ -460,8 +463,8 @@ fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>)
             .store(0, std::sync::atomic::Ordering::Relaxed);
     });
 
-    row.append(&tap);
-    row.append(&play);
+    row.set_start_widget(Some(&tap_wrapper));
+    row.set_center_widget(Some(&play));
     row
 }
 

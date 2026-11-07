@@ -38,8 +38,8 @@
 }
 
 .tap-button {
-  min-width: 80px;
-  min-height: 80px;
+  min-width: 64px;
+  min-height: 64px;
   border-radius: 999px;
   font-weight: 600;
 }
