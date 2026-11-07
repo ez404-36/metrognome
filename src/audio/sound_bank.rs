@@ -14,20 +14,20 @@ impl SoundBank {
     pub fn preset(preset: SoundPreset, sample_rate: u32) -> Self {
         match preset {
             SoundPreset::Classic => Self {
-                normal: synthetic_click(sample_rate, 580.0, 0.052, 0.62),
-                accent: synthetic_click(sample_rate, 820.0, 0.085, 0.88),
+                normal: synthetic_click(sample_rate, 580.0, 0.052, 0.62, 0.02),
+                accent: synthetic_click(sample_rate, 820.0, 0.085, 0.88, 0.02),
             },
             SoundPreset::Woodblock => Self {
-                normal: synthetic_click(sample_rate, 330.0, 0.038, 0.68),
-                accent: synthetic_click(sample_rate, 540.0, 0.062, 0.92),
+                normal: synthetic_click(sample_rate, 330.0, 0.038, 0.68, 0.10),
+                accent: synthetic_click(sample_rate, 540.0, 0.062, 0.92, 0.10),
             },
             SoundPreset::Digital => Self {
-                normal: synthetic_click(sample_rate, 1_240.0, 0.022, 0.58),
-                accent: synthetic_click(sample_rate, 1_680.0, 0.034, 0.86),
+                normal: synthetic_click(sample_rate, 1_240.0, 0.022, 0.58, 0.0),
+                accent: synthetic_click(sample_rate, 1_680.0, 0.034, 0.86, 0.0),
             },
             SoundPreset::Soft => Self {
-                normal: synthetic_click(sample_rate, 420.0, 0.085, 0.52),
-                accent: synthetic_click(sample_rate, 640.0, 0.115, 0.76),
+                normal: synthetic_click(sample_rate, 420.0, 0.085, 0.52, 0.02),
+                accent: synthetic_click(sample_rate, 640.0, 0.115, 0.76, 0.02),
             },
         }
     }
@@ -157,16 +157,24 @@ fn normalize_peak(mut samples: Vec<f32>) -> Result<Vec<f32>> {
 
     Ok(samples)
 }
-fn synthetic_click(sample_rate: u32, frequency: f32, duration: f32, gain: f32) -> Vec<f32> {
+fn synthetic_click(
+    sample_rate: u32,
+    frequency: f32,
+    duration: f32,
+    gain: f32,
+    noise_gain: f32,
+) -> Vec<f32> {
     let sample_count = (sample_rate as f32 * duration).round() as usize;
     let mut samples = Vec::with_capacity(sample_count);
     let mut phase = 0.0_f64;
     let mut noise_state = 0x1234_5678_u32;
     let mut lowpass = 0.0_f32;
 
+    let attack_samples = ((sample_rate as f32 * 0.0015).round() as usize).max(1);
+    let release_samples = ((sample_rate as f32 * 0.005).round() as usize).max(1);
+
     for index in 0..sample_count {
         let time = index as f32 / sample_rate as f32;
-        let normalized = index as f32 / sample_count.max(1) as f32;
         phase += frequency as f64 / sample_rate as f64;
 
         if phase >= 1.0 {
@@ -178,18 +186,20 @@ fn synthetic_click(sample_rate: u32, frequency: f32, duration: f32, gain: f32) -
             .wrapping_add(1_013_904_223);
         let noise = ((noise_state >> 8) as i32 - 0x800_000) as f32 / 0x800_000 as f32;
         let tone = (phase * std::f64::consts::TAU) as f32;
-        let noise_envelope = (-time / 0.008).exp();
-        let tone_envelope = (-time / (duration * 0.35)).exp();
-        let value = tone * tone_envelope + noise * noise_envelope * 0.35;
+        let noise_envelope = (-time / 0.003).exp();
+        let tone_envelope = (-time / (duration * 0.22)).exp();
 
-        lowpass += 0.35 * (value - lowpass);
-        let faded = lowpass * gain * (1.0 - normalized * normalized);
+        lowpass += 0.20 * (noise - lowpass);
+        let unshaped = tone * tone_envelope + lowpass * noise_envelope * noise_gain;
+        let attack = (index as f32 / attack_samples as f32).min(1.0);
+        let remaining = sample_count.saturating_sub(index).max(1);
+        let release = if remaining <= release_samples {
+            (remaining.saturating_sub(1) as f32 / release_samples.max(1) as f32).clamp(0.0, 1.0)
+        } else {
+            1.0
+        };
+        let faded = unshaped * gain * attack * release;
         samples.push(faded.clamp(-1.0, 1.0));
-    }
-
-    // Avoid an abrupt end at zero crossings.
-    if let Some(last) = samples.last_mut() {
-        *last = 0.0;
     }
 
     samples

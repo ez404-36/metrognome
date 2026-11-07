@@ -422,7 +422,7 @@ fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>)
 
     let tap_wrapper = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     tap_wrapper.set_halign(gtk::Align::End);
-    tap_wrapper.set_margin_end(64);
+    tap_wrapper.set_margin_end(70);
     tap_wrapper.append(&tap);
 
     let tap_times = Rc::new(RefCell::new(Vec::<std::time::Instant>::new()));

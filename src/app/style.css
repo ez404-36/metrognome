@@ -38,10 +38,12 @@
 }
 
 .tap-button {
-  min-width: 64px;
-  min-height: 64px;
+  min-width: 52px;
+  min-height: 52px;
   border-radius: 999px;
+  padding: 0;
   font-weight: 600;
+  font-size: 11px;
 }
 
 .beat-toggle {
