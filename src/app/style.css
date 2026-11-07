@@ -1,0 +1,57 @@
+.metrognome-title {
+  font-weight: 700;
+}
+
+.metro-card {
+  background-color: rgba(255, 255, 255, 0.88);
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.bpm-label {
+  font-size: 82px;
+  font-weight: 300;
+}
+
+.bpm-adjust {
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 0;
+}
+
+.pill-button {
+  border-radius: 999px;
+  padding: 12px 18px;
+  min-width: 64px;
+}
+
+.play-button {
+  min-width: 104px;
+  min-height: 104px;
+  border-radius: 999px;
+}
+
+.play-button image {
+  -gtk-icon-size: 48px;
+}
+
+.tap-button {
+  min-width: 92px;
+  min-height: 92px;
+  border-radius: 999px;
+}
+
+.beat-toggle {
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0;
+  font-size: 22px;
+  color: alpha(currentColor, 0.36);
+}
+
+.beat-toggle.beat-active {
+  color: @accent_color;
+  font-weight: 700;
+}
