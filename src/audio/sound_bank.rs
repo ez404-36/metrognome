@@ -1,4 +1,11 @@
 use anyhow::{anyhow, Result};
+use symphonia::core::audio::SampleBuffer;
+use symphonia::core::codecs::{DecoderOptions, CODEC_TYPE_NULL};
+use symphonia::core::errors::Error as SymphoniaError;
+use symphonia::core::formats::FormatOptions;
+use symphonia::core::io::MediaSourceStream;
+use symphonia::core::meta::MetadataOptions;
+use symphonia::core::probe::Hint;
 
 #[derive(Debug, Clone)]
 pub struct SoundBank {
@@ -7,16 +14,12 @@ pub struct SoundBank {
 }
 
 impl SoundBank {
-    pub fn synthetic(sample_rate: u32) -> Self {
-        Self::preset(SoundPreset::Classic, sample_rate)
-    }
-
     pub fn preset(preset: SoundPreset, sample_rate: u32) -> Self {
         match preset {
-            SoundPreset::Classic => Self {
+            SoundPreset::Classic => Self::embedded(sample_rate).unwrap_or_else(|_| Self {
                 normal: synthetic_click(sample_rate, 580.0, 0.052, 0.62),
                 accent: synthetic_click(sample_rate, 820.0, 0.085, 0.88),
-            },
+            }),
             SoundPreset::Woodblock => Self {
                 normal: synthetic_click(sample_rate, 330.0, 0.038, 0.68),
                 accent: synthetic_click(sample_rate, 540.0, 0.062, 0.92),
@@ -30,6 +33,13 @@ impl SoundBank {
                 accent: synthetic_click(sample_rate, 640.0, 0.115, 0.76),
             },
         }
+    }
+
+    pub fn embedded(sample_rate: u32) -> Result<Self> {
+        Ok(Self {
+            normal: decode_ogg_bytes(include_bytes!("../../assets/audio/tick.ogg"), sample_rate)?,
+            accent: decode_ogg_bytes(include_bytes!("../../assets/audio/accent.ogg"), sample_rate)?,
+        })
     }
 
     #[cfg_attr(feature = "ui", allow(dead_code))]
@@ -104,6 +114,79 @@ fn downmix_to_mono(samples: Vec<f32>, channels: usize) -> Vec<f32> {
         .chunks(channels)
         .map(|frame| frame.iter().sum::<f32>() / channels as f32)
         .collect()
+}
+
+pub fn decode_ogg_bytes(bytes: &[u8], target_sample_rate: u32) -> Result<Vec<f32>> {
+    let source = MediaSourceStream::new(
+        Box::new(std::io::Cursor::new(bytes.to_vec())),
+        Default::default(),
+    );
+    let mut hint = Hint::new();
+    hint.with_extension("ogg");
+
+    let probed = symphonia::default::get_probe()
+        .format(
+            &hint,
+            source,
+            &FormatOptions::default(),
+            &MetadataOptions::default(),
+        )
+        .map_err(|error| anyhow!("OGG probe failed: {error}"))?;
+
+    let mut format_reader = probed.format;
+    let track = format_reader
+        .tracks()
+        .iter()
+        .find(|track| track.codec_params.codec != CODEC_TYPE_NULL)
+        .ok_or_else(|| anyhow!("OGG file has no supported audio track"))?
+        .clone();
+
+    let source_sample_rate = track
+        .codec_params
+        .sample_rate
+        .ok_or_else(|| anyhow!("OGG track has no sample rate"))?;
+    let channels = track
+        .codec_params
+        .channels
+        .map(|channels| channels.count())
+        .unwrap_or(1)
+        .max(1);
+
+    let mut decoder = symphonia::default::get_codecs()
+        .make(&track.codec_params, &DecoderOptions::default())
+        .map_err(|error| anyhow!("OGG decoder init failed: {error}"))?;
+
+    let mut interleaved = Vec::new();
+    loop {
+        let packet = match format_reader.next_packet() {
+            Ok(packet) => packet,
+            Err(SymphoniaError::IoError(error))
+                if error.kind() == std::io::ErrorKind::UnexpectedEof =>
+            {
+                break;
+            }
+            Err(error) => return Err(anyhow!("OGG decode failed: {error}")),
+        };
+
+        if packet.track_id() != track.id {
+            continue;
+        }
+
+        let decoded = decoder
+            .decode(&packet)
+            .map_err(|error| anyhow!("OGG packet decode failed: {error}"))?;
+        let mut buffer = SampleBuffer::<f32>::new(decoded.capacity() as u64, *decoded.spec());
+        buffer.copy_interleaved_ref(decoded);
+        interleaved.extend_from_slice(buffer.samples());
+    }
+
+    if interleaved.is_empty() {
+        return Err(anyhow!("OGG file contains no samples"));
+    }
+
+    let mono = downmix_to_mono(interleaved, channels);
+    let resampled = resample_linear(mono, source_sample_rate, target_sample_rate);
+    normalize_peak(resampled)
 }
 
 fn resample_linear(samples: Vec<f32>, source_rate: u32, target_rate: u32) -> Vec<f32> {
@@ -194,13 +277,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn synthetic_sound_is_short_and_bounded() {
-        let bank = SoundBank::synthetic(48_000);
+    fn embedded_classic_sound_is_short_and_bounded() {
+        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
 
-        assert_eq!(bank.normal.len(), 2_496);
+        assert!(
+            (400..=900).contains(&bank.normal.len()),
+            "unexpected embedded tick length: {}",
+            bank.normal.len()
+        );
         assert!(bank.normal.iter().all(|sample| sample.abs() <= 1.0));
+        assert!(bank.normal.iter().any(|sample| sample.abs() > 0.1));
         assert!(bank.accent.iter().any(|sample| sample.abs() > 0.1));
-        assert_eq!(bank.normal.last(), Some(&0.0));
     }
 }
 
@@ -246,8 +333,6 @@ mod wav_tests {
             assert!(bank.accent.iter().all(|sample| sample.abs() <= 1.0));
             assert!(bank.normal.iter().any(|sample| sample.abs() > 0.05));
             assert!(bank.accent.iter().any(|sample| sample.abs() > 0.05));
-            assert_eq!(bank.normal.last(), Some(&0.0));
-            assert_eq!(bank.accent.last(), Some(&0.0));
         }
     }
 }

@@ -11,7 +11,7 @@ use cpal::{
 };
 
 use super::scheduler::{OutputSample, Scheduler};
-use super::sound_bank::SoundBank;
+use super::sound_bank::{SoundBank, SoundPreset};
 use crate::model::SharedParams;
 
 pub struct AudioEngine {
@@ -38,7 +38,10 @@ impl AudioEngine {
         let sample_rate = config.sample_rate.0;
         let params = Arc::new(SharedParams::new());
         params.sample_rate.store(sample_rate, Ordering::Relaxed);
-        let bank = Arc::new(ArcSwap::new(Arc::new(SoundBank::synthetic(sample_rate))));
+        let bank = Arc::new(ArcSwap::new(Arc::new(SoundBank::preset(
+            SoundPreset::Classic,
+            sample_rate,
+        ))));
         let started = Arc::new(AtomicBool::new(false));
         let error: fn(cpal::StreamError) = audio_stream_error;
 

@@ -11,7 +11,9 @@ adjustable volume, accent patterns, and customizable sounds.
 - 2/4, 3/4, 4/4, and 6/8 patterns.
 - Accent pattern support.
 - Master volume.
-- Built-in Classic, Woodblock, Digital, and Soft sounds.
+- Built-in Classic, Woodblock, Digital, and Soft sounds; the Classic preset uses
+  embedded CC0 OGG Vorbis samples (Kenney "Interface Sounds", see
+  `assets/audio/LICENSE.md`).
 - 16-bit PCM and floating-point WAV import, including channel downmix,
   resampling, and peak normalization.
 - Tap tempo.

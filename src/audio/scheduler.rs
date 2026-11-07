@@ -157,6 +157,7 @@ impl OutputSample for u16 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::audio::sound_bank::SoundPreset;
 
     #[test]
     fn first_start_is_immediate_accent() {
@@ -165,7 +166,7 @@ mod tests {
         params
             .running
             .store(true, std::sync::atomic::Ordering::Relaxed);
-        let bank = SoundBank::synthetic(48_000);
+        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
         let mut scheduler = Scheduler::new(0, 4);
         let mut output = vec![0.0_f32; 48];
 
@@ -182,7 +183,7 @@ mod tests {
         params
             .running
             .store(true, std::sync::atomic::Ordering::Relaxed);
-        let bank = SoundBank::synthetic(48_000);
+        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
         let mut scheduler = Scheduler::new(0, 4);
         let mut output = vec![0.0_f32; 96_000];
 
@@ -200,7 +201,7 @@ mod tests {
         params
             .running
             .store(true, std::sync::atomic::Ordering::Relaxed);
-        let bank = SoundBank::synthetic(48_000);
+        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
         let mut scheduler = Scheduler::new(0, 4);
         let mut output = vec![0.0_f32; 144_000];
 
