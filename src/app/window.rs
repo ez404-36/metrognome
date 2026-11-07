@@ -55,7 +55,11 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     vbox.set_margin_start(24);
     vbox.set_margin_end(24);
 
-    vbox.append(&build_header(&window, &engine));
+    let header = build_header(&window, &engine);
+    let toolbar = adw::ToolbarView::new();
+    toolbar.add_top_bar(&header);
+    toolbar.set_content(Some(&vbox));
+
     vbox.append(&build_pattern_row(&params));
     vbox.append(&build_tempo_card(&params));
     vbox.append(&build_beat_dots(&params));
@@ -76,15 +80,15 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
         glib::Propagation::Proceed
     });
 
-    window.set_child(Some(&vbox));
+    window.set_content(Some(&toolbar));
     window
 }
 
 fn build_header(
     window: &adw::ApplicationWindow,
     engine: &Rc<RefCell<AudioEngine>>,
-) -> gtk::HeaderBar {
-    let header = gtk::HeaderBar::new();
+) -> adw::HeaderBar {
+    let header = adw::HeaderBar::new();
     let title = gtk::Label::new(Some("Metrognome"));
     title.add_css_class("metrognome-title");
     header.set_title_widget(Some(&title));
@@ -132,7 +136,6 @@ fn build_header(
     popover.set_child(Some(&menu));
     sound_menu.set_popover(Some(&popover));
     header.pack_end(&sound_menu);
-    window.set_titlebar(Some(&header));
     header
 }
 
