@@ -58,7 +58,13 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     let header = build_header(&window, &engine);
     let toolbar = adw::ToolbarView::new();
     toolbar.add_top_bar(&header);
-    toolbar.set_content(Some(&vbox));
+
+    let clamp = adw::Clamp::new();
+    clamp.set_maximum_size(430);
+    clamp.set_tightening_threshold(460);
+    clamp.set_child(Some(&vbox));
+
+    toolbar.set_content(Some(&clamp));
 
     vbox.append(&build_pattern_row(&params));
     vbox.append(&build_tempo_card(&params));
@@ -171,21 +177,17 @@ fn choose_wav(window: &adw::ApplicationWindow, engine: &Rc<RefCell<AudioEngine>>
     );
 }
 
-fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::FlowBox {
-    let flow = gtk::FlowBox::new();
-    flow.set_orientation(gtk::Orientation::Horizontal);
-    flow.set_min_children_per_line(4);
-    flow.set_max_children_per_line(4);
-    flow.set_column_spacing(12);
-    flow.set_homogeneous(true);
-    flow.set_valign(gtk::Align::Center);
-    flow.set_halign(gtk::Align::Center);
-    flow.set_selection_mode(gtk::SelectionMode::None);
+fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::Box {
+    let row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    row.set_valign(gtk::Align::Center);
+    row.set_halign(gtk::Align::Center);
 
     let mut first = None;
     for (label, beats) in TIME_SIGNATURES {
         let button = gtk::ToggleButton::with_label(label);
         button.add_css_class("pill-button");
+        button.set_width_request(68);
+        button.set_hexpand(false);
 
         if let Some(previous) = first.as_ref() {
             button.set_group(Some(previous));
@@ -212,17 +214,18 @@ fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::FlowBox {
             button.set_active(true);
         }
 
-        flow.append(&button);
+        row.append(&button);
     }
 
-    flow
+    row
 }
 
 fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
-    let card = gtk::Box::new(gtk::Orientation::Vertical, 18);
+    let card = gtk::Box::new(gtk::Orientation::Vertical, 14);
     card.add_css_class("metro-card");
+    card.add_css_class("card");
 
-    let top = gtk::Box::new(gtk::Orientation::Horizontal, 18);
+    let top = gtk::Box::new(gtk::Orientation::Horizontal, 14);
     top.set_halign(gtk::Align::Center);
     top.set_valign(gtk::Align::Center);
 
@@ -293,10 +296,8 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
         glib::ControlFlow::Continue
     });
 
-    let volume_title = gtk::Label::new(Some("Volume"));
-    volume_title.set_halign(gtk::Align::Start);
     let volume_adjustment =
-        gtk::Adjustment::new(f64::from(params.volume()), 0.0, 1.01, 0.01, 0.05, 0.0);
+        gtk::Adjustment::new(f64::from(params.volume()), 0.0, 1.0, 0.01, 0.05, 0.0);
     let volume = gtk::Scale::new(gtk::Orientation::Horizontal, Some(&volume_adjustment));
     volume.set_digits(2);
     volume.set_hexpand(true);
@@ -305,10 +306,17 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
         params_for_volume.set_volume(scale.value() as f32);
     });
 
+    let volume_row = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+    let low_volume = gtk::Image::from_icon_name("audio-volume-low-symbolic");
+    let high_volume = gtk::Image::from_icon_name("audio-volume-high-symbolic");
+    volume_row.append(&low_volume);
+    volume_row.append(&volume);
+    volume_row.append(&high_volume);
+
     card.append(&top);
     card.append(&slider);
-    card.append(&volume_title);
-    card.append(&volume);
+    card.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+    card.append(&volume_row);
     card
 }
 
@@ -322,8 +330,11 @@ fn build_beat_dots(params: &Arc<SharedParams>) -> gtk::Box {
     let params_for_poll = params.clone();
     glib::timeout_add_local(Duration::from_millis(16), move || {
         let current = params_for_poll.current_beat() as usize;
+        let running = params_for_poll
+            .running
+            .load(std::sync::atomic::Ordering::Relaxed);
         for (index, button) in buttons_for_poll.borrow().iter().enumerate() {
-            if index == current {
+            if running && index == current {
                 button.add_css_class("beat-active");
             } else {
                 button.remove_css_class("beat-active");

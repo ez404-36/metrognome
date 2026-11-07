@@ -3,55 +3,62 @@
 }
 
 .metro-card {
-  background-color: rgba(255, 255, 255, 0.88);
   border-radius: 20px;
-  padding: 28px;
+  padding: 24px;
 }
 
 .bpm-label {
-  font-size: 82px;
+  font-size: 72px;
   font-weight: 300;
+  letter-spacing: -2px;
 }
 
 .bpm-adjust {
-  min-width: 42px;
-  min-height: 42px;
+  min-width: 38px;
+  min-height: 38px;
   border-radius: 999px;
   padding: 0;
 }
 
 .pill-button {
   border-radius: 999px;
-  padding: 12px 18px;
-  min-width: 64px;
+  padding: 11px 0;
+  min-width: 68px;
+  font-weight: 600;
 }
 
 .play-button {
-  min-width: 104px;
-  min-height: 104px;
-  border-radius: 999px;
-}
-
-.play-button image {
-  -gtk-icon-size: 48px;
-}
-
-.tap-button {
   min-width: 92px;
   min-height: 92px;
   border-radius: 999px;
 }
 
+.play-button image {
+  -gtk-icon-size: 44px;
+}
+
+.tap-button {
+  min-width: 80px;
+  min-height: 80px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
 .beat-toggle {
-  min-width: 36px;
-  min-height: 36px;
+  min-width: 30px;
+  min-height: 30px;
   border-radius: 999px;
   padding: 0;
-  font-size: 22px;
-  color: alpha(currentColor, 0.36);
+  font-size: 16px;
+  color: alpha(currentColor, 0.28);
 }
 
 .beat-toggle.beat-active {
   color: @accent_color;
   font-weight: 700;
+}
+
+.metro-card separator {
+  margin-top: 6px;
+  margin-bottom: 6px;
 }
