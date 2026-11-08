@@ -21,6 +21,112 @@ pub fn default_states(beats: u32) -> Vec<BeatState> {
     (0..beats).map(|_| BeatState::Enabled).collect()
 }
 
+/// Interface languages exposed by the settings modal. The array order is the
+/// persisted atomic index; `English` is deliberately first so first launches
+/// and legacy settings files use English by default.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
+pub enum Language {
+    #[default]
+    #[serde(rename = "en")]
+    English,
+    #[serde(rename = "zh")]
+    Chinese,
+    #[serde(rename = "hi")]
+    Hindi,
+    #[serde(rename = "es")]
+    Spanish,
+    #[serde(rename = "fr")]
+    French,
+    #[serde(rename = "ar")]
+    Arabic,
+    #[serde(rename = "bn")]
+    Bengali,
+    #[serde(rename = "pt")]
+    Portuguese,
+    #[serde(rename = "ru")]
+    Russian,
+    #[serde(rename = "ur")]
+    Urdu,
+    #[serde(rename = "de")]
+    German,
+    #[serde(rename = "ja")]
+    Japanese,
+    #[serde(rename = "pa")]
+    Punjabi,
+    #[serde(rename = "mr")]
+    Marathi,
+    #[serde(rename = "te")]
+    Telugu,
+    #[serde(rename = "tr")]
+    Turkish,
+    #[serde(rename = "ko")]
+    Korean,
+    #[serde(rename = "vi")]
+    Vietnamese,
+    #[serde(rename = "it")]
+    Italian,
+    #[serde(rename = "id")]
+    Indonesian,
+    #[serde(rename = "pl")]
+    Polish,
+    #[serde(rename = "uk")]
+    Ukrainian,
+    #[serde(rename = "nl")]
+    Dutch,
+    #[serde(rename = "th")]
+    Thai,
+    #[serde(rename = "sw")]
+    Swahili,
+}
+
+/// `(language, ISO 639-1 code, native name)`. Native names are shown so the
+/// selector remains usable when the interface is in an unfamiliar language.
+pub const LANGUAGES: [(Language, &str, &str); 25] = [
+    (Language::English, "EN", "English"),
+    (Language::Chinese, "ZH", "中文"),
+    (Language::Hindi, "HI", "हिन्दी"),
+    (Language::Spanish, "ES", "Español"),
+    (Language::French, "FR", "Français"),
+    (Language::Arabic, "AR", "العربية"),
+    (Language::Bengali, "BN", "বাংলা"),
+    (Language::Portuguese, "PT", "Português"),
+    (Language::Russian, "RU", "Русский"),
+    (Language::Urdu, "UR", "اردو"),
+    (Language::German, "DE", "Deutsch"),
+    (Language::Japanese, "JA", "日本語"),
+    (Language::Punjabi, "PA", "ਪੰਜਾਬੀ"),
+    (Language::Marathi, "MR", "मराठी"),
+    (Language::Telugu, "TE", "తెలుగు"),
+    (Language::Turkish, "TR", "Türkçe"),
+    (Language::Korean, "KO", "한국어"),
+    (Language::Vietnamese, "VI", "Tiếng Việt"),
+    (Language::Italian, "IT", "Italiano"),
+    (Language::Indonesian, "ID", "Bahasa Indonesia"),
+    (Language::Polish, "PL", "Polski"),
+    (Language::Ukrainian, "UK", "Українська"),
+    (Language::Dutch, "NL", "Nederlands"),
+    (Language::Thai, "TH", "ไทย"),
+    (Language::Swahili, "SW", "Kiswahili"),
+];
+
+impl Language {
+    pub fn from_index(index: usize) -> Self {
+        LANGUAGES[index.min(LANGUAGES.len() - 1)].0
+    }
+
+    pub fn index(self) -> usize {
+        LANGUAGES
+            .iter()
+            .position(|(language, _, _)| *language == self)
+            .unwrap_or(0)
+    }
+
+    pub fn selector_label(self) -> String {
+        let (_, code, native_name) = LANGUAGES[self.index()];
+        format!("{native_name} ({code})")
+    }
+}
+
 /// Live application state. Every UI-relevant setting must live here so the
 /// persistence snapshot covers it; when a new setting is added, map it in
 /// both `AppSettings::from_params` and `AppSettings::apply_to` — the
@@ -43,6 +149,8 @@ pub struct SharedParams {
     /// Selected click sample: 0 is the bundled bank, higher values index
     /// the candidate bank.
     pub sample: AtomicUsize,
+    /// Selected interface language as its position in `LANGUAGES`.
+    pub language: AtomicUsize,
     pub sample_rate: AtomicU32,
 }
 
@@ -59,6 +167,7 @@ impl SharedParams {
             one_shot_pending: AtomicU32::new(0),
             highlight_first: AtomicBool::new(true),
             sample: AtomicUsize::new(0),
+            language: AtomicUsize::new(Language::default().index()),
             sample_rate: AtomicU32::new(48_000),
         }
     }
@@ -141,6 +250,13 @@ impl SharedParams {
         self.sample.store(sample, Ordering::SeqCst);
     }
 
+    pub fn language(&self) -> Language {
+        Language::from_index(self.language.load(Ordering::SeqCst))
+    }
+
+    pub fn set_language(&self, language: Language) {
+        self.language.store(language.index(), Ordering::SeqCst);
+    }
 }
 
 const PATTERN_MASK: u32 = 0xFFFF;
@@ -179,6 +295,10 @@ pub struct AppSettings {
     /// zero index the candidate bank. `None` comes from older saves.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sample: Option<usize>,
+    /// Interface language. The serde default keeps saves made before this
+    /// field existed on English.
+    #[serde(default)]
+    pub language: Language,
 }
 
 impl Default for AppSettings {
@@ -191,6 +311,7 @@ impl Default for AppSettings {
             accents: None,
             highlight_first: true,
             sample: None,
+            language: Language::default(),
         }
     }
 }
@@ -231,6 +352,7 @@ impl AppSettings {
             accents: None,
             highlight_first: params.highlight_first(),
             sample: Some(params.sample()),
+            language: params.language(),
         }
     }
 
@@ -284,6 +406,7 @@ impl AppSettings {
         params.set_states(self.beats, &self.effective_states());
         params.set_highlight_first(self.highlight_first);
         params.set_sample(self.sample.unwrap_or(0));
+        params.set_language(self.language);
     }
 }
 
@@ -355,6 +478,7 @@ mod tests {
             accents: None,
             highlight_first: true,
             sample: Some(99_999),
+            language: Language::English,
         };
         let params = SharedParams::new();
         settings.apply_to(&params);
@@ -401,6 +525,7 @@ mod tests {
             accents: None,
             highlight_first: false,
             sample: Some(2),
+            language: Language::Russian,
         };
         let text = serde_json::to_string(&settings).unwrap();
         let loaded: AppSettings = serde_json::from_str(&text).unwrap();
@@ -414,6 +539,7 @@ mod tests {
         assert_eq!(loaded.states, settings.states);
         assert_eq!(loaded.highlight_first, settings.highlight_first);
         assert_eq!(loaded.sample, settings.sample);
+        assert_eq!(loaded.language, Language::Russian);
     }
 
     #[test]
@@ -427,6 +553,9 @@ mod tests {
         }"#;
         let loaded: AppSettings = serde_json::from_str(text).unwrap();
 
+        // Settings written before the language existed stay on the first-open
+        // default instead of changing the user's interface unexpectedly.
+        assert_eq!(loaded.language, Language::English);
 
         assert_eq!(
             loaded.effective_states(),
@@ -453,6 +582,7 @@ mod tests {
             ]
         );
         assert!(settings.highlight_first);
+        assert_eq!(settings.language, Language::English);
     }
 
     #[test]
@@ -465,6 +595,7 @@ mod tests {
             accents: Some(vec![true, false, false, false]),
             highlight_first: true,
             sample: None,
+            language: Language::English,
         };
 
         assert_eq!(
@@ -492,6 +623,7 @@ mod tests {
             accents: None,
             highlight_first: true,
             sample: None,
+            language: Language::English,
         };
 
         assert_eq!(
@@ -518,6 +650,7 @@ mod tests {
         );
         source.set_highlight_first(false);
         source.set_sample(4);
+        source.set_language(Language::Ukrainian);
 
         // A JSON round trip simulates writing and reading settings.json.
         let saved = AppSettings::from_params(&source);
@@ -536,5 +669,17 @@ mod tests {
         assert_eq!(restored.states(), source.states());
         assert_eq!(restored.highlight_first(), source.highlight_first());
         assert_eq!(restored.sample(), source.sample());
+        assert_eq!(restored.language(), source.language());
+    }
+
+    #[test]
+    fn language_selector_labels_use_native_names_and_codes() {
+        assert_eq!(Language::English.selector_label(), "English (EN)");
+        assert_eq!(Language::Russian.selector_label(), "Русский (RU)");
+        assert_eq!(LANGUAGES.len() >= 20, true);
+
+        for (index, (language, _, _)) in LANGUAGES.iter().enumerate() {
+            assert_eq!(language.index(), index);
+        }
     }
 }

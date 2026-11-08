@@ -10,9 +10,230 @@ use gtk::{glib, CssProvider, STYLE_PROVIDER_PRIORITY_APPLICATION};
 
 use crate::audio::engine::AudioEngine;
 use crate::audio::sound_bank::SoundBank;
-use crate::model::{default_states, AppSettings, BeatState, SharedParams};
+use crate::model::{default_states, AppSettings, BeatState, Language, SharedParams, LANGUAGES};
 
 const TIME_SIGNATURES: [(&str, u32); 4] = [("2/4", 2), ("3/4", 3), ("4/4", 4), ("6/8", 6)];
+
+/// Visible settings-modal copy. Keeping the native language in the selector
+/// while translating the surrounding controls makes a language switch obvious
+/// even when the user cannot read the current interface language.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SettingsText {
+    Settings,
+    Language,
+    Sample,
+    ClassicBundled,
+    PlayMeasure,
+    HighlightFirstBeat,
+}
+
+/// One row per `Language`, one column per `SettingsText`.
+const SETTINGS_TEXTS: [[&str; 6]; 25] = [
+    [
+        "Settings",
+        "Language",
+        "Sample",
+        "Classic (bundled)",
+        "Play measure",
+        "Highlight first beat",
+    ],
+    [
+        "设置",
+        "语言",
+        "样本",
+        "经典（内置）",
+        "播放一小节",
+        "突出第一拍",
+    ],
+    [
+        "सेटिंग्स",
+        "भाषा",
+        "सैंपल",
+        "क्लासिक (बिल्ट-इन)",
+        "एक माप बजाएँ",
+        "पहला बीट हाइलाइट करें",
+    ],
+    [
+        "Ajustes",
+        "Idioma",
+        "Muestra",
+        "Clásica (incluida)",
+        "Reproducir compás",
+        "Resaltar primer tiempo",
+    ],
+    [
+        "Paramètres",
+        "Langue",
+        "Échantillon",
+        "Classique (intégré)",
+        "Jouer une mesure",
+        "Mettre en valeur le premier temps",
+    ],
+    [
+        "الإعدادات",
+        "اللغة",
+        "العينة",
+        "كلاسيكي (مدمج)",
+        "تشغيل ميزان",
+        "تمييز النبضة الأولى",
+    ],
+    [
+        "সেটিংস",
+        "ভাষা",
+        "স্যাম্পল",
+        "ক্লাসিক (অন্তর্ভুক্ত)",
+        "মাপ বাজান",
+        "প্রথম বিট হাইলাইট করুন",
+    ],
+    [
+        "Configurações",
+        "Idioma",
+        "Amostra",
+        "Clássico (integrado)",
+        "Tocar compasso",
+        "Destacar primeiro tempo",
+    ],
+    [
+        "Настройки",
+        "Язык",
+        "Семпл",
+        "Classic (встроенный)",
+        "Воспроизвести такт",
+        "Выделять первый удар",
+    ],
+    [
+        "ترتیبات",
+        "زبان",
+        "سیمپل",
+        "کلاسک (شامل)",
+        "میزان چلائیں",
+        "پہلی دھن نمایاں کریں",
+    ],
+    [
+        "Einstellungen",
+        "Sprache",
+        "Sample",
+        "Klassisch (integriert)",
+        "Takt abspielen",
+        "Ersten Schlag hervorheben",
+    ],
+    [
+        "設定",
+        "言語",
+        "サンプル",
+        "クラシック（内蔵）",
+        "1小節を再生",
+        "最初のビートを強調",
+    ],
+    [
+        "ਸੈਟਿੰਗਾਂ",
+        "ਭਾਸ਼ਾ",
+        "ਸੈਂਪਲ",
+        "ਕਲਾਸਿਕ (ਸ਼ਾਮਲ)",
+        "ਤਾਲ ਚਲਾਓ",
+        "ਪਹਿਲਾ ਬੀਟ ਉਭਾਰੋ",
+    ],
+    [
+        "सेटिंग्ज",
+        "भाषा",
+        "नमुना",
+        "क्लासिक (अंतर्भूत)",
+        "ताल वाजवा",
+        "पहिला ठोका ठळक करा",
+    ],
+    [
+        "సెట్టింగ్‌లు",
+        "భాష",
+        "సాంపిల్",
+        "క్లాసిక్ (అంతర్భుతం)",
+        "తాళం వాయించు",
+        "మొదటి బీట్ హైలైట్ చేయండి",
+    ],
+    [
+        "Ayarlar",
+        "Dil",
+        "Örnek",
+        "Klasik (yerleşik)",
+        "Ölçüyü çal",
+        "İlk vurguyu öne çıkar",
+    ],
+    [
+        "설정",
+        "언어",
+        "샘플",
+        "클래식(내장)",
+        "마디 재생",
+        "첫 박자 강조",
+    ],
+    [
+        "Cài đặt",
+        "Ngôn ngữ",
+        "Mẫu âm thanh",
+        "Cổ điển (nhúng)",
+        "Phát một ô nhịp",
+        "Làm nổi bật nhịp đầu",
+    ],
+    [
+        "Impostazioni",
+        "Lingua",
+        "Campione",
+        "Classico (integrato)",
+        "Riproduci misura",
+        "Evidenzia primo battito",
+    ],
+    [
+        "Pengaturan",
+        "Bahasa",
+        "Sampel",
+        "Classic (bawaan)",
+        "Putar birama",
+        "Sorot ketukan pertama",
+    ],
+    [
+        "Ustawienia",
+        "Język",
+        "Próbka",
+        "Classic (wbudowany)",
+        "Zagraj takt",
+        "Wyróżnij pierwsze uderzenie",
+    ],
+    [
+        "Налаштування",
+        "Мова",
+        "Семпл",
+        "Classic (вбудований)",
+        "Відтворити такт",
+        "Виділяти перший удар",
+    ],
+    [
+        "Instellingen",
+        "Taal",
+        "Voorbeeld",
+        "Classic (ingebed)",
+        "Maat afspelen",
+        "Eerste slag markeren",
+    ],
+    [
+        "การตั้งค่า",
+        "ภาษา",
+        "ตัวอย่างเสียง",
+        "คลาสสิก (ในตัว)",
+        "เล่นหนึ่งห้อง",
+        "เน้นจังหวะแรก",
+    ],
+    [
+        "Mipangilio",
+        "Lugha",
+        "Sampuli",
+        "Classic (ndani)",
+        "Cheza kipimo",
+        "Angazia mdundo wa kwanza",
+    ],
+];
+
+fn settings_text(language: Language, text: SettingsText) -> &'static str {
+    SETTINGS_TEXTS[language.index()][text as usize]
+}
 
 /// Errors are less prominent than the settings controls; Russian keeps its
 /// existing copy and all other selections fall back to English. This avoids
@@ -30,7 +251,21 @@ enum ErrorText {
     RecoverAudio,
 }
 
-fn error_text(text: ErrorText) -> &'static str {
+fn error_text(language: Language, text: ErrorText) -> &'static str {
+    if language == Language::Russian {
+        return match text {
+            ErrorText::SaveSettings => "Не удалось сохранить настройки",
+            ErrorText::LoadWav => "Не удалось загрузить WAV",
+            ErrorText::OpenFileChooser => "Не удалось открыть выбор файла",
+            ErrorText::AudioStream => "Ошибка аудиопотока",
+            ErrorText::PlayTapSound => "Не удалось воспроизвести звук тапа",
+            ErrorText::StartAudio => "Не удалось запустить аудио",
+            ErrorText::LoadSample => "Не удалось загрузить семпл",
+            ErrorText::PlaySample => "Не удалось воспроизвести семпл",
+            ErrorText::RecoverAudio => "Аудиовыход восстановлен",
+        };
+    }
+
     match text {
         ErrorText::SaveSettings => "Could not save settings",
         ErrorText::LoadWav => "Could not load WAV",
@@ -186,7 +421,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
                 eprintln!("Could not save settings: {error}");
                 toast_for_save.show(&format!(
                     "{}: {error}",
-                    error_text(ErrorText::SaveSettings)
+                    error_text(params_for_save.language(), ErrorText::SaveSettings)
                 ));
             }
             *last_saved_for_loop.borrow_mut() = Some(current);
@@ -199,6 +434,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     // episode so the watchdog cannot spam popups every 500 ms.
     let engine_for_watch = engine.clone();
     let toast_for_watch = toast.clone();
+    let params_for_watch = params.clone();
     let watch_failing = Rc::new(Cell::new(false));
     glib::timeout_add_local(Duration::from_millis(500), move || {
         let result = engine_for_watch.borrow_mut().recover_stream_if_needed();
@@ -207,13 +443,16 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
             Ok(false) => {}
             Ok(true) => {
                 watch_failing.set(false);
-                toast_for_watch.show(&error_text(ErrorText::RecoverAudio));
+                toast_for_watch.show(&error_text(
+                    params_for_watch.language(),
+                    ErrorText::RecoverAudio,
+                ));
             }
             Err(error) => {
                 if !was_failing {
                     toast_for_watch.show(&format!(
                         "{}: {error:#}",
-                        error_text(ErrorText::AudioStream)
+                        error_text(params_for_watch.language(), ErrorText::AudioStream)
                     ));
                 }
                 watch_failing.set(true);
@@ -248,6 +487,7 @@ fn choose_wav(
     window: &adw::ApplicationWindow,
     engine: &Rc<RefCell<AudioEngine>>,
     accent: bool,
+    params: &Arc<SharedParams>,
     toast: &Rc<ErrorToast>,
 ) {
     let dialog = gtk::FileDialog::new();
@@ -258,6 +498,7 @@ fn choose_wav(
     });
     let engine = engine.clone();
     let toast = toast.clone();
+    let params = params.clone();
 
     dialog.open(
         Some(window),
@@ -276,7 +517,7 @@ fn choose_wav(
                     eprintln!("Could not load WAV: {error:#}");
                     toast.show(&format!(
                         "{}: {error:#}",
-                        error_text(ErrorText::LoadWav)
+                        error_text(params.language(), ErrorText::LoadWav)
                     ));
                 }
             }
@@ -285,7 +526,7 @@ fn choose_wav(
                 eprintln!("Could not open file chooser: {error}");
                 toast.show(&format!(
                     "{}: {error}",
-                    error_text(ErrorText::OpenFileChooser)
+                    error_text(params.language(), ErrorText::OpenFileChooser)
                 ));
             }
         },
@@ -584,12 +825,24 @@ fn build_controls(
     settings_button.add_css_class("controls-menu-button");
     settings_button.set_width_request(52);
     settings_button.set_height_request(52);
-    settings_button.set_tooltip_text(Some("Настройки"));
+    settings_button.set_tooltip_text(Some(settings_text(
+        params.language(),
+        SettingsText::Settings,
+    )));
     settings_button.set_valign(gtk::Align::Center);
     settings_button.set_margin_start(24);
     settings_button.set_margin_end(24);
     let params_for_open = params.clone();
-    let (settings_dialog, settings_sample_select) = build_settings_modal(window, engine, params);
+    let (settings_dialog, settings_sample_select, settings_language_select) =
+        build_settings_modal(window, engine, params);
+    let settings_button_for_language = settings_button.clone();
+    let params_for_language_button = params.clone();
+    settings_language_select.connect_selected_notify(move |select| {
+        let language = Language::from_index(select.selected() as usize);
+        params_for_language_button.set_language(language);
+        settings_button_for_language
+            .set_tooltip_text(Some(settings_text(language, SettingsText::Settings)));
+    });
     settings_button.connect_clicked(move |_| {
         // The bank for the persisted sample is already loaded; only resync
         // the dropdown so a failed selection cannot leave the visual choice
@@ -609,7 +862,7 @@ fn build_controls(
             eprintln!("Could not play tap sound: {error:#}");
             toast_for_tap.show(&format!(
                 "{}: {error:#}",
-                error_text(ErrorText::PlayTapSound)
+                error_text(params_for_tap.language(), ErrorText::PlayTapSound)
             ));
         }
 
@@ -643,7 +896,7 @@ fn build_controls(
             eprintln!("Could not start audio: {error:#}");
             toast_for_play.show(&format!(
                 "{}: {error:#}",
-                error_text(ErrorText::StartAudio)
+                error_text(params_for_play.language(), ErrorText::StartAudio)
             ));
         } else {
             button.set_icon_name("media-playback-stop");
@@ -663,12 +916,15 @@ fn build_settings_modal(
     parent: &adw::ApplicationWindow,
     engine: &Rc<RefCell<AudioEngine>>,
     params: &Arc<SharedParams>,
-) -> (adw::Window, gtk::DropDown) {
+) -> (adw::Window, gtk::DropDown, gtk::DropDown) {
     let dialog = adw::Window::new();
     dialog.set_transient_for(Some(parent));
     dialog.set_modal(true);
     dialog.set_destroy_with_parent(true);
-    dialog.set_title(Some("Настройки"));
+    dialog.set_title(Some(settings_text(
+        params.language(),
+        SettingsText::Settings,
+    )));
     dialog.set_default_width(380);
 
     // GTK's default close handling destroys the window. Since the settings
@@ -682,7 +938,10 @@ fn build_settings_modal(
 
     let toolbar = adw::ToolbarView::new();
     let header = adw::HeaderBar::new();
-    let header_title = gtk::Label::new(Some("Настройки"));
+    let header_title = gtk::Label::new(Some(settings_text(
+        params.language(),
+        SettingsText::Settings,
+    )));
     header.set_title_widget(Some(&header_title));
     toolbar.add_top_bar(&header);
 
@@ -692,7 +951,37 @@ fn build_settings_modal(
     content.set_margin_start(18);
     content.set_margin_end(18);
 
-    let sample_title = gtk::Label::new(Some("Семпл"));
+    let language_title = gtk::Label::new(Some(settings_text(
+        params.language(),
+        SettingsText::Language,
+    )));
+    language_title.set_halign(gtk::Align::Start);
+    language_title.add_css_class("settings-section-title");
+    content.append(&language_title);
+
+    let language_labels: Vec<String> = LANGUAGES
+        .iter()
+        .map(|(language, _, _)| language.selector_label())
+        .collect();
+    let language_select = gtk::DropDown::from_strings(
+        language_labels
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            .as_slice(),
+    );
+    language_select.set_hexpand(true);
+    language_select.set_valign(gtk::Align::Center);
+    // Restore before connecting the handler, just like every other selector.
+    language_select.set_selected(params.language().index() as u32);
+
+    let language_row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    language_row.set_hexpand(true);
+    language_row.append(&language_select);
+    content.append(&language_row);
+
+    let sample_title =
+        gtk::Label::new(Some(settings_text(params.language(), SettingsText::Sample)));
     sample_title.set_halign(gtk::Align::Start);
     sample_title.add_css_class("settings-section-title");
     content.append(&sample_title);
@@ -701,7 +990,7 @@ fn build_settings_modal(
     sample_labels.extend(SoundBank::candidate_labels());
     let preview_busy = Rc::new(Cell::new(false));
     let sample_select = gtk::DropDown::from_strings(sample_labels.as_slice());
-    sample_select.set_tooltip_text(Some("Семпл"));
+    sample_select.set_tooltip_text(Some(settings_text(params.language(), SettingsText::Sample)));
     sample_select.set_hexpand(true);
     sample_select.set_valign(gtk::Align::Center);
     // Select the restored sample before installing the change handler so the
@@ -713,7 +1002,10 @@ fn build_settings_modal(
     play_button.add_css_class("circular");
     play_button.add_css_class("sample-play-button");
     play_button.set_valign(gtk::Align::Center);
-    play_button.set_tooltip_text(Some("Воспроизвести такт"));
+    play_button.set_tooltip_text(Some(settings_text(
+        params.language(),
+        SettingsText::PlayMeasure,
+    )));
 
     let sample_row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
     sample_row.set_hexpand(true);
@@ -733,7 +1025,10 @@ fn build_settings_modal(
     // content.append(&wav_row);
 
     let first_beat = adw::SwitchRow::builder()
-        .title("Выделять первый удар")
+        .title(settings_text(
+            params.language(),
+            SettingsText::HighlightFirstBeat,
+        ))
         .build();
     first_beat.set_active(params.highlight_first());
     let params_for_toggle = params.clone();
@@ -750,6 +1045,44 @@ fn build_settings_modal(
     overlay.set_child(Some(&toolbar));
     let toast = ErrorToast::new(&overlay);
 
+    // Update the modal in place instead of rebuilding it, so the switch state
+    // and any in-progress preview stay intact while the language changes.
+    let dialog_for_language = dialog.clone();
+    let header_title_for_language = header_title.clone();
+    let language_title_for_language = language_title.clone();
+    let sample_title_for_language = sample_title.clone();
+    let sample_select_for_language = sample_select.clone();
+    let play_button_for_language = play_button.clone();
+    let first_beat_for_language = first_beat.clone();
+    let params_for_language = params.clone();
+    language_select.connect_selected_notify(move |select| {
+        let language = Language::from_index(select.selected() as usize);
+        params_for_language.set_language(language);
+
+        let settings = settings_text(language, SettingsText::Settings);
+        dialog_for_language.set_title(Some(settings));
+        header_title_for_language.set_text(settings);
+        language_title_for_language.set_text(settings_text(language, SettingsText::Language));
+        sample_title_for_language.set_text(settings_text(language, SettingsText::Sample));
+        play_button_for_language
+            .set_tooltip_text(Some(settings_text(language, SettingsText::PlayMeasure)));
+        first_beat_for_language
+            .set_title(settings_text(language, SettingsText::HighlightFirstBeat));
+
+        // `Classic (bundled)` is generated by the UI; candidate labels come
+        // from user filenames and must not be translated.
+        if let Some(sample_model) = sample_select_for_language
+            .model()
+            .and_then(|model| model.downcast::<gtk::StringList>().ok())
+        {
+            sample_model.splice(
+                0,
+                1,
+                &[settings_text(language, SettingsText::ClassicBundled)],
+            );
+        }
+    });
+
     let engine_for_list = engine.clone();
     let params_for_list = params.clone();
     let toast_for_list = toast.clone();
@@ -765,7 +1098,7 @@ fn build_settings_modal(
                 eprintln!("Could not load sample: {error:#}");
                 toast_for_list.show(&format!(
                     "{}: {error:#}",
-                    error_text(ErrorText::LoadSample)
+                    error_text(params_for_list.language(), ErrorText::LoadSample)
                 ));
                 // Restore the dropdown to the sample that is actually loaded
                 // so the visible selection never disagrees with the bank.
@@ -790,7 +1123,7 @@ fn build_settings_modal(
             eprintln!("Could not load sample for preview: {error:#}");
             toast_for_preview.show(&format!(
                 "{}: {error:#}",
-                error_text(ErrorText::LoadSample)
+                error_text(params_for_preview.language(), ErrorText::LoadSample)
             ));
             return;
         }
@@ -818,7 +1151,7 @@ fn build_settings_modal(
                 eprintln!("Could not play sample: {error:#}");
                 toast_for_preview.show(&format!(
                     "{}: {error:#}",
-                    error_text(ErrorText::PlaySample)
+                    error_text(params_for_preview.language(), ErrorText::PlaySample)
                 ));
                 button_for_preview.set_sensitive(true);
                 busy_for_preview.set(false);
@@ -829,29 +1162,33 @@ fn build_settings_modal(
     let parent_for_normal = parent.clone();
     let engine_for_normal = engine.clone();
     let toast_for_normal = toast.clone();
+    let params_for_normal = params.clone();
     normal_wav_button.connect_clicked(move |_| {
         choose_wav(
             &parent_for_normal,
             &engine_for_normal,
             false,
+            &params_for_normal,
             &toast_for_normal,
         );
     });
     let parent_for_accent = parent.clone();
     let engine_for_accent = engine.clone();
     let toast_for_accent = toast.clone();
+    let params_for_accent = params.clone();
     accent_wav_button.connect_clicked(move |_| {
         choose_wav(
             &parent_for_accent,
             &engine_for_accent,
             true,
+            &params_for_accent,
             &toast_for_accent,
         );
     });
 
     dialog.set_content(Some(&overlay));
     apply_pointer_cursors(dialog.upcast_ref());
-    (dialog, sample_select)
+    (dialog, sample_select, language_select)
 }
 
 /// GTK 4 does not support the `cursor` CSS property, so interactive widgets

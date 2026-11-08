@@ -28,6 +28,7 @@
 | 🔊 **Built-in sounds** | Classic, Woodblock, Digital, and Soft presets. |
 | 🎛 **Your sounds** | Import 16-bit PCM or floating-point WAV files; Metrognome downmixes, resamples, and normalizes them. |
 | 🖤 **libadwaita UI** | Native GNOME controls with light and dark theme support. |
+| 🌍 **25 languages** | Interface language selector with native-language labels. |
 | 💾 **Reliable settings** | Settings persist through atomic temporary-file writes. |
 
 ## Quick start
