@@ -2,20 +2,23 @@ use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
 
 pub const MAX_BEATS: u32 = 16;
 
-/// Per-beat playback state. The application exposes two states: Accent is
-/// enabled and Muted is disabled. Muted beats produce no sound at all. The
-/// first beat of a measure plays the special "first" sound while it is not
-/// muted. `Normal` is retained only to decode saves made by older versions.
+/// Per-beat playback state. The application exposes two states: `Enabled`
+/// beats sound (the plain tick, or the special first-beat sound when the
+/// highlight switch is on), `Muted` beats produce no sound at all.
+/// `Normal` is retained only to decode saves made by older versions; it
+/// maps to `Enabled` everywhere. The serialized spelling of `Enabled` used
+/// to be `accent`, so old settings files still load through the serde alias.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BeatState {
     Muted,
     Normal,
-    Accent,
+    #[serde(alias = "accent")]
+    Enabled,
 }
 
 pub fn default_states(beats: u32) -> Vec<BeatState> {
-    (0..beats).map(|_| BeatState::Accent).collect()
+    (0..beats).map(|_| BeatState::Enabled).collect()
 }
 
 /// Live application state. Every UI-relevant setting must live here so the
@@ -28,8 +31,10 @@ pub struct SharedParams {
     pub running: AtomicBool,
     pub bpm: AtomicU32,
     pub volume: AtomicU32,
-    pub beat_count: AtomicU32,
-    pub active_mask: AtomicU32,
+    /// Meter packed into one value so the audio thread can never observe a
+    /// torn pair while the UI switches meter mid-playback: bits 0..15 hold
+    /// the active mask, bits 16..31 hold the beat count.
+    pattern: AtomicU32,
     pub current_beat: AtomicU32,
     pub preview_generation: AtomicU32,
     /// Number of immediate one-shot clicks requested by the UI.
@@ -48,8 +53,7 @@ impl SharedParams {
             running: AtomicBool::new(false),
             bpm: AtomicU32::new(140),
             volume: AtomicU32::new(f32::to_bits(0.85)),
-            beat_count: AtomicU32::new(4),
-            active_mask: AtomicU32::new(0b1111),
+            pattern: AtomicU32::new(pack_pattern(4, 0b1111)),
             current_beat: AtomicU32::new(0),
             preview_generation: AtomicU32::new(0),
             one_shot_pending: AtomicU32::new(0),
@@ -77,7 +81,13 @@ impl SharedParams {
     }
 
     pub fn beat_count(&self) -> u32 {
-        self.beat_count.load(Ordering::Relaxed).clamp(1, MAX_BEATS)
+        pattern_count(self.pattern.load(Ordering::Relaxed))
+    }
+
+    /// Reads the meter as one atomic value: `(active_mask, beat_count)`.
+    pub fn pattern(&self) -> (u32, u32) {
+        let packed = self.pattern.load(Ordering::Relaxed);
+        (packed & PATTERN_MASK, pattern_count(packed))
     }
 
     pub fn set_states(&self, beats: u32, states: &[BeatState]) {
@@ -86,27 +96,26 @@ impl SharedParams {
 
         for (index, state) in states.iter().enumerate().take(beats as usize) {
             match state {
-                BeatState::Accent | BeatState::Normal => {
+                BeatState::Enabled | BeatState::Normal => {
                     active_mask |= 1 << index;
                 }
                 BeatState::Muted => {}
             }
         }
 
-        self.beat_count.store(beats, Ordering::Relaxed);
-        self.active_mask.store(active_mask, Ordering::Relaxed);
+        self.pattern
+            .store(pack_pattern(beats, active_mask), Ordering::Relaxed);
     }
 
     pub fn states(&self) -> Vec<BeatState> {
-        let beats = self.beat_count();
-        let active_mask = self.active_mask.load(Ordering::Relaxed);
+        let (active_mask, beats) = self.pattern();
 
         (0..beats)
             .map(|index| {
                 if active_mask & (1 << index) == 0 {
                     BeatState::Muted
                 } else {
-                    BeatState::Accent
+                    BeatState::Enabled
                 }
             })
             .collect()
@@ -131,6 +140,18 @@ impl SharedParams {
     pub fn set_sample(&self, sample: usize) {
         self.sample.store(sample, Ordering::SeqCst);
     }
+
+}
+
+const PATTERN_MASK: u32 = 0xFFFF;
+const PATTERN_COUNT_SHIFT: u32 = 16;
+
+fn pack_pattern(count: u32, active_mask: u32) -> u32 {
+    ((count & PATTERN_MASK) << PATTERN_COUNT_SHIFT) | (active_mask & PATTERN_MASK)
+}
+
+fn pattern_count(packed: u32) -> u32 {
+    ((packed >> PATTERN_COUNT_SHIFT) & PATTERN_MASK).clamp(1, MAX_BEATS)
 }
 
 impl Default for SharedParams {
@@ -221,7 +242,7 @@ impl AppSettings {
                 return states
                     .iter()
                     .map(|&state| match state {
-                        BeatState::Normal => BeatState::Accent,
+                        BeatState::Normal => BeatState::Enabled,
                         state => state,
                     })
                     .collect();
@@ -229,7 +250,7 @@ impl AppSettings {
         }
 
         if let Some(accents) = &self.accents {
-            return accents.iter().map(|_| BeatState::Accent).collect();
+            return accents.iter().map(|_| BeatState::Enabled).collect();
         }
 
         default_states(self.beats)
@@ -246,7 +267,15 @@ impl AppSettings {
         }
 
         let json = serde_json::to_string_pretty(self)?;
-        std::fs::write(path, json)
+        // Write to a sibling temporary file, flush it to disk, then rename.
+        // A crash mid-write therefore never leaves a truncated settings.json
+        // behind: readers either see the old or the new complete file.
+        let temporary = path.with_extension("json.tmp");
+        let mut file = std::fs::File::create(&temporary)?;
+        std::io::Write::write_all(&mut file, json.as_bytes())?;
+        file.sync_all()?;
+        std::fs::rename(temporary, path)?;
+        Ok(())
     }
 
     pub fn apply_to(&self, params: &SharedParams) {
@@ -268,19 +297,94 @@ mod tests {
         params.set_states(
             3,
             &[
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Muted,
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Normal,
-                BeatState::Accent,
+                BeatState::Enabled,
             ],
         );
         let states = params.states();
 
         assert_eq!(
             states,
-            vec![BeatState::Accent, BeatState::Muted, BeatState::Accent]
+            vec![BeatState::Enabled, BeatState::Muted, BeatState::Enabled]
         );
+    }
+
+    #[test]
+    fn pattern_reads_count_and_mask_as_one_atomic_value() {
+        let params = SharedParams::new();
+        params.set_states(
+            6,
+            &[
+                BeatState::Enabled,
+                BeatState::Muted,
+                BeatState::Enabled,
+                BeatState::Muted,
+                BeatState::Enabled,
+                BeatState::Muted,
+            ],
+        );
+
+        // The audio thread must never observe the new beat count together
+        // with the old active mask, so both values come from one atomic.
+        let (mask, count) = params.pattern();
+        assert_eq!(count, 6);
+        assert_eq!(mask, 0b010101);
+        assert_eq!(
+            params.states(),
+            vec![
+                BeatState::Enabled,
+                BeatState::Muted,
+                BeatState::Enabled,
+                BeatState::Muted,
+                BeatState::Enabled,
+                BeatState::Muted,
+            ]
+        );
+    }
+
+    #[test]
+    fn out_of_range_saved_settings_are_clamped() {
+        let settings = AppSettings {
+            bpm: 0,
+            volume: 5.0,
+            beats: 999,
+            states: None,
+            accents: None,
+            highlight_first: true,
+            sample: Some(99_999),
+        };
+        let params = SharedParams::new();
+        settings.apply_to(&params);
+
+        assert_eq!(params.bpm(), 20);
+        assert_eq!(params.volume(), 1.0);
+        assert_eq!(params.beat_count(), 16);
+        assert_eq!(params.states(), default_states(16));
+        // The sample index is restored raw; the UI's load_sample falls back
+        // to the bundled bank when the candidate index is out of range.
+        assert_eq!(params.sample(), 99_999);
+    }
+
+    #[test]
+    fn save_is_atomic_and_leaves_no_temporary_file() {
+        let config_root =
+            std::env::temp_dir().join(format!("metrognome-config-test-{}", std::process::id()));
+        std::env::set_var("XDG_CONFIG_HOME", &config_root);
+        std::fs::create_dir_all(&config_root).unwrap();
+
+        let settings = AppSettings::default();
+        settings.save().unwrap();
+
+        let path = config_root.join("metrognome").join("settings.json");
+        let saved_text = std::fs::read_to_string(&path).unwrap();
+        let loaded: AppSettings = serde_json::from_str(&saved_text).unwrap();
+        assert_eq!(loaded, settings);
+        assert!(!path.with_extension("json.tmp").exists());
+
+        std::fs::remove_dir_all(&config_root).unwrap();
     }
 
     #[test]
@@ -289,13 +393,21 @@ mod tests {
             bpm: 183,
             volume: 0.42,
             beats: 3,
-            states: Some(vec![BeatState::Accent, BeatState::Muted, BeatState::Normal]),
+            states: Some(vec![
+                BeatState::Enabled,
+                BeatState::Muted,
+                BeatState::Normal,
+            ]),
             accents: None,
             highlight_first: false,
             sample: Some(2),
         };
         let text = serde_json::to_string(&settings).unwrap();
         let loaded: AppSettings = serde_json::from_str(&text).unwrap();
+        // New saves spell the enabled state "enabled"; the old "accent"
+        // spelling is only read back, never written.
+        assert!(text.contains("\"enabled\""));
+        assert!(!text.contains("\"accent\""));
 
         assert_eq!(loaded.bpm, 183);
         assert_eq!(loaded.volume, 0.42);
@@ -305,16 +417,39 @@ mod tests {
     }
 
     #[test]
+    fn legacy_accent_state_names_still_load() {
+        let text = r#"{
+            "bpm": 140,
+            "volume": 0.8,
+            "beats": 4,
+            "states": ["accent", "muted", "accent", "muted"],
+            "highlight_first": true
+        }"#;
+        let loaded: AppSettings = serde_json::from_str(text).unwrap();
+
+
+        assert_eq!(
+            loaded.effective_states(),
+            vec![
+                BeatState::Enabled,
+                BeatState::Muted,
+                BeatState::Enabled,
+                BeatState::Muted
+            ]
+        );
+    }
+
+    #[test]
     fn default_settings_are_enabled() {
         let settings = AppSettings::default();
 
         assert_eq!(
             settings.effective_states(),
             vec![
-                BeatState::Accent,
-                BeatState::Accent,
-                BeatState::Accent,
-                BeatState::Accent
+                BeatState::Enabled,
+                BeatState::Enabled,
+                BeatState::Enabled,
+                BeatState::Enabled
             ]
         );
         assert!(settings.highlight_first);
@@ -335,10 +470,10 @@ mod tests {
         assert_eq!(
             settings.effective_states(),
             vec![
-                BeatState::Accent,
-                BeatState::Accent,
-                BeatState::Accent,
-                BeatState::Accent
+                BeatState::Enabled,
+                BeatState::Enabled,
+                BeatState::Enabled,
+                BeatState::Enabled
             ]
         );
     }
@@ -349,7 +484,11 @@ mod tests {
             bpm: 140,
             volume: 0.8,
             beats: 3,
-            states: Some(vec![BeatState::Accent, BeatState::Normal, BeatState::Muted]),
+            states: Some(vec![
+                BeatState::Enabled,
+                BeatState::Normal,
+                BeatState::Muted,
+            ]),
             accents: None,
             highlight_first: true,
             sample: None,
@@ -357,7 +496,7 @@ mod tests {
 
         assert_eq!(
             settings.effective_states(),
-            vec![BeatState::Accent, BeatState::Accent, BeatState::Muted]
+            vec![BeatState::Enabled, BeatState::Enabled, BeatState::Muted]
         );
     }
 
@@ -369,12 +508,12 @@ mod tests {
         source.set_states(
             6,
             &[
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Muted,
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Muted,
-                BeatState::Accent,
-                BeatState::Accent,
+                BeatState::Enabled,
+                BeatState::Enabled,
             ],
         );
         source.set_highlight_first(false);

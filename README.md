@@ -21,6 +21,11 @@ adjustable volume, accent patterns, and customizable sounds.
 - Sound preset menu and WAV import actions.
 - Clickable beat indicators for custom accent patterns.
 - Settings persistence.
+- Atomic settings writes (temporary file + rename), so a crash cannot
+  corrupt `settings.json`.
+- On-screen error notifications (bottom-right toasts) and automatic
+  recovery of the audio output stream after a device error.
+- WAV import limited to click samples up to 5 seconds long.
 - Unit tests for pattern handling, settings serialization, and high-tempo scheduling.
 
 ## Build

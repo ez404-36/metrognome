@@ -82,12 +82,11 @@ impl Scheduler {
         let preview_generation = params.preview_generation.load(Ordering::SeqCst);
         if self.preview_generation != preview_generation {
             self.preview_generation = preview_generation;
-            let beat_count = params.beat_count();
+            let (active_mask, beat_count) = params.pattern();
 
             // A preview plays a complete measure at the current tempo and
             // rhythm, so all of its voices are scheduled up front.
             for beat_index in 0..beat_count {
-                let active = params.active_mask.load(Ordering::Relaxed) & (1 << beat_index) != 0;
                 let highlight_first = params.highlight_first.load(Ordering::Relaxed);
                 let kind = if beat_index == 0 && highlight_first {
                     VoiceKind::First
@@ -95,6 +94,7 @@ impl Scheduler {
                     VoiceKind::Normal
                 };
 
+                let active = active_mask & (1 << beat_index) != 0;
                 if !active {
                     continue;
                 }
@@ -113,9 +113,9 @@ impl Scheduler {
 
         if running {
             while (self.next_hit as u64) < end {
-                let beat_count = params.beat_count();
+                let (active_mask, beat_count) = params.pattern();
                 let beat_index = self.beat % beat_count;
-                let active = params.active_mask.load(Ordering::Relaxed) & (1 << beat_index) != 0;
+                let active = active_mask & (1 << beat_index) != 0;
                 let highlight_first = params.highlight_first.load(Ordering::Relaxed);
                 let kind = if beat_index == 0 && highlight_first {
                     VoiceKind::First
@@ -320,9 +320,9 @@ mod tests {
         params.set_states(
             4,
             &[
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Muted,
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Muted,
             ],
         );
@@ -330,7 +330,7 @@ mod tests {
 
         let bank = SoundBank {
             normal: vec![0.1; 64],
-            accent: vec![0.5; 64],
+            first_source: vec![0.5; 64],
             first: vec![0.9; 64],
         };
         let mut scheduler = Scheduler::new(0, 4);
@@ -352,9 +352,9 @@ mod tests {
         params.set_states(
             4,
             &[
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Normal,
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Normal,
             ],
         );
@@ -362,7 +362,7 @@ mod tests {
 
         let bank = SoundBank {
             normal: vec![0.1; 64],
-            accent: vec![0.5; 64],
+            first_source: vec![0.5; 64],
             first: vec![0.9; 64],
         };
         let mut scheduler = Scheduler::new(0, 4);
@@ -387,9 +387,9 @@ mod tests {
         params.set_states(
             4,
             &[
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Normal,
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Normal,
             ],
         );
@@ -398,7 +398,7 @@ mod tests {
 
         let bank = SoundBank {
             normal: vec![0.1; 64],
-            accent: vec![0.5; 64],
+            first_source: vec![0.5; 64],
             first: vec![0.9; 64],
         };
         let mut scheduler = Scheduler::new(0, 4);
@@ -417,9 +417,9 @@ mod tests {
         params.set_states(
             4,
             &[
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Normal,
-                BeatState::Accent,
+                BeatState::Enabled,
                 BeatState::Muted,
             ],
         );
@@ -427,7 +427,7 @@ mod tests {
 
         let bank = SoundBank {
             normal: vec![0.1; 64],
-            accent: vec![0.5; 64],
+            first_source: vec![0.5; 64],
             first: vec![0.9; 64],
         };
         let mut scheduler = Scheduler::new(0, 4);
@@ -451,7 +451,7 @@ mod tests {
 
         let bank = SoundBank {
             normal: vec![0.25; 64],
-            accent: vec![0.9; 64],
+            first_source: vec![0.9; 64],
             first: vec![0.5; 64],
         };
         let mut scheduler = Scheduler::new(0, 4);
@@ -471,13 +471,13 @@ mod tests {
         let params = SharedParams::new();
         params.set_bpm(240);
         params.sample_rate.store(48_000, Ordering::Relaxed);
-        params.set_states(4, &[BeatState::Accent; 4]);
+        params.set_states(4, &[BeatState::Enabled; 4]);
         params.set_highlight_first(false);
         params.preview_generation.store(1, Ordering::SeqCst);
 
         let bank = SoundBank {
             normal: vec![0.1; 64],
-            accent: vec![0.5; 64],
+            first_source: vec![0.5; 64],
             first: vec![0.9; 64],
         };
         let mut scheduler = Scheduler::new(0, 4);
@@ -489,5 +489,128 @@ mod tests {
         assert!((output[12_000] - 0.1 * gain).abs() < 1e-4);
         assert!((output[24_000] - 0.1 * gain).abs() < 1e-4);
         assert!((output[36_000] - 0.1 * gain).abs() < 1e-4);
+    }
+
+    #[test]
+    fn tempo_change_while_running_keeps_phase_without_restart_or_burst() {
+        let params = SharedParams::new();
+        params.set_bpm(120); // 12_000 frames per beat at 48 kHz.
+        params.sample_rate.store(48_000, Ordering::Relaxed);
+        params.running.store(true, Ordering::Relaxed);
+        let bank = SoundBank {
+            normal: vec![1.0; 8],
+            first_source: vec![1.0; 8],
+            first: vec![1.0; 8],
+        };
+        let mut scheduler = Scheduler::new(0, 4);
+
+        // Startup delay puts hits at 12_000 and 36_000; the next hit is
+        // pending at 60_000 when this buffer ends.
+        let mut first = vec![0.0_f32; 48_000];
+        scheduler.render(&params, &bank, &mut first, 1);
+
+        params.set_bpm(240); // period halves to 12_000 frames per beat.
+        let mut second = vec![0.0_f32; 48_000]; // frames 48_000..96_000
+        scheduler.render(&params, &bank, &mut second, 1);
+
+        let gain = params.volume();
+        // The pending hit lands where it was scheduled under the old tempo,
+        // then the new period applies. No restart gap, no burst.
+        for hit in [60_000, 72_000, 84_000] {
+            let sample = second[hit - 48_000];
+            assert!((sample - gain).abs() < 1e-4, "expected hit at {hit}");
+        }
+        for gap in [54_000, 66_000, 78_000, 90_000] {
+            assert!(
+                second[gap - 48_000].abs() < 1e-6,
+                "expected silence at {gap}"
+            );
+        }
+    }
+
+    #[test]
+    fn meter_change_while_running_keeps_tempo_and_wraps_beat_cycle() {
+        let params = SharedParams::new();
+        params.set_bpm(240); // 12_000 frames per beat at 48 kHz.
+        params.sample_rate.store(48_000, Ordering::Relaxed);
+        params.set_states(4, &[BeatState::Enabled; 4]);
+        params.running.store(true, Ordering::Relaxed);
+        let bank = SoundBank {
+            normal: vec![0.2; 4],
+            first_source: vec![0.2; 4],
+            first: vec![0.8; 4],
+        };
+        let mut scheduler = Scheduler::new(0, 4);
+
+        // One full 4/4 measure: hits at 12_000..48_000, next pending at 60_000.
+        let mut first = vec![0.0_f32; 60_000];
+        scheduler.render(&params, &bank, &mut first, 1);
+        let gain = params.volume();
+        assert!((first[12_000] - 0.8 * gain).abs() < 1e-4); // 4/4 downbeat
+        assert!((first[24_000] - 0.2 * gain).abs() < 1e-4);
+
+        // Switch to 2/4 mid-stream: the packed pattern updates atomically and
+        // the hit grid keeps its tempo phase while the beat cycle wraps.
+        params.set_states(2, &[BeatState::Enabled; 2]);
+        let mut second = vec![0.0_f32; 60_000]; // frames 60_000..120_000
+        scheduler.render(&params, &bank, &mut second, 1);
+
+        // Beat counter is at 4, so 4 % 2 = 0 is the 2/4 downbeat.
+        assert!((second[0] - 0.8 * gain).abs() < 1e-4); // 60_000
+        assert!((second[12_000] - 0.2 * gain).abs() < 1e-4); // 72_000
+        assert!((second[24_000] - 0.8 * gain).abs() < 1e-4); // 84_000
+        assert!((second[36_000] - 0.2 * gain).abs() < 1e-4); // 96_000
+    }
+
+    #[test]
+    fn sound_bank_swap_mid_tail_is_safe_and_releases_the_voice() {
+        let params = SharedParams::new();
+        params.set_bpm(120);
+        params.sample_rate.store(48_000, Ordering::Relaxed);
+        params.running.store(true, Ordering::Relaxed);
+        let long_bank = SoundBank {
+            normal: vec![0.5; 200],
+            first_source: vec![0.5; 200],
+            first: vec![0.5; 200],
+        };
+        let short_bank = SoundBank {
+            normal: vec![0.25; 10],
+            first_source: vec![0.25; 10],
+            first: vec![0.25; 10],
+        };
+        let mut scheduler = Scheduler::new(0, 4);
+
+        // Startup hit at 12_000; the render stops mid-tail at position 100.
+        let mut first = vec![0.0_f32; 12_100];
+        scheduler.render(&params, &long_bank, &mut first, 1);
+
+        // Swap to the shorter bank while the voice is still playing: the
+        // voice reads the new bank, releases without panic, and the tail
+        // stays silent instead of replaying the old sample.
+        let mut second = vec![0.0_f32; 50];
+        scheduler.render(&params, &short_bank, &mut second, 1);
+        assert!(second.iter().all(|sample| sample.abs() < 1e-6));
+    }
+
+    #[test]
+    fn batched_one_shots_are_all_consumed_and_mixed() {
+        let params = SharedParams::new();
+        params.sample_rate.store(48_000, Ordering::Relaxed);
+        params.one_shot_pending.store(3, Ordering::SeqCst);
+
+        let bank = SoundBank {
+            normal: vec![0.25; 64],
+            first_source: vec![0.5; 64],
+            first: vec![0.9; 64],
+        };
+        let mut scheduler = Scheduler::new(0, 4);
+        let mut output = vec![0.0_f32; 256];
+        scheduler.render(&params, &bank, &mut output, 1);
+
+        let gain = params.volume();
+        assert_eq!(params.one_shot_pending.load(Ordering::SeqCst), 0);
+        // Three overlapping one-shots mix into one sample value.
+        assert!((output[0] - 0.75 * gain).abs() < 1e-4);
+        assert_eq!(output[64], 0.0);
     }
 }

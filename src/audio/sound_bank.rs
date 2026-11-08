@@ -7,8 +7,16 @@ use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
 
+/// Imported click samples must stay short. The header check runs before any
+/// sample data is read so an oversized file cannot blow up memory while it
+/// is being decoded.
+const MAX_WAV_DURATION_SECONDS: f64 = 5.0;
+
 /// An audition candidate: a normal click plus its derived accent variant,
 /// both embedded as OGG Vorbis bytes.
+///
+/// The accent asset is never played directly: it is only the source the
+/// first-beat sound is derived from (see `derive_first_sound`).
 pub struct CandidateSound {
     pub label: &'static str,
     pub normal: &'static [u8],
@@ -18,9 +26,11 @@ pub struct CandidateSound {
 #[derive(Debug, Clone)]
 pub struct SoundBank {
     pub normal: Vec<f32>,
-    pub accent: Vec<f32>,
+    /// Accent sample used only as the source for `first`; no beat plays it
+    /// directly.
+    pub first_source: Vec<f32>,
     /// Special sound for the first tick of each measure (brighter + louder
-    /// than the accent so bar starts stand out).
+    /// than the plain tick so bar starts stand out).
     pub first: Vec<f32>,
 }
 
@@ -29,22 +39,22 @@ impl SoundBank {
         match preset {
             SoundPreset::Classic => Self::embedded(sample_rate).unwrap_or_else(|_| Self {
                 normal: synthetic_click(sample_rate, 580.0, 0.052, 0.62),
-                accent: synthetic_click(sample_rate, 820.0, 0.085, 0.88),
+                first_source: synthetic_click(sample_rate, 820.0, 0.085, 0.88),
                 first: synthetic_click(sample_rate, 1_150.0, 0.110, 0.95),
             }),
             SoundPreset::Woodblock => Self {
                 normal: synthetic_click(sample_rate, 330.0, 0.038, 0.68),
-                accent: synthetic_click(sample_rate, 540.0, 0.062, 0.92),
+                first_source: synthetic_click(sample_rate, 540.0, 0.062, 0.92),
                 first: synthetic_click(sample_rate, 720.0, 0.085, 0.95),
             },
             SoundPreset::Digital => Self {
                 normal: synthetic_click(sample_rate, 1_240.0, 0.022, 0.58),
-                accent: synthetic_click(sample_rate, 1_680.0, 0.034, 0.86),
+                first_source: synthetic_click(sample_rate, 1_680.0, 0.034, 0.86),
                 first: synthetic_click(sample_rate, 2_300.0, 0.042, 0.90),
             },
             SoundPreset::Soft => Self {
                 normal: synthetic_click(sample_rate, 420.0, 0.085, 0.52),
-                accent: synthetic_click(sample_rate, 640.0, 0.115, 0.76),
+                first_source: synthetic_click(sample_rate, 640.0, 0.115, 0.76),
                 first: synthetic_click(sample_rate, 830.0, 0.135, 0.85),
             },
         }
@@ -58,7 +68,7 @@ impl SoundBank {
         Ok(Self {
             normal: decode_ogg_bytes(include_bytes!("../../assets/audio/tick.ogg"), sample_rate)?,
             first,
-            accent,
+            first_source: accent,
         })
     }
 
@@ -68,16 +78,10 @@ impl SoundBank {
             .ok_or_else(|| anyhow!("candidate sound index {index} is out of range"))?;
         let raw_accent = decode_ogg_bytes(candidate.accent, sample_rate)?;
         let first = derive_first_sound(&raw_accent, sample_rate);
-        let mut accent = raw_accent;
-        // Accent is the same hit pitched up at build time; lift it slightly so
-        // accented beats read louder than normal ones.
-        for sample in &mut accent {
-            *sample = (*sample * 1.2).clamp(-1.0, 1.0);
-        }
         Ok(Self {
             normal: decode_ogg_bytes(candidate.normal, sample_rate)?,
             first,
-            accent,
+            first_source: raw_accent,
         })
     }
 
@@ -98,7 +102,7 @@ impl SoundBank {
         let first = derive_first_sound(&accent, target_sample_rate);
         Ok(Self {
             normal: decode_wav(normal_path, target_sample_rate)?,
-            accent,
+            first_source: accent,
             first,
         })
     }
@@ -116,8 +120,8 @@ pub fn derive_first_sound(accent: &[f32], sample_rate: u32) -> Vec<f32> {
 /// Raises the Classic downbeat to a consistent loudness. The bundled accent
 /// has a higher crest factor than the candidate accents, so a fixed gain made
 /// its first hit almost indistinguishable once the final output was clipped.
-fn emphasize_first_sound(first: &mut [f32], accent: &[f32]) {
-    let target_rms = rms(accent) * 2.5;
+fn emphasize_first_sound(first: &mut [f32], first_source: &[f32]) {
+    let target_rms = rms(first_source) * 2.5;
     let current_rms = rms(first).max(f32::EPSILON);
     let gain = (target_rms / current_rms).min(2.5);
 
@@ -164,6 +168,15 @@ pub fn decode_wav(path: &std::path::Path, target_sample_rate: u32) -> Result<Vec
     let source_sample_rate = spec.sample_rate;
     let channels = usize::from(spec.channels.max(1));
 
+    // Reject overlong files from the header alone, before allocating.
+    let header_seconds = f64::from(reader.duration()) / f64::from(source_sample_rate.max(1));
+    if !header_seconds.is_finite() || header_seconds > MAX_WAV_DURATION_SECONDS {
+        return Err(anyhow!(
+            "WAV file is {header_seconds:.1} s long; imported clicks are limited to \
+             {MAX_WAV_DURATION_SECONDS:.0} s"
+        ));
+    }
+
     let interleaved: Vec<f32> = match spec.sample_format {
         hound::SampleFormat::Int => reader
             .samples::<i16>()
@@ -183,6 +196,13 @@ pub fn decode_wav(path: &std::path::Path, target_sample_rate: u32) -> Result<Vec
     }
 
     let mono = downmix_to_mono(interleaved, channels);
+    let decoded_seconds = mono.len() as f64 / f64::from(source_sample_rate.max(1));
+    if decoded_seconds > MAX_WAV_DURATION_SECONDS {
+        return Err(anyhow!(
+            "WAV file is {decoded_seconds:.1} s long; imported clicks are limited to \
+             {MAX_WAV_DURATION_SECONDS:.0} s"
+        ));
+    }
     let resampled = resample_linear(mono, source_sample_rate, target_sample_rate);
     normalize_peak(resampled)
 }
@@ -367,7 +387,7 @@ mod tests {
                 .fold(0.0_f32, |peak, sample| peak.max(sample.abs()))
         };
         let first_rms = rms(&bank.first);
-        let accent_rms = rms(&bank.accent);
+        let first_source_rms = rms(&bank.first_source);
 
         assert!(
             (400..=900).contains(&bank.normal.len()),
@@ -376,10 +396,10 @@ mod tests {
         );
         assert!(bank.normal.iter().all(|sample| sample.abs() <= 1.0));
         assert!(bank.normal.iter().any(|sample| sample.abs() > 0.1));
-        assert!(bank.accent.iter().any(|sample| sample.abs() > 0.1));
+        assert!(bank.first_source.iter().any(|sample| sample.abs() > 0.1));
         assert!(
-            first_rms > accent_rms * 1.5,
-            "Classic first RMS {first_rms} must be clearly above accent RMS {accent_rms}"
+            first_rms > first_source_rms * 1.5,
+            "Classic first RMS {first_rms} must be clearly above source RMS {first_source_rms}"
         );
         assert!(
             peak(&bank.first) <= 0.95,
@@ -393,21 +413,18 @@ mod candidate_tests {
     use super::*;
 
     #[test]
-    fn candidates_decode_with_louder_accent() {
+    fn candidates_decode_and_derive_a_louder_first_sound() {
         assert!(SoundBank::candidate_labels().len() >= 18);
 
         let bank = SoundBank::candidate(0, 48_000).unwrap();
-        let peak = |samples: &[f32]| {
-            samples
-                .iter()
-                .fold(0.0_f32, |peak, sample| peak.max(sample.abs()))
-        };
 
         assert!(!bank.normal.is_empty());
-        assert!(!bank.accent.is_empty());
+        assert!(!bank.first_source.is_empty());
         assert!(!bank.first.is_empty());
-        assert!(peak(&bank.accent) > peak(&bank.normal) * 1.1);
-        assert!(rms(&bank.first) > rms(&bank.accent));
+        // The derived first sound is the pitched-up accent source with its
+        // gain lifted, so it must read clearly louder than its source.
+        assert!(rms(&bank.first) > rms(&bank.first_source));
+        assert!(bank.first_source.iter().all(|sample| sample.abs() <= 1.0));
         assert!(bank.normal.iter().all(|sample| sample.abs() <= 1.0));
 
         assert!(SoundBank::candidate(usize::MAX, 48_000).is_err());
@@ -448,13 +465,113 @@ mod wav_tests {
     }
 
     #[test]
+    fn unsupported_bit_depths_fail_cleanly() {
+        let path = std::env::temp_dir().join(format!(
+            "metrognome-import-test24-{}.wav",
+            std::process::id()
+        ));
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 48_000,
+            bits_per_sample: 24,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let mut writer = hound::WavWriter::create(&path, spec).unwrap();
+        writer.write_sample(1_000_000_i32).unwrap();
+        writer.write_sample(-1_000_000_i32).unwrap();
+        writer.finalize().unwrap();
+
+        // 24-bit integer WAV is a common DAW export format; the import must
+        // reject it with an error instead of silently producing garbage.
+        let imported = decode_wav(&path, 48_000);
+        std::fs::remove_file(&path).unwrap();
+        assert!(imported.is_err());
+    }
+
+    #[test]
+    fn empty_and_silent_wav_files_are_rejected() {
+        let path = std::env::temp_dir().join(format!(
+            "metrognome-import-test-silent-{}.wav",
+            std::process::id()
+        ));
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 48_000,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let mut writer = hound::WavWriter::create(&path, spec).unwrap();
+        // Digital silence: normalize_peak must reject a file with no signal.
+        writer.write_sample(0_i16).unwrap();
+        writer.write_sample(0_i16).unwrap();
+        writer.finalize().unwrap();
+
+        let imported = decode_wav(&path, 48_000);
+        std::fs::remove_file(&path).unwrap();
+        assert!(imported.is_err());
+    }
+
+    #[test]
+    fn wav_files_longer_than_five_seconds_are_rejected() {
+        let path = std::env::temp_dir().join(format!(
+            "metrognome-import-test-long-{}.wav",
+            std::process::id()
+        ));
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 24_000,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let mut writer = hound::WavWriter::create(&path, spec).unwrap();
+        for _ in 0..24_000 * 6 {
+            writer.write_sample(1_000_i16).unwrap();
+        }
+        writer.finalize().unwrap();
+
+        // The header-based limit must reject the file before its 144 000
+        // samples are decoded into memory.
+        let imported = decode_wav(&path, 48_000);
+        std::fs::remove_file(&path).unwrap();
+        let error = imported.unwrap_err().to_string();
+        assert!(
+            error.contains("limited to 5 s"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn wav_files_within_five_seconds_are_accepted() {
+        let path = std::env::temp_dir().join(format!(
+            "metrognome-import-test-4s-{}.wav",
+            std::process::id()
+        ));
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 24_000,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let mut writer = hound::WavWriter::create(&path, spec).unwrap();
+        for index in 0..24_000 * 4 {
+            let value = if index % 48 == 0 { 1_000 } else { 0 };
+            writer.write_sample(value).unwrap();
+        }
+        writer.finalize().unwrap();
+
+        let imported = decode_wav(&path, 48_000);
+        std::fs::remove_file(&path).unwrap();
+        assert!(imported.is_ok());
+    }
+
+    #[test]
     fn presets_are_safe_to_mix() {
         for preset in SoundPreset::ALL {
             let bank = SoundBank::preset(preset, 48_000);
             assert!(bank.normal.iter().all(|sample| sample.abs() <= 1.0));
-            assert!(bank.accent.iter().all(|sample| sample.abs() <= 1.0));
+            assert!(bank.first_source.iter().all(|sample| sample.abs() <= 1.0));
             assert!(bank.normal.iter().any(|sample| sample.abs() > 0.05));
-            assert!(bank.accent.iter().any(|sample| sample.abs() > 0.05));
+            assert!(bank.first_source.iter().any(|sample| sample.abs() > 0.05));
         }
     }
 }

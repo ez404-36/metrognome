@@ -43,9 +43,12 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
 
     // Restore the persisted sample choice before any widget is built so the
     // audio engine, the selector and the previous session agree immediately.
-    if !load_sample(&engine, params.sample()) {
+    if let Err(error) = load_sample(&engine, params.sample()) {
+        eprintln!("Saved sample failed to load: {error:#}");
         params.set_sample(0);
-        load_sample(&engine, 0);
+        if let Err(error) = load_sample(&engine, 0) {
+            eprintln!("Bundled sample failed to load: {error:#}");
+        }
     }
 
     load_css();
@@ -372,12 +375,12 @@ fn replace_beat_buttons(
             let current = states
                 .get(index_for_click)
                 .copied()
-                .unwrap_or(BeatState::Accent);
+                .unwrap_or(BeatState::Enabled);
             // A click toggles a dot between its two exposed states: enabled
             // and disabled.
             let next = match current {
-                BeatState::Accent | BeatState::Normal => BeatState::Muted,
-                BeatState::Muted => BeatState::Accent,
+                BeatState::Enabled | BeatState::Normal => BeatState::Muted,
+                BeatState::Muted => BeatState::Enabled,
             };
             if let Some(slot) = states.get_mut(index_for_click) {
                 *slot = next;
@@ -386,7 +389,7 @@ fn replace_beat_buttons(
 
             let states = params.states();
             for (position, button) in buttons.borrow().iter().enumerate() {
-                let state = states.get(position).copied().unwrap_or(BeatState::Accent);
+                let state = states.get(position).copied().unwrap_or(BeatState::Enabled);
                 apply_state_class(button, state);
             }
         });
@@ -404,7 +407,7 @@ fn apply_state_class(button: &gtk::Button, state: BeatState) {
     }
 
     button.add_css_class(match state {
-        BeatState::Accent => "state-accent",
+        BeatState::Enabled => "state-accent",
         BeatState::Normal => "state-accent",
         BeatState::Muted => "state-muted",
     });
@@ -447,7 +450,9 @@ fn build_controls(
     let params_for_open = params.clone();
     let settings_dialog = build_settings_modal(window, engine, params);
     settings_button.connect_clicked(move |_| {
-        load_sample(&engine_for_open, params_for_open.sample());
+        if let Err(error) = load_sample(&engine_for_open, params_for_open.sample()) {
+            eprintln!("Could not resync sample: {error:#}");
+        }
         settings_dialog.present();
     });
 
@@ -554,9 +559,11 @@ fn build_settings_modal(
     let params_for_list = params.clone();
     sample_select.connect_selected_notify(move |select| {
         let position = select.selected() as usize;
-        if load_sample(&engine_for_list, position) {
-            params_for_list.set_sample(position);
+        if let Err(error) = load_sample(&engine_for_list, position) {
+            eprintln!("Could not load sample: {error:#}");
+            return;
         }
+        params_for_list.set_sample(position);
     });
 
     let play_button = gtk::Button::from_icon_name("media-playback-start");
@@ -577,7 +584,8 @@ fn build_settings_modal(
         }
 
         let position = dropdown_for_preview.selected() as usize;
-        if !load_sample(&engine_for_preview, position) {
+        if let Err(error) = load_sample(&engine_for_preview, position) {
+            eprintln!("Could not load sample for preview: {error:#}");
             return;
         }
 
@@ -682,7 +690,7 @@ fn apply_pointer_cursors(widget: &gtk::Widget) {
     }
 }
 
-fn load_sample(engine: &Rc<RefCell<AudioEngine>>, position: usize) -> bool {
+fn load_sample(engine: &Rc<RefCell<AudioEngine>>, position: usize) -> anyhow::Result<()> {
     let sample_rate = engine.borrow().sample_rate;
     let result = if position == 0 {
         SoundBank::embedded(sample_rate)
@@ -690,16 +698,8 @@ fn load_sample(engine: &Rc<RefCell<AudioEngine>>, position: usize) -> bool {
         SoundBank::candidate(position - 1, sample_rate)
     };
 
-    match result {
-        Ok(bank) => {
-            engine.borrow().set_sound_bank(bank);
-            true
-        }
-        Err(error) => {
-            eprintln!("Could not load sample: {error:#}");
-            false
-        }
-    }
+    engine.borrow().set_sound_bank(result?);
+    Ok(())
 }
 
 fn load_css() {

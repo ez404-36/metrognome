@@ -23,6 +23,10 @@ pub struct AudioEngine {
     params: Arc<SharedParams>,
     sound_bank: Arc<ArcSwap<SoundBank>>,
     started: Arc<AtomicBool>,
+    /// Set by the stream error callback when the output device dies; the
+    /// next ensure/recover rebuilds the stream, re-resolving the default
+    /// device in case it was replaced.
+    stream_errored: Arc<AtomicBool>,
     pub sample_rate: u32,
 }
 
@@ -52,6 +56,7 @@ impl AudioEngine {
             sample_rate,
         ))));
         let started = Arc::new(AtomicBool::new(false));
+        let stream_errored = Arc::new(AtomicBool::new(false));
 
         Ok(Self {
             stream: None,
@@ -61,8 +66,40 @@ impl AudioEngine {
             params,
             sound_bank: bank,
             started,
+            stream_errored,
             sample_rate,
         })
+    }
+
+    /// Re-resolves the default output device and its configuration, for
+    /// example after the previous device was unplugged. Refreshing the
+    /// sample rate keeps the scheduler period correct; an already decoded
+    /// click bank keeps its old rate, which may shift its pitch slightly
+    /// until it is reselected.
+    fn refresh_device(&mut self) -> Result<()> {
+        let host = cpal::default_host();
+        let device = host
+            .default_output_device()
+            .context("no default audio output device")?;
+        let supported = device
+            .default_output_config()
+            .context("default output configuration is unavailable")?;
+        let supported_buffer_size = *supported.buffer_size();
+        let sample_format = supported.sample_format();
+        let mut config: StreamConfig = supported.into();
+        config.buffer_size = low_latency_buffer_size(supported_buffer_size);
+        let sample_rate = config.sample_rate.0;
+
+        self.device = device;
+        self.config = config;
+        self.sample_format = sample_format;
+        if self.sample_rate != sample_rate {
+            self.sample_rate = sample_rate;
+            self.params
+                .sample_rate
+                .store(sample_rate, Ordering::Relaxed);
+        }
+        Ok(())
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -93,11 +130,21 @@ impl AudioEngine {
     }
 
     fn ensure_stream(&mut self) -> Result<()> {
-        if self.stream.is_some() {
+        if self.stream.is_some() && !self.stream_errored.swap(false, Ordering::SeqCst) {
             return Ok(());
         }
 
-        let error: fn(cpal::StreamError) = audio_stream_error;
+        // The previous stream is either absent or reported an error; drop it
+        // and resolve the current default device afresh.
+        self.stream = None;
+        self.refresh_device()?;
+
+        let stream_errored = self.stream_errored.clone();
+        let error = move |stream_error: cpal::StreamError| {
+            eprintln!("audio stream error: {stream_error}");
+            stream_errored.store(true, Ordering::SeqCst);
+        };
+
         let stream = match self.sample_format {
             SampleFormat::F32 => Self::build_stream::<f32>(
                 &self.device,
@@ -148,8 +195,10 @@ impl AudioEngine {
 
     pub fn set_accent_wav(&self, path: &std::path::Path) -> Result<()> {
         let mut bank = self.sound_bank.load().as_ref().clone();
-        bank.accent = super::sound_bank::decode_wav(path, self.sample_rate)?;
-        bank.first = super::sound_bank::derive_first_sound(&bank.accent, self.sample_rate);
+        // The accent WAV never plays directly; it becomes the source the
+        // first-beat sound is derived from.
+        bank.first_source = super::sound_bank::decode_wav(path, self.sample_rate)?;
+        bank.first = super::sound_bank::derive_first_sound(&bank.first_source, self.sample_rate);
         self.sound_bank.store(Arc::new(bank));
         Ok(())
     }
@@ -157,10 +206,14 @@ impl AudioEngine {
     pub fn play(&mut self) -> Result<()> {
         self.ensure_stream()?;
 
-        if !self.started.swap(true, Ordering::SeqCst) {
+        // Only mark the stream started after play() succeeds; otherwise an
+        // early failure would permanently skip the stream start on every
+        // later attempt.
+        if !self.started.load(Ordering::SeqCst) {
             if let Some(stream) = self.stream.as_ref() {
                 stream.play()?;
             }
+            self.started.store(true, Ordering::SeqCst);
         }
 
         self.params.running.store(true, Ordering::Relaxed);
@@ -183,7 +236,7 @@ impl AudioEngine {
         let beats = f64::from(self.params.beat_count().max(1));
         let bpm = f64::from(self.params.bpm().max(1));
         let measure_duration = beats * 60.0 / bpm;
-        let sound_tail = [bank.normal.len(), bank.accent.len(), bank.first.len()]
+        let sound_tail = [bank.normal.len(), bank.first_source.len(), bank.first.len()]
             .into_iter()
             .max()
             .unwrap_or_default() as f64
@@ -216,10 +269,23 @@ impl AudioEngine {
     pub fn is_running(&self) -> bool {
         self.params.running.load(Ordering::Relaxed)
     }
-}
 
-fn audio_stream_error(error: cpal::StreamError) {
-    eprintln!("audio stream error: {error}");
+    /// Rebuilds the output stream after a device error. Returns whether a
+    /// rebuild was attempted; playback resumes automatically if the stream
+    /// had been started before.
+    pub fn recover_stream_if_needed(&mut self) -> Result<bool> {
+        if !self.stream_errored.load(Ordering::SeqCst) {
+            return Ok(false);
+        }
+
+        self.ensure_stream()?;
+        if self.started.load(Ordering::SeqCst) {
+            if let Some(stream) = self.stream.as_ref() {
+                stream.play()?;
+            }
+        }
+        Ok(true)
+    }
 }
 
 fn low_latency_buffer_size(supported: SupportedBufferSize) -> BufferSize {
