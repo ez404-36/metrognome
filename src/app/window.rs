@@ -6,7 +6,7 @@ use std::{
 };
 
 use adw::{prelude::*, Application};
-use gtk::{glib, CssProvider, STYLE_PROVIDER_PRIORITY_APPLICATION};
+use gtk::{gdk, gio, glib, CssProvider, IconTheme, STYLE_PROVIDER_PRIORITY_APPLICATION};
 
 use crate::audio::engine::AudioEngine;
 use crate::audio::sound_bank::SoundBank;
@@ -25,10 +25,11 @@ enum SettingsText {
     ClassicBundled,
     PlayMeasure,
     HighlightFirstBeat,
+    AboutMetrognome,
 }
 
 /// One row per `Language`, one column per `SettingsText`.
-const SETTINGS_TEXTS: [[&str; 6]; 25] = [
+const SETTINGS_TEXTS: [[&str; 7]; 25] = [
     [
         "Settings",
         "Language",
@@ -36,6 +37,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classic (bundled)",
         "Play measure",
         "Highlight first beat",
+        "About Metrognome",
     ],
     [
         "设置",
@@ -44,6 +46,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "经典（内置）",
         "播放一小节",
         "突出第一拍",
+        "关于 Metrognome",
     ],
     [
         "सेटिंग्स",
@@ -52,6 +55,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "क्लासिक (बिल्ट-इन)",
         "एक माप बजाएँ",
         "पहला बीट हाइलाइट करें",
+        "Metrognome के बारे में",
     ],
     [
         "Ajustes",
@@ -60,6 +64,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Clásica (incluida)",
         "Reproducir compás",
         "Resaltar primer tiempo",
+        "Acerca de Metrognome",
     ],
     [
         "Paramètres",
@@ -68,6 +73,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classique (intégré)",
         "Jouer une mesure",
         "Mettre en valeur le premier temps",
+        "À propos de Metrognome",
     ],
     [
         "الإعدادات",
@@ -76,6 +82,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "كلاسيكي (مدمج)",
         "تشغيل ميزان",
         "تمييز النبضة الأولى",
+        "حول Metrognome",
     ],
     [
         "সেটিংস",
@@ -84,6 +91,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "ক্লাসিক (অন্তর্ভুক্ত)",
         "মাপ বাজান",
         "প্রথম বিট হাইলাইট করুন",
+        "Metrognome সম্পর্কে",
     ],
     [
         "Configurações",
@@ -92,6 +100,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Clássico (integrado)",
         "Tocar compasso",
         "Destacar primeiro tempo",
+        "Sobre o Metrognome",
     ],
     [
         "Настройки",
@@ -100,6 +109,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classic (встроенный)",
         "Воспроизвести такт",
         "Выделять первый удар",
+        "О программе",
     ],
     [
         "ترتیبات",
@@ -108,6 +118,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "کلاسک (شامل)",
         "میزان چلائیں",
         "پہلی دھن نمایاں کریں",
+        "Metrognome کے بارے میں",
     ],
     [
         "Einstellungen",
@@ -116,6 +127,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Klassisch (integriert)",
         "Takt abspielen",
         "Ersten Schlag hervorheben",
+        "Über Metrognome",
     ],
     [
         "設定",
@@ -124,6 +136,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "クラシック（内蔵）",
         "1小節を再生",
         "最初のビートを強調",
+        "Metrognome について",
     ],
     [
         "ਸੈਟਿੰਗਾਂ",
@@ -132,6 +145,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "ਕਲਾਸਿਕ (ਸ਼ਾਮਲ)",
         "ਤਾਲ ਚਲਾਓ",
         "ਪਹਿਲਾ ਬੀਟ ਉਭਾਰੋ",
+        "Metrognome ਬਾਰੇ",
     ],
     [
         "सेटिंग्ज",
@@ -140,6 +154,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "क्लासिक (अंतर्भूत)",
         "ताल वाजवा",
         "पहिला ठोका ठळक करा",
+        "Metrognome विषयी",
     ],
     [
         "సెట్టింగ్‌లు",
@@ -148,6 +163,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "క్లాసిక్ (అంతర్భుతం)",
         "తాళం వాయించు",
         "మొదటి బీట్ హైలైట్ చేయండి",
+        "Metrognome గురించి",
     ],
     [
         "Ayarlar",
@@ -156,6 +172,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Klasik (yerleşik)",
         "Ölçüyü çal",
         "İlk vurguyu öne çıkar",
+        "Metrognome Hakkında",
     ],
     [
         "설정",
@@ -164,6 +181,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "클래식(내장)",
         "마디 재생",
         "첫 박자 강조",
+        "Metrognome 정보",
     ],
     [
         "Cài đặt",
@@ -172,6 +190,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Cổ điển (nhúng)",
         "Phát một ô nhịp",
         "Làm nổi bật nhịp đầu",
+        "Giới thiệu Metrognome",
     ],
     [
         "Impostazioni",
@@ -180,6 +199,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classico (integrato)",
         "Riproduci misura",
         "Evidenzia primo battito",
+        "Informazioni su Metrognome",
     ],
     [
         "Pengaturan",
@@ -188,6 +208,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classic (bawaan)",
         "Putar birama",
         "Sorot ketukan pertama",
+        "Tentang Metrognome",
     ],
     [
         "Ustawienia",
@@ -196,6 +217,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classic (wbudowany)",
         "Zagraj takt",
         "Wyróżnij pierwsze uderzenie",
+        "O Metrognome",
     ],
     [
         "Налаштування",
@@ -204,6 +226,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classic (вбудований)",
         "Відтворити такт",
         "Виділяти перший удар",
+        "Про програму",
     ],
     [
         "Instellingen",
@@ -212,6 +235,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classic (ingebed)",
         "Maat afspelen",
         "Eerste slag markeren",
+        "Over Metrognome",
     ],
     [
         "การตั้งค่า",
@@ -220,6 +244,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "คลาสสิก (ในตัว)",
         "เล่นหนึ่งห้อง",
         "เน้นจังหวะแรก",
+        "เกี่ยวกับ Metrognome",
     ],
     [
         "Mipangilio",
@@ -228,11 +253,29 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Classic (ndani)",
         "Cheza kipimo",
         "Angazia mdundo wa kwanza",
+        "Kuhusu Metrognome",
     ],
 ];
 
 fn settings_text(language: Language, text: SettingsText) -> &'static str {
     SETTINGS_TEXTS[language.index()][text as usize]
+}
+
+fn about_text(language: Language) -> &'static str {
+    settings_text(language, SettingsText::AboutMetrognome)
+}
+
+fn show_about(parent: &adw::Window) {
+    adw::AboutWindow::builder()
+        .transient_for(parent)
+        .application_name("Metrognome")
+        .application_icon("metrognome")
+        .version(env!("CARGO_PKG_VERSION"))
+        .comments("A stable and customizable GNOME metronome built with Rust, GTK 4, libadwaita, and cpal.")
+        .developer_name("ez404-36")
+        .license_type(gtk::License::MitX11)
+        .build()
+        .present();
 }
 
 /// Errors are less prominent than the settings controls; Russian keeps its
@@ -335,6 +378,7 @@ impl ErrorToast {
 }
 
 pub fn launch() -> anyhow::Result<()> {
+    register_icon_resources();
     let app = Application::builder()
         .application_id("io.github.metrognome.Metrognome")
         .build();
@@ -443,7 +487,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
             Ok(false) => {}
             Ok(true) => {
                 watch_failing.set(false);
-                toast_for_watch.show(&error_text(
+                toast_for_watch.show(error_text(
                     params_for_watch.language(),
                     ErrorText::RecoverAudio,
                 ));
@@ -477,8 +521,20 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
 
 fn build_header() -> adw::HeaderBar {
     let header = adw::HeaderBar::new();
-    let title = gtk::Label::new(Some("Metrognome"));
-    title.add_css_class("metrognome-title");
+    let title = gtk::Box::new(gtk::Orientation::Horizontal, 7);
+
+    let logo = gtk::Image::builder()
+        .icon_name("metrognome-header")
+        .pixel_size(18)
+        .build();
+    logo.add_css_class("app-logo");
+    title.append(&logo);
+
+    let label = gtk::Label::new(Some("Metrognome"));
+    label.add_css_class("metrognome-title");
+    title.append(&label);
+    title.set_halign(gtk::Align::Center);
+
     header.set_title_widget(Some(&title));
     header
 }
@@ -1040,6 +1096,16 @@ fn build_settings_modal(
     settings_group.add(&first_beat);
     content.append(&settings_group);
 
+    let about_button = gtk::Button::builder()
+        .label(about_text(params.language()))
+        .css_classes(["flat", "caption", "about-button"])
+        .halign(gtk::Align::Center)
+        .margin_top(12)
+        .build();
+    let parent_for_about = dialog.clone();
+    about_button.connect_clicked(move |_| show_about(&parent_for_about));
+    content.append(&about_button);
+
     toolbar.set_content(Some(&content));
     let overlay = gtk::Overlay::new();
     overlay.set_child(Some(&toolbar));
@@ -1054,6 +1120,7 @@ fn build_settings_modal(
     let sample_select_for_language = sample_select.clone();
     let play_button_for_language = play_button.clone();
     let first_beat_for_language = first_beat.clone();
+    let about_button_for_language = about_button.clone();
     let params_for_language = params.clone();
     language_select.connect_selected_notify(move |select| {
         let language = Language::from_index(select.selected() as usize);
@@ -1068,6 +1135,7 @@ fn build_settings_modal(
             .set_tooltip_text(Some(settings_text(language, SettingsText::PlayMeasure)));
         first_beat_for_language
             .set_title(settings_text(language, SettingsText::HighlightFirstBeat));
+        about_button_for_language.set_label(about_text(language));
 
         // `Classic (bundled)` is generated by the UI; candidate labels come
         // from user filenames and must not be translated.
@@ -1232,7 +1300,22 @@ fn load_sample(engine: &Rc<RefCell<AudioEngine>>, position: usize) -> anyhow::Re
     Ok(())
 }
 
+fn register_icon_resources() {
+    let bytes = glib::Bytes::from_static(super::style::ICONS);
+    let resource =
+        gio::Resource::from_data(&bytes).expect("compiled icon resource should be valid");
+    gio::resources_register(&resource);
+}
+
+fn add_icon_theme_resource_path() {
+    if let Some(display) = gdk::Display::default() {
+        IconTheme::for_display(&display).add_resource_path(super::style::ICON_RESOURCE_PATH);
+    }
+}
+
 fn load_css() {
+    add_icon_theme_resource_path();
+
     let provider = CssProvider::new();
     provider.load_from_string(crate::app::style::CSS);
 
@@ -1242,5 +1325,34 @@ fn load_css() {
             &provider,
             STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
+    }
+}
+
+#[cfg(all(test, feature = "ui"))]
+mod icon_resource_tests {
+    use super::*;
+
+    #[test]
+    fn compiled_icons_resolve_from_the_application_resource_path() {
+        if !gtk::is_initialized() {
+            gtk::init().expect("GTK should initialize in the test harness");
+        }
+
+        register_icon_resources();
+
+        let theme = gtk::IconTheme::new();
+        theme.add_resource_path(crate::app::style::ICON_RESOURCE_PATH);
+
+        for name in ["metrognome", "metrognome-symbolic", "metrognome-header"] {
+            theme.lookup_icon(
+                name,
+                &[],
+                32,
+                1,
+                gtk::TextDirection::Ltr,
+                gtk::IconLookupFlags::empty(),
+            );
+            assert!(theme.has_icon(name), "{name} was not registered");
+        }
     }
 }

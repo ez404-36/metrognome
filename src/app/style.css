@@ -2,6 +2,10 @@
   font-weight: 700;
 }
 
+.app-logo {
+  opacity: 0.8;
+}
+
 .metro-card {
   border-radius: 20px;
   padding: 24px;
@@ -106,6 +110,10 @@
   font-size: 13px;
   font-weight: 700;
   opacity: 0.75;
+}
+
+.about-button {
+  opacity: 0.85;
 }
 
 .sample-row {

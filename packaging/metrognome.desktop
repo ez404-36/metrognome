@@ -6,5 +6,5 @@ Comment=Keep time with customizable sounds and accent patterns
 Exec=metrognome
 Icon=metrognome
 Terminal=false
-Categories=Audio;Music;GTK;
+Categories=AudioVideo;Audio;Music;GTK;
 Keywords=metronome;music;practice;tempo;rhythm;

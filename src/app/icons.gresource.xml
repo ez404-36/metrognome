@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/io/github/metrognome/icons/hicolor">
+        <file alias="scalable/apps/metrognome-symbolic.svg">metrognome-symbolic.svg</file>
+        <file alias="scalable/apps/metrognome-header.svg">metrognome-header.svg</file>
+        <file alias="256x256/apps/metrognome.png" compressed="false">metrognome-256.png</file>
+    </gresource>
+</gresources>

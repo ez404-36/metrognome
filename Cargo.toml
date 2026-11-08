@@ -21,3 +21,27 @@ adw = { package = "libadwaita", version = "0.7", features = ["v1_5"], optional =
 [features]
 default = []
 ui = ["dep:gtk", "dep:adw"]
+
+# Debian package definition, built in CI with `cargo deb --no-build`
+# after `cargo build --release --features ui`. `$auto` derives the runtime
+# dependencies from the linked shared libraries (GTK 4, libadwaita, ALSA).
+[package.metadata.deb]
+maintainer = "ez404-36 <210903914+ez404-36@users.noreply.github.com>"
+copyright = "2026, ez404-36"
+extended-description = """\
+Metrognome keeps timing in the audio callback, not in a GUI timer: beats are \
+planned in audio samples over a continuous cpal output stream. It offers \
+20–300 BPM with continuous tempo changes and tap tempo, 2/4, 3/4, 4/4 and \
+6/8 accent patterns, built-in click presets, WAV import, a native \
+libadwaita UI with light and dark theme support, and persistent settings."""
+depends = "$auto"
+section = "sound"
+priority = "optional"
+assets = [
+    ["target/release/metrognome", "usr/bin/", "755"],
+    ["packaging/metrognome.desktop", "usr/share/applications/", "644"],
+    ["assets/brand/icons/metrognome-symbolic.svg", "usr/share/icons/hicolor/symbolic/apps/metrognome-symbolic.svg", "644"],
+    ["assets/brand/icons/metrognome-64.png", "usr/share/icons/hicolor/64x64/apps/metrognome.png", "644"],
+    ["assets/brand/icons/metrognome-128.png", "usr/share/icons/hicolor/128x128/apps/metrognome.png", "644"],
+    ["assets/brand/icons/metrognome-256.png", "usr/share/icons/hicolor/256x256/apps/metrognome.png", "644"],
+]

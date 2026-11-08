@@ -1,0 +1,312 @@
+name: Release
+
+# Builds the Metrognome Linux artifacts:
+#   - `.deb` package via cargo-deb (runtime `Depends:` auto-derived from the
+#     linked shared libraries: GTK 4, libadwaita, ALSA, glibc).
+#   - portable `.AppImage` via linuxdeploy, which bundles the non-glibc
+#     shared libraries (GTK 4, libadwaita, ALSA) into the image.
+#
+# Triggers:
+#   - Pushing a tag like `v0.1.0` builds the artifacts and attaches them to a
+#     GitHub Release for that tag.
+#   - Manual `workflow_dispatch` builds the artifacts and uploads them as
+#     workflow artifacts (no Release is created).
+#
+# Flow (mirrors the ProcMix release workflow):
+#   check -> create-release (draft) -> build-linux -> publish-release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  # linuxdeploy and its bundled appimagetool ship as AppImages; the runner has
+  # no FUSE mount, so both must extract-and-run instead.
+  APPIMAGE_EXTRACT_AND_RUN: '1'
+  # Pin linuxdeploy for reproducible bundling; bump this tag deliberately.
+  LINUXDEPLOY_VERSION: 1-alpha-20251107-1
+
+jobs:
+  # Fast gate before the slow release build so a broken tag fails in minutes.
+  # ubuntu-24.04 is required: the `ui` feature compiles against GTK 4.12 and
+  # libadwaita 1.5 headers, which first ship in Ubuntu 24.04. The artifacts
+  # therefore target the 24.04-era GNOME stack (the deb Depends reflect the
+  # build runner's library versions; the AppImage bundles GTK but not glibc).
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the tag matches the crate version
+        if: github.ref_type == 'tag'
+        run: |
+          set -euo pipefail
+          crate_version="$(grep -m1 '^version' Cargo.toml | sed -E 's/^version = "(.*)"$/\1/')"
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [ "$tag_version" != "$crate_version" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match the crate version ${crate_version}; expected v${crate_version}."
+            exit 1
+          fi
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry & target
+        uses: Swatinem/rust-cache@v2
+
+      # Build-time headers for GTK 4, libadwaita and ALSA (alsa.pc, needed by
+      # the alsa-sys crate behind cpal). pkg-config is preinstalled on the
+      # runner image.
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libasound2-dev
+
+      - name: Formatting (rustfmt)
+        run: cargo fmt --check
+
+      # Clippy with the `ui` feature compiles the shipped GUI configuration.
+      # The default (non-UI) configuration is covered by cargo test below.
+      - name: Clippy
+        run: cargo clippy --all-targets --features ui -- -D warnings
+
+      - name: Test
+        run: cargo test
+
+  # Create the draft GitHub Release ONCE, before the build job runs, so the
+  # public release is never visible without its artifacts. A DRAFT release has
+  # no git tag attached until it is published, so it cannot be looked up by
+  # `gh release view <tag>` or the `releases/tags/<tag>` API; find it by
+  # scanning the releases list for one whose `tag_name` matches. This also
+  # makes a re-run idempotent instead of creating a second draft.
+  create-release:
+    needs: check
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      release-id: ${{ steps.create.outputs.release-id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create or reuse draft release
+        id: create
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag='${{ github.ref_name }}'
+          repo='${{ github.repository }}'
+
+          # The releases LIST endpoint is eventually consistent: a draft
+          # created one line earlier is frequently absent from the very next
+          # list call, so retry the lookup a few times before giving up.
+          # `awk 'NR==1'` (instead of `head -n1`) avoids a SIGPIPE that would
+          # make the upstream `gh` exit non-zero under `pipefail`.
+          #
+          # A transient GitHub API hiccup can make `gh api` print its JSON
+          # error BODY to stdout instead of failing loudly, which would then
+          # be passed through as if it were a real id. Every extraction point
+          # is therefore validated as ALL-DIGITS before being accepted.
+          is_numeric_id() {
+            case "$1" in
+              '' ) return 1 ;;
+              *[!0-9]* ) return 1 ;;
+              * ) return 0 ;;
+            esac
+          }
+
+          find_id() {
+            local candidate
+            candidate="$(gh api --paginate "repos/$repo/releases" \
+              -q ".[] | select(.tag_name == \"$tag\") | .id" 2>/dev/null \
+              | awk 'NR==1')"
+            is_numeric_id "$candidate" && printf '%s' "$candidate"
+          }
+
+          find_id_retry() {
+            local id=""
+            for _ in 1 2 3 4 5; do
+              id="$(find_id || true)"
+              [ -n "$id" ] && { printf '%s' "$id"; return 0; }
+              sleep 3
+            done
+            return 0
+          }
+
+          release_id="$(find_id_retry)"
+          if [ -z "$release_id" ]; then
+            # `gh release create` prints the release's HTML URL on success,
+            # which the API also exposes verbatim as `html_url`; map it back
+            # to the release id without relying on the list call becoming
+            # consistent.
+            release_url="$(gh release create "$tag" \
+              --repo "$repo" \
+              --draft \
+              --title "Metrognome $tag" \
+              --notes "Metrognome $tag — .deb package and portable AppImage.")"
+            echo "Created draft release: $release_url"
+            url_id="$(gh api --paginate "repos/$repo/releases" \
+              -q ".[] | select(.html_url == \"$release_url\") | .id" 2>/dev/null \
+              | awk 'NR==1' || true)"
+            if is_numeric_id "$url_id"; then
+              release_id="$url_id"
+            else
+              release_id="$(find_id_retry)"
+            fi
+          fi
+
+          if [ -z "$release_id" ]; then
+            echo "::error::Could not resolve a release id for draft $tag."
+            exit 1
+          fi
+
+          echo "Resolved release id: $release_id"
+          echo "release-id=$release_id" >> "$GITHUB_OUTPUT"
+
+  # Skipped `needs` jobs (create-release on workflow_dispatch) do not block
+  # dependents: only failed or canceled ones do. On workflow_dispatch the
+  # release-id output is empty and the build job uploads workflow artifacts
+  # without touching any release.
+  build-linux:
+    needs: [check, create-release]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry & target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libasound2-dev
+
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          version="$(grep -m1 '^version' Cargo.toml | sed -E 's/^version = "(.*)"$/\1/')"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build release binary (ui feature)
+        run: cargo build --release --features ui
+
+      - name: Install cargo-deb
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deb
+
+      # The deb packaging config lives in [package.metadata.deb] in
+      # Cargo.toml. --no-build reuses the release binary built above with the
+      # `ui` feature (cargo deb alone would build with default features, which
+      # produces the non-GUI smoke-test binary).
+      - name: Build .deb package
+        run: cargo deb --no-build
+
+      - name: Build AppImage
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          OUTPUT: metrognome_${{ steps.version.outputs.version }}_x86_64.AppImage
+        run: |
+          set -euo pipefail
+          appdir=AppDir
+          mkdir -p "$appdir/usr/bin" "$appdir/usr/share/applications"
+          mkdir -p "$appdir/usr/share/icons/hicolor/symbolic/apps"
+          for size in 64x64 128x128 256x256; do
+            mkdir -p "$appdir/usr/share/icons/hicolor/$size/apps"
+            cp "assets/brand/icons/metrognome-${size%%x*}.png" \
+              "$appdir/usr/share/icons/hicolor/$size/apps/metrognome.png"
+          done
+          cp assets/brand/icons/metrognome-symbolic.svg \
+            "$appdir/usr/share/icons/hicolor/symbolic/apps/metrognome-symbolic.svg"
+          cp target/release/metrognome "$appdir/usr/bin/"
+          cp packaging/metrognome.desktop "$appdir/usr/share/applications/"
+
+          curl -fsSL -o linuxdeploy \
+            "https://github.com/linuxdeploy/linuxdeploy/releases/download/${LINUXDEPLOY_VERSION}/linuxdeploy-x86_64.AppImage"
+          chmod +x linuxdeploy
+          ./linuxdeploy --appdir "$appdir" --output appimage
+
+          test -s "$OUTPUT"
+
+      - name: Upload deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrognome-linux-deb
+          path: target/debian/*.deb
+          if-no-files-found: error
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrognome-linux-appimage
+          path: metrognome_*_x86_64.AppImage
+          if-no-files-found: error
+
+      - name: Upload artifacts to the draft release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          repo='${{ github.repository }}'
+          release_id='${{ needs.create-release.outputs.release-id }}'
+          # Upload through the release-ID REST endpoint: a DRAFT release is
+          # not reachable through the `releases/tags/<tag>` API (it has no
+          # attached git tag until published), so this is the reliable path.
+          # Stale assets from a previous run are deleted first, giving the
+          # same effect as `gh release upload --clobber` for idempotent
+          # re-runs.
+          for file in target/debian/*.deb metrognome_*_x86_64.AppImage; do
+            name="$(basename "$file")"
+            gh api "repos/$repo/releases/$release_id/assets" \
+              -q ".[] | select(.name == \"$name\") | .id" \
+              | while read -r asset_id; do
+                  gh api --method DELETE "repos/$repo/releases/assets/$asset_id" >/dev/null
+                done
+            gh api --method POST \
+              -H "Content-Type: application/octet-stream" \
+              "repos/$repo/releases/$release_id/assets?name=$name" \
+              --input "$file" >/dev/null
+            echo "Uploaded $name to release $release_id."
+          done
+
+  # Publish the draft release ONLY after the build job has uploaded its
+  # artifacts, so the public release is never visible without them.
+  # `gh release edit --draft=false` is idempotent: if a maintainer already
+  # published the release manually while the build was running, this is a
+  # no-op and the assets simply continue landing in that release.
+  publish-release:
+    needs: build-linux
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release edit "${GITHUB_REF_NAME}" \
+            --repo '${{ github.repository }}' \
+            --draft=false
+          echo "Published release ${GITHUB_REF_NAME} (artifacts attached before publication)."

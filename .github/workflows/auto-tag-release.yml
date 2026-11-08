@@ -1,0 +1,137 @@
+name: Auto-tag release on version bump
+
+# Automatically creates and pushes a `v<version>` git tag when a version bump
+# lands on `master` — publishing a release only requires bumping the version
+# in Cargo.toml. Pushing the tag triggers release.yml's artifact build +
+# draft GitHub Release, exactly as a manual `git tag` + `git push` would.
+#
+# Trigger: push to `master` that touches Cargo.toml. The `paths` filter alone
+# is NOT sufficient to detect a real bump (touching Cargo.toml without
+# changing the version string, e.g. adding a dependency, would also match),
+# so the job additionally diffs the ACTUAL version value between the
+# before/after commits of the push before doing anything.
+#
+# IMPORTANT — GITHUB_TOKEN cannot trigger downstream workflows: a tag pushed
+# using the default `GITHUB_TOKEN` does NOT trigger OTHER workflows (GitHub's
+# anti-recursion rule). To avoid that trap, this job pushes the tag using a
+# personal access token stored in the `RELEASE_TAG_PAT` secret
+# (`Contents: read and write` is enough) if present, falling back to
+# `GITHUB_TOKEN` with a loud warning otherwise (the tag is still created —
+# release.yml would then need a manual `workflow_dispatch`, or the tag push
+# re-triggered from a local clone).
+#
+# The PAT MUST be handed to `actions/checkout` via its `token:` input — NOT
+# merely embedded in the push URL. checkout persists whatever token it was
+# given as `http.https://github.com/.extraheader`, and that header WINS over
+# any `https://user:token@github.com/...` credentials in the remote URL. A
+# `git push https://x-access-token:${PAT}@...` after a default checkout
+# therefore still authenticates as GITHUB_TOKEN and is silently swallowed by
+# the anti-recursion rule. Because checkout holds the credential, the push
+# below is a plain `git push origin "$tag"`.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'Cargo.toml'
+
+permissions:
+  contents: write
+  # `actions: read` is required by the final step's `gh run list`, which
+  # confirms the tag push actually started release.yml.
+  actions: read
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need history for both the before/after SHAs of the push, plus the
+          # ability to fetch the previous commit's version of Cargo.toml for
+          # the diff below. Persist the PAT (not GITHUB_TOKEN) as the
+          # credential git will use for the tag push — see the header comment.
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TAG_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Detect version bump
+        id: version
+        run: |
+          set -euo pipefail
+          new_version="$(grep -m1 '^version' Cargo.toml | sed -E 's/^version = "(.*)"$/\1/')"
+          echo "new=$new_version" >> "$GITHUB_OUTPUT"
+
+          # `before` is all-zeros for the first push of a new branch (not
+          # expected on `master`, but handle it defensively) — with no prior
+          # state to diff against, fall through to the tag-exists check below
+          # as the real guard instead of guessing.
+          before='${{ github.event.before }}'
+          if [ "$before" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$before" 2>/dev/null; then
+            echo "No previous commit to diff against; relying on tag-exists check."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          old_version="$(git show "$before:Cargo.toml" 2>/dev/null \
+            | grep -m1 '^version' | sed -E 's/^version = "(.*)"$/\1/' || true)"
+
+          if [ "$old_version" = "$new_version" ]; then
+            echo "Version unchanged ($new_version); this push did not bump the version."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version changed: ${old_version:-<none>} -> $new_version"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag
+        if: steps.version.outputs.changed == 'true'
+        env:
+          # Read through `env` rather than interpolating `${{ secrets.* }}`
+          # into the script body: an inline secret is rendered into the log as
+          # `***`, which makes the emptiness check unreadable when debugging.
+          # Only used to decide WHICH warning to print — the credential itself
+          # is already held by the checkout step above.
+          HAS_PAT: ${{ secrets.RELEASE_TAG_PAT != '' }}
+        run: |
+          set -euo pipefail
+          tag="v${{ steps.version.outputs.new }}"
+
+          if git ls-remote --tags origin "$tag" | grep -q "refs/tags/$tag"; then
+            echo "Tag $tag already exists on origin; nothing to do."
+            exit 0
+          fi
+
+          if [ "$HAS_PAT" != "true" ]; then
+            echo "::warning::RELEASE_TAG_PAT is not set — tagging with GITHUB_TOKEN, which will NOT trigger release.yml automatically (GitHub blocks workflows triggering workflows via the default token). Add a PAT with 'Contents: read and write' as RELEASE_TAG_PAT to fully automate this, or manually re-run release.yml via workflow_dispatch / re-push the tag from a local clone."
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "Release $tag"
+          git push origin "$tag"
+          echo "Pushed tag $tag"
+
+      # Fail loudly if the tag push did not start release.yml. Without this
+      # the failure mode is silent: a green auto-tag run, a tag on origin, and
+      # no artifacts or draft release until someone notices days later.
+      - name: Verify release.yml was triggered
+        if: steps.version.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="v${{ steps.version.outputs.new }}"
+
+          # The run is queued asynchronously; poll rather than sleep once.
+          for _ in $(seq 1 10); do
+            sleep 10
+            count="$(gh run list --workflow release.yml --branch "$tag" --json databaseId --jq 'length')"
+            if [ "$count" -gt 0 ]; then
+              echo "release.yml was triggered by $tag."
+              exit 0
+            fi
+          done
+
+          echo "::error::Tag $tag was pushed but release.yml did not start within 100s. The push most likely authenticated as GITHUB_TOKEN (anti-recursion), so no artifacts or draft release will be produced. Fix: verify RELEASE_TAG_PAT is set and unexpired, then re-push the tag from a local clone: git push --delete origin $tag && git push origin $tag"
+          exit 1

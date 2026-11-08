@@ -676,7 +676,7 @@ mod tests {
     fn language_selector_labels_use_native_names_and_codes() {
         assert_eq!(Language::English.selector_label(), "English (EN)");
         assert_eq!(Language::Russian.selector_label(), "Русский (RU)");
-        assert_eq!(LANGUAGES.len() >= 20, true);
+        assert!(LANGUAGES.len() >= 20);
 
         for (index, (language, _, _)) in LANGUAGES.iter().enumerate() {
             assert_eq!(language.index(), index);

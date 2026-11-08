@@ -1,0 +1,51 @@
+name: CI
+
+# Fast gate for branches and PRs. The release workflow repeats these checks
+# because a tag is the release trigger; this workflow exists so broken
+# branches cannot reach that point unnoticed.
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-24.04
+    # The `ui` feature needs GTK 4.12 / libadwaita 1.5 headers, which first
+    # ship in Ubuntu 24.04 (see release.yml).
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry & target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libasound2-dev
+
+      - name: Formatting (rustfmt)
+        run: cargo fmt --check
+
+      - name: Clippy (ui feature — the shipped configuration)
+        run: cargo clippy --all-targets --features ui -- -D warnings
+
+      - name: Test
+        run: cargo test
+
+      - name: Build GUI binary
+        run: cargo build --features ui
