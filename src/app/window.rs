@@ -9,8 +9,8 @@ use adw::{prelude::*, Application};
 use gtk::{glib, CssProvider, STYLE_PROVIDER_PRIORITY_APPLICATION};
 
 use crate::audio::engine::AudioEngine;
-use crate::audio::sound_bank::SoundPreset;
-use crate::model::{AppSettings, SharedParams};
+use crate::audio::sound_bank::SoundBank;
+use crate::model::{default_states, AppSettings, BeatState, SharedParams};
 
 const TIME_SIGNATURES: [(&str, u32); 4] = [("2/4", 2), ("3/4", 3), ("4/4", 4), ("6/8", 6)];
 
@@ -41,6 +41,13 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     let settings = AppSettings::load();
     settings.apply_to(&params);
 
+    // Restore the persisted sample choice before any widget is built so the
+    // audio engine, the selector and the previous session agree immediately.
+    if !load_sample(&engine, params.sample()) {
+        params.set_sample(0);
+        load_sample(&engine, 0);
+    }
+
     load_css();
     let window = adw::ApplicationWindow::builder()
         .application(app)
@@ -55,7 +62,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     vbox.set_margin_start(24);
     vbox.set_margin_end(24);
 
-    let header = build_header(&window, &engine);
+    let header = build_header();
     let toolbar = adw::ToolbarView::new();
     toolbar.add_top_bar(&header);
 
@@ -69,17 +76,28 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     vbox.append(&build_pattern_row(&params));
     vbox.append(&build_tempo_card(&params));
     vbox.append(&build_beat_dots(&params));
-    vbox.append(&build_controls(&engine, &params));
+    vbox.append(&build_controls(&window, &engine, &params));
+
+    // The autosave loop persists every UI-relevant change (tempo, volume,
+    // meter, beat toggles, highlight switch and sample choice) shortly after
+    // it happens, so even a crash or forced kill cannot lose the last state.
+    let last_saved = Rc::new(RefCell::new(Some(AppSettings::from_params(&params))));
+    let params_for_save = params.clone();
+    let last_saved_for_loop = last_saved.clone();
+    glib::timeout_add_local(Duration::from_millis(250), move || {
+        let current = AppSettings::from_params(&params_for_save);
+        if last_saved_for_loop.borrow().as_ref() != Some(&current) {
+            if let Err(error) = current.save() {
+                eprintln!("Could not save settings: {error}");
+            }
+            *last_saved_for_loop.borrow_mut() = Some(current);
+        }
+        glib::ControlFlow::Continue
+    });
 
     let params_copy = params;
     window.connect_close_request(move |_| {
-        let (beats, accents) = params_copy.pattern();
-        let current = AppSettings {
-            bpm: params_copy.bpm(),
-            volume: params_copy.volume(),
-            beats,
-            accents,
-        };
+        let current = AppSettings::from_params(&params_copy);
         if let Err(error) = current.save() {
             eprintln!("Could not save settings: {error}");
         }
@@ -87,61 +105,15 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     });
 
     window.set_content(Some(&toolbar));
+    apply_pointer_cursors(window.upcast_ref());
     window
 }
 
-fn build_header(
-    window: &adw::ApplicationWindow,
-    engine: &Rc<RefCell<AudioEngine>>,
-) -> adw::HeaderBar {
+fn build_header() -> adw::HeaderBar {
     let header = adw::HeaderBar::new();
     let title = gtk::Label::new(Some("Metrognome"));
     title.add_css_class("metrognome-title");
     header.set_title_widget(Some(&title));
-
-    let sound_menu = gtk::MenuButton::new();
-    sound_menu.set_icon_name("open-menu-symbolic");
-    sound_menu.set_tooltip_text(Some("Sound settings"));
-
-    let popover = gtk::Popover::new();
-    let menu = gtk::Box::new(gtk::Orientation::Vertical, 8);
-    menu.set_margin_top(12);
-    menu.set_margin_bottom(12);
-    menu.set_margin_start(12);
-    menu.set_margin_end(12);
-
-    for preset in SoundPreset::ALL {
-        let button = gtk::Button::with_label(preset.title());
-        let engine = engine.clone();
-        let popover = popover.clone();
-        button.connect_clicked(move |_| {
-            let bank =
-                crate::audio::sound_bank::SoundBank::preset(preset, engine.borrow().sample_rate);
-            engine.borrow().set_sound_bank(bank);
-            popover.popdown();
-        });
-        menu.append(&button);
-    }
-
-    menu.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
-    let normal_button = gtk::Button::with_label("Set normal WAV…");
-    let accent_button = gtk::Button::with_label("Set accent WAV…");
-    let engine_for_normal = engine.clone();
-    let window_for_normal = window.clone();
-    let engine_for_accent = engine.clone();
-    let window_for_accent = window.clone();
-    normal_button.connect_clicked(move |_| {
-        choose_wav(&window_for_normal, &engine_for_normal, false);
-    });
-    accent_button.connect_clicked(move |_| {
-        choose_wav(&window_for_accent, &engine_for_accent, true);
-    });
-    menu.append(&normal_button);
-    menu.append(&accent_button);
-
-    popover.set_child(Some(&menu));
-    sound_menu.set_popover(Some(&popover));
-    header.pack_end(&sound_menu);
     header
 }
 
@@ -195,24 +167,19 @@ fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::Box {
             first = Some(button.clone());
         }
 
+        // Restore the active pill to the persisted meter instead of always
+        // defaulting to 4/4 after restart. Do this before installing the
+        // handler so restoring state cannot replace the saved accents.
+        if beats == params.beat_count() {
+            button.set_active(true);
+        }
+
         let params = params.clone();
         button.connect_toggled(move |toggle| {
             if toggle.is_active() {
-                let default_accents = match beats {
-                    6 => vec![true, false, false, true, false, false],
-                    beats => {
-                        let mut accents = vec![false; beats as usize];
-                        accents[0] = true;
-                        accents
-                    }
-                };
-                params.set_pattern(beats, &default_accents);
+                params.set_states(beats, &default_states(beats));
             }
         });
-
-        if beats == 4 {
-            button.set_active(true);
-        }
 
         row.append(&button);
     }
@@ -321,8 +288,8 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
 fn build_beat_dots(params: &Arc<SharedParams>) -> gtk::Box {
     let dots = gtk::Box::new(gtk::Orientation::Horizontal, 10);
     dots.set_halign(gtk::Align::Center);
-    let buttons = Rc::new(RefCell::new(Vec::<gtk::ToggleButton>::new()));
-    let rebuilding = Rc::new(Cell::new(false));
+    let buttons = Rc::new(RefCell::new(Vec::<gtk::Button>::new()));
+    let signature = Rc::new(Cell::new(0_u32));
 
     let buttons_for_poll = buttons.clone();
     let params_for_poll = params.clone();
@@ -343,62 +310,85 @@ fn build_beat_dots(params: &Arc<SharedParams>) -> gtk::Box {
 
     let params_for_redraw = params.clone();
     let buttons_for_redraw = buttons.clone();
-    let rebuilding_for_redraw = rebuilding.clone();
+    let signature_for_redraw = signature.clone();
     let dots_for_redraw = dots.clone();
     glib::timeout_add_local(Duration::from_millis(100), move || {
-        let desired = params_for_redraw.beat_count() as usize;
-        if buttons_for_redraw.borrow().len() != desired {
-            replace_beat_buttons(
-                &dots_for_redraw,
-                &buttons_for_redraw,
-                &rebuilding_for_redraw,
-                &params_for_redraw,
-            );
+        let desired = params_for_redraw.beat_count();
+        if buttons_for_redraw.borrow().len() != desired as usize
+            || signature_for_redraw.get() != desired
+        {
+            replace_beat_buttons(&dots_for_redraw, &buttons_for_redraw, &params_for_redraw);
+            signature_for_redraw.set(desired);
         }
         glib::ControlFlow::Continue
     });
 
-    replace_beat_buttons(&dots, &buttons, &rebuilding, params);
+    replace_beat_buttons(&dots, &buttons, params);
+    signature.set(params.beat_count());
 
     dots
 }
 
 fn replace_beat_buttons(
     row: &gtk::Box,
-    buttons: &Rc<RefCell<Vec<gtk::ToggleButton>>>,
-    rebuilding: &Rc<Cell<bool>>,
+    buttons: &Rc<RefCell<Vec<gtk::Button>>>,
     params: &Arc<SharedParams>,
 ) {
-    for child in row.observe_children().into_iter().flatten() {
-        if let Some(button) = child.downcast_ref::<gtk::ToggleButton>() {
+    // GTK's child list is live: removing a widget while iterating it shifts
+    // the remaining indices and can leave stale beat buttons in the row.
+    // Snapshot the children first so every old button is removed reliably.
+    let old_children: Vec<gtk::glib::Object> = row
+        .observe_children()
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect();
+    for child in old_children {
+        if let Some(button) = child.downcast_ref::<gtk::Button>() {
             row.remove(button);
         }
     }
     buttons.borrow_mut().clear();
 
-    let (_, accents) = params.pattern();
-    rebuilding.set(true);
-    let mut created = Vec::with_capacity(accents.len());
+    let states = params.states();
+    let mut created = Vec::with_capacity(states.len());
 
-    for accented in accents {
-        let button = gtk::ToggleButton::with_label("●");
+    for (index, state) in states.iter().copied().enumerate() {
+        let button = gtk::Button::with_label("\u{25CF}");
         button.add_css_class("beat-toggle");
-        button.set_active(accented);
+        button.set_valign(gtk::Align::Center);
+        button.set_cursor_from_name(Some("pointer"));
+        if index == 0 {
+            // The downbeat remains slightly larger even when the special
+            // musical highlight is disabled.
+            button.add_css_class("first-beat");
+        }
+        apply_state_class(&button, state);
 
         let buttons = buttons.clone();
-        let rebuilding = rebuilding.clone();
         let params = params.clone();
-        button.connect_toggled(move |_| {
-            if rebuilding.get() {
-                return;
+        let index_for_click = index;
+        button.connect_clicked(move |_| {
+            let mut states = params.states();
+            let current = states
+                .get(index_for_click)
+                .copied()
+                .unwrap_or(BeatState::Accent);
+            // A click toggles a dot between its two exposed states: enabled
+            // and disabled.
+            let next = match current {
+                BeatState::Accent | BeatState::Normal => BeatState::Muted,
+                BeatState::Muted => BeatState::Accent,
+            };
+            if let Some(slot) = states.get_mut(index_for_click) {
+                *slot = next;
             }
+            params.set_states(params.beat_count(), &states);
 
-            let accents: Vec<bool> = buttons
-                .borrow()
-                .iter()
-                .map(|button| button.is_active())
-                .collect();
-            params.set_pattern(params.beat_count(), &accents);
+            let states = params.states();
+            for (position, button) in buttons.borrow().iter().enumerate() {
+                let state = states.get(position).copied().unwrap_or(BeatState::Accent);
+                apply_state_class(button, state);
+            }
         });
 
         row.append(&button);
@@ -406,10 +396,25 @@ fn replace_beat_buttons(
     }
 
     *buttons.borrow_mut() = created;
-    rebuilding.set(false);
 }
 
-fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>) -> gtk::CenterBox {
+fn apply_state_class(button: &gtk::Button, state: BeatState) {
+    for class in ["state-accent", "state-muted"] {
+        button.remove_css_class(class);
+    }
+
+    button.add_css_class(match state {
+        BeatState::Accent => "state-accent",
+        BeatState::Normal => "state-accent",
+        BeatState::Muted => "state-muted",
+    });
+}
+
+fn build_controls(
+    window: &adw::ApplicationWindow,
+    engine: &Rc<RefCell<AudioEngine>>,
+    params: &Arc<SharedParams>,
+) -> gtk::CenterBox {
     let row = gtk::CenterBox::new();
     row.set_hexpand(true);
     row.set_valign(gtk::Align::Center);
@@ -420,19 +425,42 @@ fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>)
     tap.set_width_request(52);
     tap.set_height_request(52);
     tap.set_valign(gtk::Align::Center);
+    // Mirror the tap button and the burger around the centered play button:
+    // identical sizes and equal margins on both sides keep the side buttons
+    // at exactly the same distance from it.
+    tap.set_margin_start(24);
+    tap.set_margin_end(24);
     let play = gtk::Button::from_icon_name("media-playback-start");
     play.add_css_class("play-button");
     play.add_css_class("suggested-action");
 
-    let tap_wrapper = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    tap_wrapper.set_halign(gtk::Align::End);
-    tap_wrapper.set_valign(gtk::Align::Center);
-    tap_wrapper.set_margin_end(16);
-    tap_wrapper.append(&tap);
+    let settings_button = gtk::Button::from_icon_name("open-menu-symbolic");
+    settings_button.add_css_class("flat");
+    settings_button.add_css_class("controls-menu-button");
+    settings_button.set_width_request(52);
+    settings_button.set_height_request(52);
+    settings_button.set_tooltip_text(Some("Настройки"));
+    settings_button.set_valign(gtk::Align::Center);
+    settings_button.set_margin_start(24);
+    settings_button.set_margin_end(24);
+    let engine_for_open = engine.clone();
+    let params_for_open = params.clone();
+    let settings_dialog = build_settings_modal(window, engine, params);
+    settings_button.connect_clicked(move |_| {
+        load_sample(&engine_for_open, params_for_open.sample());
+        settings_dialog.present();
+    });
 
     let tap_times = Rc::new(RefCell::new(Vec::<std::time::Instant>::new()));
     let params_for_tap = params.clone();
+    let engine_for_tap = engine.clone();
     tap.connect_clicked(move |_| {
+        // Give the user audible feedback from the sample they currently have
+        // selected, while the tap itself only recalculates the tempo.
+        if let Err(error) = engine_for_tap.borrow_mut().play_normal_one_shot() {
+            eprintln!("Could not play tap sound: {error:#}");
+        }
+
         let now = std::time::Instant::now();
         let mut times = tap_times.borrow_mut();
         times.retain(|time| now.duration_since(*time).as_secs_f64() < 3.0);
@@ -468,9 +496,210 @@ fn build_controls(engine: &Rc<RefCell<AudioEngine>>, params: &Arc<SharedParams>)
             .store(0, std::sync::atomic::Ordering::Relaxed);
     });
 
-    row.set_start_widget(Some(&tap_wrapper));
+    row.set_start_widget(Some(&tap));
     row.set_center_widget(Some(&play));
+    row.set_end_widget(Some(&settings_button));
     row
+}
+
+fn build_settings_modal(
+    parent: &adw::ApplicationWindow,
+    engine: &Rc<RefCell<AudioEngine>>,
+    params: &Arc<SharedParams>,
+) -> adw::Window {
+    let dialog = adw::Window::new();
+    dialog.set_transient_for(Some(parent));
+    dialog.set_modal(true);
+    dialog.set_destroy_with_parent(true);
+    dialog.set_title(Some("Настройки"));
+    dialog.set_default_width(380);
+
+    // GTK's default close handling destroys the window. Since the settings
+    // dialog is reused by the burger button, hide it instead and recreate the
+    // native surface the next time it is presented.
+    let dialog_for_close = dialog.clone();
+    dialog.connect_close_request(move |_| {
+        dialog_for_close.set_visible(false);
+        glib::Propagation::Stop
+    });
+
+    let toolbar = adw::ToolbarView::new();
+    let header = adw::HeaderBar::new();
+    header.set_title_widget(Some(&gtk::Label::new(Some("Настройки"))));
+    toolbar.add_top_bar(&header);
+
+    let content = gtk::Box::new(gtk::Orientation::Vertical, 18);
+    content.set_margin_top(18);
+    content.set_margin_bottom(24);
+    content.set_margin_start(18);
+    content.set_margin_end(18);
+
+    let sample_title = gtk::Label::new(Some("Семпл"));
+    sample_title.set_halign(gtk::Align::Start);
+    sample_title.add_css_class("settings-section-title");
+    content.append(&sample_title);
+
+    let mut sample_labels = vec!["Classic (bundled)"];
+    sample_labels.extend(SoundBank::candidate_labels());
+    let preview_busy = Rc::new(Cell::new(false));
+    let sample_select = gtk::DropDown::from_strings(sample_labels.as_slice());
+    sample_select.set_tooltip_text(Some("Click sample"));
+    sample_select.set_hexpand(true);
+    sample_select.set_valign(gtk::Align::Center);
+    // Select the restored sample before installing the change handler so the
+    // initial selection cannot trigger a redundant bank reload.
+    sample_select.set_selected(params.sample() as u32);
+
+    let engine_for_list = engine.clone();
+    let params_for_list = params.clone();
+    sample_select.connect_selected_notify(move |select| {
+        let position = select.selected() as usize;
+        if load_sample(&engine_for_list, position) {
+            params_for_list.set_sample(position);
+        }
+    });
+
+    let play_button = gtk::Button::from_icon_name("media-playback-start");
+    play_button.add_css_class("flat");
+    play_button.add_css_class("circular");
+    play_button.add_css_class("sample-play-button");
+    play_button.set_valign(gtk::Align::Center);
+    play_button.set_tooltip_text(Some("Воспроизвести такт"));
+
+    let engine_for_preview = engine.clone();
+    let dropdown_for_preview = sample_select.clone();
+    let button_for_preview = play_button.clone();
+    let params_for_preview = params.clone();
+    let busy_for_preview = preview_busy.clone();
+    play_button.connect_clicked(move |_| {
+        if busy_for_preview.get() {
+            return;
+        }
+
+        let position = dropdown_for_preview.selected() as usize;
+        if !load_sample(&engine_for_preview, position) {
+            return;
+        }
+
+        params_for_preview.set_sample(position);
+        busy_for_preview.set(true);
+        let preview_result = {
+            let mut engine = engine_for_preview.borrow_mut();
+            engine.preview_measure()
+        };
+
+        match preview_result {
+            Ok(duration) => {
+                button_for_preview.set_icon_name("media-playback-stop");
+                button_for_preview.set_sensitive(false);
+                let button = button_for_preview.clone();
+                let busy = busy_for_preview.clone();
+                glib::timeout_add_local_once(duration + Duration::from_millis(120), move || {
+                    button.set_icon_name("media-playback-start");
+                    button.set_sensitive(true);
+                    busy.set(false);
+                });
+            }
+            Err(error) => {
+                eprintln!("Could not play sample: {error:#}");
+                button_for_preview.set_sensitive(true);
+                busy_for_preview.set(false);
+            }
+        }
+    });
+
+    let sample_row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    sample_row.set_hexpand(true);
+    sample_row.append(&sample_select);
+    sample_row.append(&play_button);
+    content.append(&sample_row);
+
+    let normal_wav_button = gtk::Button::with_label("Обычный WAV…");
+    let accent_wav_button = gtk::Button::with_label("Акцентный WAV…");
+    let parent_for_normal = parent.clone();
+    let engine_for_normal = engine.clone();
+    let parent_for_accent = parent.clone();
+    let engine_for_accent = engine.clone();
+    normal_wav_button.connect_clicked(move |_| {
+        choose_wav(&parent_for_normal, &engine_for_normal, false);
+    });
+    accent_wav_button.connect_clicked(move |_| {
+        choose_wav(&parent_for_accent, &engine_for_accent, true);
+    });
+
+    let wav_row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    wav_row.set_hexpand(true);
+    wav_row.append(&normal_wav_button);
+    wav_row.append(&accent_wav_button);
+    // Custom WAV import stays available in code but is temporarily hidden
+    // from the settings UI. Restore it by appending `wav_row` here again.
+    // content.append(&wav_row);
+
+    let first_beat = adw::SwitchRow::builder()
+        .title("Выделять первый удар")
+        .build();
+    first_beat.set_active(params.highlight_first());
+    let params_for_toggle = params.clone();
+    first_beat.connect_active_notify(move |toggle| {
+        params_for_toggle.set_highlight_first(toggle.is_active());
+    });
+
+    let settings_group = adw::PreferencesGroup::new();
+    settings_group.add(&first_beat);
+    content.append(&settings_group);
+
+    toolbar.set_content(Some(&content));
+    dialog.set_content(Some(&toolbar));
+    apply_pointer_cursors(dialog.upcast_ref());
+    dialog
+}
+
+/// GTK 4 does not support the `cursor` CSS property, so interactive widgets
+/// must get their pointer cursor through `set_cursor_from_name`. Walk the
+/// widget tree once and mark every clickable or draggable widget.
+fn apply_pointer_cursors(widget: &gtk::Widget) {
+    let is_interactive = widget.downcast_ref::<gtk::Button>().is_some()
+        || widget.downcast_ref::<gtk::CheckButton>().is_some()
+        || widget.downcast_ref::<gtk::Scale>().is_some()
+        || widget.downcast_ref::<gtk::SpinButton>().is_some()
+        || widget.downcast_ref::<gtk::Switch>().is_some();
+
+    let mut needs_pointer = is_interactive;
+    if !needs_pointer {
+        if let Some(row) = widget.downcast_ref::<gtk::ListBoxRow>() {
+            needs_pointer = row.is_activatable() || row.is_selectable();
+        }
+    }
+
+    if needs_pointer {
+        widget.set_cursor_from_name(Some("pointer"));
+    }
+
+    let mut child = widget.first_child();
+    while let Some(current) = child {
+        apply_pointer_cursors(&current);
+        child = current.next_sibling();
+    }
+}
+
+fn load_sample(engine: &Rc<RefCell<AudioEngine>>, position: usize) -> bool {
+    let sample_rate = engine.borrow().sample_rate;
+    let result = if position == 0 {
+        SoundBank::embedded(sample_rate)
+    } else {
+        SoundBank::candidate(position - 1, sample_rate)
+    };
+
+    match result {
+        Ok(bank) => {
+            engine.borrow().set_sound_bank(bank);
+            true
+        }
+        Err(error) => {
+            eprintln!("Could not load sample: {error:#}");
+            false
+        }
+    }
 }
 
 fn load_css() {

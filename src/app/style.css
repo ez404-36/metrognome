@@ -56,15 +56,68 @@
   border-radius: 999px;
   padding: 0;
   font-size: 16px;
-  color: alpha(currentColor, 0.28);
+  color: alpha(currentColor, 0.15);
+  background-color: transparent;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.beat-toggle:hover {
+  background-color: alpha(currentColor, 0.05);
+}
+
+.beat-toggle.state-muted {
+  color: alpha(currentColor, 0.15);
+}
+
+.beat-toggle.state-accent {
+  color: @accent_color;
+  font-weight: 700;
 }
 
 .beat-toggle.beat-active {
+  color: alpha(@accent_color, 0.45);
+  background-color: alpha(@accent_color, 0.10);
+}
+
+.beat-toggle.beat-active.state-accent {
   color: @accent_color;
   font-weight: 700;
+  background-color: alpha(@accent_color, 0.18);
+}
+
+.beat-toggle.first-beat {
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 19px;
 }
 
 .metro-card separator {
   margin-top: 6px;
   margin-bottom: 6px;
+}
+
+.controls-menu-button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 999px;
+}
+
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.sample-row {
+  padding: 0;
+}
+
+.sample-row label {
+  font-weight: 500;
+}
+
+.sample-play-button {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
 }

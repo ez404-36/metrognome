@@ -7,10 +7,21 @@ use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
 
+/// An audition candidate: a normal click plus its derived accent variant,
+/// both embedded as OGG Vorbis bytes.
+pub struct CandidateSound {
+    pub label: &'static str,
+    pub normal: &'static [u8],
+    pub accent: &'static [u8],
+}
+
 #[derive(Debug, Clone)]
 pub struct SoundBank {
     pub normal: Vec<f32>,
     pub accent: Vec<f32>,
+    /// Special sound for the first tick of each measure (brighter + louder
+    /// than the accent so bar starts stand out).
+    pub first: Vec<f32>,
 }
 
 impl SoundBank {
@@ -19,27 +30,62 @@ impl SoundBank {
             SoundPreset::Classic => Self::embedded(sample_rate).unwrap_or_else(|_| Self {
                 normal: synthetic_click(sample_rate, 580.0, 0.052, 0.62),
                 accent: synthetic_click(sample_rate, 820.0, 0.085, 0.88),
+                first: synthetic_click(sample_rate, 1_150.0, 0.110, 0.95),
             }),
             SoundPreset::Woodblock => Self {
                 normal: synthetic_click(sample_rate, 330.0, 0.038, 0.68),
                 accent: synthetic_click(sample_rate, 540.0, 0.062, 0.92),
+                first: synthetic_click(sample_rate, 720.0, 0.085, 0.95),
             },
             SoundPreset::Digital => Self {
                 normal: synthetic_click(sample_rate, 1_240.0, 0.022, 0.58),
                 accent: synthetic_click(sample_rate, 1_680.0, 0.034, 0.86),
+                first: synthetic_click(sample_rate, 2_300.0, 0.042, 0.90),
             },
             SoundPreset::Soft => Self {
                 normal: synthetic_click(sample_rate, 420.0, 0.085, 0.52),
                 accent: synthetic_click(sample_rate, 640.0, 0.115, 0.76),
+                first: synthetic_click(sample_rate, 830.0, 0.135, 0.85),
             },
         }
     }
 
     pub fn embedded(sample_rate: u32) -> Result<Self> {
+        let accent =
+            decode_ogg_bytes(include_bytes!("../../assets/audio/accent.ogg"), sample_rate)?;
+        let mut first = derive_first_sound(&accent, sample_rate);
+        emphasize_first_sound(&mut first, &accent);
         Ok(Self {
             normal: decode_ogg_bytes(include_bytes!("../../assets/audio/tick.ogg"), sample_rate)?,
-            accent: decode_ogg_bytes(include_bytes!("../../assets/audio/accent.ogg"), sample_rate)?,
+            first,
+            accent,
         })
+    }
+
+    pub fn candidate(index: usize, sample_rate: u32) -> Result<Self> {
+        let candidate = super::candidate_assets::CANDIDATES
+            .get(index)
+            .ok_or_else(|| anyhow!("candidate sound index {index} is out of range"))?;
+        let raw_accent = decode_ogg_bytes(candidate.accent, sample_rate)?;
+        let first = derive_first_sound(&raw_accent, sample_rate);
+        let mut accent = raw_accent;
+        // Accent is the same hit pitched up at build time; lift it slightly so
+        // accented beats read louder than normal ones.
+        for sample in &mut accent {
+            *sample = (*sample * 1.2).clamp(-1.0, 1.0);
+        }
+        Ok(Self {
+            normal: decode_ogg_bytes(candidate.normal, sample_rate)?,
+            first,
+            accent,
+        })
+    }
+
+    pub fn candidate_labels() -> Vec<&'static str> {
+        super::candidate_assets::CANDIDATES
+            .iter()
+            .map(|candidate| candidate.label)
+            .collect()
     }
 
     #[cfg_attr(feature = "ui", allow(dead_code))]
@@ -48,14 +94,49 @@ impl SoundBank {
         accent_path: &std::path::Path,
         target_sample_rate: u32,
     ) -> Result<Self> {
+        let accent = decode_wav(accent_path, target_sample_rate)?;
+        let first = derive_first_sound(&accent, target_sample_rate);
         Ok(Self {
             normal: decode_wav(normal_path, target_sample_rate)?,
-            accent: decode_wav(accent_path, target_sample_rate)?,
+            accent,
+            first,
         })
     }
 }
 
+/// Derives the special "first tick" sound from an accent hit by pitching it
+/// up ~35% and lifting its gain, so the measure downbeat reads distinctly.
+pub fn derive_first_sound(accent: &[f32], sample_rate: u32) -> Vec<f32> {
+    let pitched_source_rate = (sample_rate as f32 * 1.35).round() as u32;
+    let pitched = resample_linear(accent.to_vec(), pitched_source_rate, sample_rate);
+
+    pitched.into_iter().map(|sample| sample * 1.4).collect()
+}
+
+/// Raises the Classic downbeat to a consistent loudness. The bundled accent
+/// has a higher crest factor than the candidate accents, so a fixed gain made
+/// its first hit almost indistinguishable once the final output was clipped.
+fn emphasize_first_sound(first: &mut [f32], accent: &[f32]) {
+    let target_rms = rms(accent) * 2.5;
+    let current_rms = rms(first).max(f32::EPSILON);
+    let gain = (target_rms / current_rms).min(2.5);
+
+    for sample in first {
+        // Soft-limit the boosted transient instead of clipping it at the DAC.
+        *sample = ((*sample * gain).tanh() * 0.95).clamp(-0.95, 0.95);
+    }
+}
+
+fn rms(samples: &[f32]) -> f32 {
+    if samples.is_empty() {
+        return 0.0;
+    }
+
+    (samples.iter().map(|sample| *sample * *sample).sum::<f32>() / samples.len() as f32).sqrt()
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "ui", allow(dead_code))]
 pub enum SoundPreset {
     Classic,
     Woodblock,
@@ -63,6 +144,7 @@ pub enum SoundPreset {
     Soft,
 }
 
+#[cfg_attr(feature = "ui", allow(dead_code))]
 impl SoundPreset {
     pub const ALL: [Self; 4] = [Self::Classic, Self::Woodblock, Self::Digital, Self::Soft];
 
@@ -279,6 +361,13 @@ mod tests {
     #[test]
     fn embedded_classic_sound_is_short_and_bounded() {
         let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
+        let peak = |samples: &[f32]| {
+            samples
+                .iter()
+                .fold(0.0_f32, |peak, sample| peak.max(sample.abs()))
+        };
+        let first_rms = rms(&bank.first);
+        let accent_rms = rms(&bank.accent);
 
         assert!(
             (400..=900).contains(&bank.normal.len()),
@@ -288,18 +377,51 @@ mod tests {
         assert!(bank.normal.iter().all(|sample| sample.abs() <= 1.0));
         assert!(bank.normal.iter().any(|sample| sample.abs() > 0.1));
         assert!(bank.accent.iter().any(|sample| sample.abs() > 0.1));
+        assert!(
+            first_rms > accent_rms * 1.5,
+            "Classic first RMS {first_rms} must be clearly above accent RMS {accent_rms}"
+        );
+        assert!(
+            peak(&bank.first) <= 0.95,
+            "Classic first hit must stay below full scale"
+        );
+    }
+}
+
+#[cfg(test)]
+mod candidate_tests {
+    use super::*;
+
+    #[test]
+    fn candidates_decode_with_louder_accent() {
+        assert!(SoundBank::candidate_labels().len() >= 18);
+
+        let bank = SoundBank::candidate(0, 48_000).unwrap();
+        let peak = |samples: &[f32]| {
+            samples
+                .iter()
+                .fold(0.0_f32, |peak, sample| peak.max(sample.abs()))
+        };
+
+        assert!(!bank.normal.is_empty());
+        assert!(!bank.accent.is_empty());
+        assert!(!bank.first.is_empty());
+        assert!(peak(&bank.accent) > peak(&bank.normal) * 1.1);
+        assert!(rms(&bank.first) > rms(&bank.accent));
+        assert!(bank.normal.iter().all(|sample| sample.abs() <= 1.0));
+
+        assert!(SoundBank::candidate(usize::MAX, 48_000).is_err());
     }
 }
 
 #[cfg(test)]
 mod wav_tests {
     use super::*;
-    use std::path::PathBuf;
 
     #[test]
     fn imports_and_resamples_16_bit_wav() {
-        let path = PathBuf::from(std::env::temp_dir())
-            .join(format!("metrognome-import-test-{}.wav", std::process::id()));
+        let path =
+            std::env::temp_dir().join(format!("metrognome-import-test-{}.wav", std::process::id()));
         let spec = hound::WavSpec {
             channels: 1,
             sample_rate: 24_000,

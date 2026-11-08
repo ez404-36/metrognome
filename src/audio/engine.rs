@@ -2,12 +2,13 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
 };
+use std::time::Duration;
 
 use anyhow::{anyhow, Context, Result};
 use arc_swap::ArcSwap;
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
-    SampleFormat, Stream, StreamConfig,
+    BufferSize, Device, SampleFormat, Stream, StreamConfig, SupportedBufferSize,
 };
 
 use super::scheduler::{OutputSample, Scheduler};
@@ -15,8 +16,10 @@ use super::sound_bank::{SoundBank, SoundPreset};
 use crate::model::SharedParams;
 
 pub struct AudioEngine {
-    #[allow(dead_code)]
-    stream: Stream,
+    stream: Option<Stream>,
+    device: Device,
+    config: StreamConfig,
+    sample_format: SampleFormat,
     params: Arc<SharedParams>,
     sound_bank: Arc<ArcSwap<SoundBank>>,
     started: Arc<AtomicBool>,
@@ -34,7 +37,13 @@ impl AudioEngine {
             .default_output_config()
             .context("default output configuration is unavailable")?;
         let sample_format = supported.sample_format();
-        let config: StreamConfig = supported.into();
+        let supported_buffer_size = *supported.buffer_size();
+        let mut config: StreamConfig = supported.into();
+        // cpal/alsa's default configuration keeps roughly 75 ms queued before
+        // the frames produced by the next callback. That delay is very easy
+        // to hear on a tap, so request a small buffer while remaining inside
+        // the device's advertised limits.
+        config.buffer_size = low_latency_buffer_size(supported_buffer_size);
         let sample_rate = config.sample_rate.0;
         let params = Arc::new(SharedParams::new());
         params.sample_rate.store(sample_rate, Ordering::Relaxed);
@@ -43,23 +52,12 @@ impl AudioEngine {
             sample_rate,
         ))));
         let started = Arc::new(AtomicBool::new(false));
-        let error: fn(cpal::StreamError) = audio_stream_error;
-
-        let stream = match sample_format {
-            SampleFormat::F32 => {
-                Self::build_stream::<f32>(&device, &config, params.clone(), bank.clone(), error)?
-            }
-            SampleFormat::I16 => {
-                Self::build_stream::<i16>(&device, &config, params.clone(), bank.clone(), error)?
-            }
-            SampleFormat::U16 => {
-                Self::build_stream::<u16>(&device, &config, params.clone(), bank.clone(), error)?
-            }
-            format => return Err(anyhow!("unsupported output sample format: {format}")),
-        };
 
         Ok(Self {
-            stream,
+            stream: None,
+            device,
+            config,
+            sample_format,
             params,
             sound_bank: bank,
             started,
@@ -94,6 +92,41 @@ impl AudioEngine {
         Ok(stream)
     }
 
+    fn ensure_stream(&mut self) -> Result<()> {
+        if self.stream.is_some() {
+            return Ok(());
+        }
+
+        let error: fn(cpal::StreamError) = audio_stream_error;
+        let stream = match self.sample_format {
+            SampleFormat::F32 => Self::build_stream::<f32>(
+                &self.device,
+                &self.config,
+                self.params.clone(),
+                self.sound_bank.clone(),
+                error,
+            )?,
+            SampleFormat::I16 => Self::build_stream::<i16>(
+                &self.device,
+                &self.config,
+                self.params.clone(),
+                self.sound_bank.clone(),
+                error,
+            )?,
+            SampleFormat::U16 => Self::build_stream::<u16>(
+                &self.device,
+                &self.config,
+                self.params.clone(),
+                self.sound_bank.clone(),
+                error,
+            )?,
+            format => return Err(anyhow!("unsupported output sample format: {format}")),
+        };
+
+        self.stream = Some(stream);
+        Ok(())
+    }
+
     pub fn params(&self) -> &SharedParams {
         &self.params
     }
@@ -116,21 +149,68 @@ impl AudioEngine {
     pub fn set_accent_wav(&self, path: &std::path::Path) -> Result<()> {
         let mut bank = self.sound_bank.load().as_ref().clone();
         bank.accent = super::sound_bank::decode_wav(path, self.sample_rate)?;
+        bank.first = super::sound_bank::derive_first_sound(&bank.accent, self.sample_rate);
         self.sound_bank.store(Arc::new(bank));
         Ok(())
     }
 
     pub fn play(&mut self) -> Result<()> {
+        self.ensure_stream()?;
+
         if !self.started.swap(true, Ordering::SeqCst) {
-            self.stream.play()?;
+            if let Some(stream) = self.stream.as_ref() {
+                stream.play()?;
+            }
         }
 
         self.params.running.store(true, Ordering::Relaxed);
         Ok(())
     }
 
+    /// Plays one measure from the currently selected sound. The preview uses
+    /// the current meter, tempo and per-beat pattern so a sample can be heard
+    /// in its real musical context.
+    pub fn preview_measure(&mut self) -> Result<Duration> {
+        self.ensure_stream()?;
+
+        if let Some(stream) = self.stream.as_ref() {
+            stream.play()?;
+        }
+        self.started.store(true, Ordering::SeqCst);
+
+        let bank = self.sound_bank.load();
+        let sample_rate = f64::from(self.params.sample_rate.load(Ordering::Relaxed).max(1));
+        let beats = f64::from(self.params.beat_count().max(1));
+        let bpm = f64::from(self.params.bpm().max(1));
+        let measure_duration = beats * 60.0 / bpm;
+        let sound_tail = [bank.normal.len(), bank.accent.len(), bank.first.len()]
+            .into_iter()
+            .max()
+            .unwrap_or_default() as f64
+            / sample_rate;
+        self.params
+            .preview_generation
+            .fetch_add(1, Ordering::SeqCst);
+
+        Ok(Duration::from_secs_f64(measure_duration + sound_tail))
+    }
+
     pub fn stop(&mut self) {
         self.params.running.store(false, Ordering::Relaxed);
+    }
+
+    /// Plays the current sample's normal click immediately, without changing
+    /// metronome playback or restarting its beat pattern.
+    pub fn play_normal_one_shot(&mut self) -> Result<()> {
+        self.ensure_stream()?;
+
+        if let Some(stream) = self.stream.as_ref() {
+            stream.play()?;
+        }
+        self.started.store(true, Ordering::SeqCst);
+        self.params.one_shot_pending.fetch_add(1, Ordering::SeqCst);
+
+        Ok(())
     }
 
     pub fn is_running(&self) -> bool {
@@ -140,4 +220,37 @@ impl AudioEngine {
 
 fn audio_stream_error(error: cpal::StreamError) {
     eprintln!("audio stream error: {error}");
+}
+
+fn low_latency_buffer_size(supported: SupportedBufferSize) -> BufferSize {
+    const TARGET_FRAMES: u32 = 256;
+
+    match supported {
+        SupportedBufferSize::Range { min, max } => BufferSize::Fixed(TARGET_FRAMES.clamp(min, max)),
+        SupportedBufferSize::Unknown => BufferSize::Default,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn low_latency_buffer_size_stays_within_device_limits() {
+        assert_eq!(
+            low_latency_buffer_size(SupportedBufferSize::Range { min: 16, max: 1024 }),
+            BufferSize::Fixed(256)
+        );
+        assert_eq!(
+            low_latency_buffer_size(SupportedBufferSize::Range {
+                min: 512,
+                max: 2048
+            }),
+            BufferSize::Fixed(512)
+        );
+        assert_eq!(
+            low_latency_buffer_size(SupportedBufferSize::Unknown),
+            BufferSize::Default
+        );
+    }
 }
