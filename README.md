@@ -1,60 +1,93 @@
-# Metrognome
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/banner-dark.svg">
+    <img src="assets/brand/banner-light.svg" alt="Metrognome — a stable and customizable GNOME metronome built with Rust, GTK 4, libadwaita, and cpal" width="100%">
+  </picture>
 
-Metrognome is a native GNOME-style metronome focused on precise timing,
-adjustable volume, accent patterns, and customizable sounds.
+  <p>
+    <img alt="Rust" src="https://img.shields.io/badge/Rust-2021%20edition-DEA584?logo=rust&logoColor=white">
+    <img alt="GTK 4" src="https://img.shields.io/badge/GTK-4.12-4A86CF?logo=gtk&logoColor=white">
+    <img alt="libadwaita" src="https://img.shields.io/badge/libadwaita-1.5-813D9C">
+    <img alt="Platform" src="https://img.shields.io/badge/platform-Linux%20%7C%20GNOME-3584E4">
+    <img alt="License" src="https://img.shields.io/badge/license-MIT-3FBF8F">
+  </p>
 
-## Current implementation status
+  <p>
+    <strong>Precise rhythm.</strong> Custom click sounds. Native GNOME experience.<br>
+    Metrognome keeps timing in the audio callback, not in a GUI timer.
+  </p>
+</div>
 
-- Sample-clock audio scheduler.
-- Continuous `cpal` output stream.
-- BPM 20–300.
-- 2/4, 3/4, 4/4, and 6/8 patterns.
-- Accent pattern support.
-- Master volume.
-- Built-in Classic, Woodblock, Digital, and Soft sounds; the Classic preset uses
-  embedded CC0 OGG Vorbis samples (Kenney "Interface Sounds", see
-  `assets/audio/LICENSE.md`).
-- 16-bit PCM and floating-point WAV import, including channel downmix,
-  resampling, and peak normalization.
-- Tap tempo.
-- libadwaita UI skeleton.
-- Sound preset menu and WAV import actions.
-- Clickable beat indicators for custom accent patterns.
-- Settings persistence.
-- Atomic settings writes (temporary file + rename), so a crash cannot
-  corrupt `settings.json`.
-- On-screen error notifications (bottom-right toasts) and automatic
-  recovery of the audio output stream after a device error.
-- WAV import limited to click samples up to 5 seconds long.
-- Unit tests for pattern handling, settings serialization, and high-tempo scheduling.
+## Highlights
 
-## Build
+| | |
+|---|---|
+| 🎯 **Sample-clock scheduling** | Beats are planned in audio samples, with a continuous `cpal` output stream. |
+| 🎚 **20–300 BPM** | Continuous tempo changes and tap tempo without losing the beat. |
+| 🥁 **Clickable accents** | 2/4, 3/4, 4/4, and 6/8 patterns; tap a beat to customize accents. |
+| 🔊 **Built-in sounds** | Classic, Woodblock, Digital, and Soft presets. |
+| 🎛 **Your sounds** | Import 16-bit PCM or floating-point WAV files; Metrognome downmixes, resamples, and normalizes them. |
+| 🖤 **libadwaita UI** | Native GNOME controls with light and dark theme support. |
+| 💾 **Reliable settings** | Settings persist through atomic temporary-file writes. |
 
-The default build runs the audio-core smoke test:
+## Quick start
+
+Install the GTK development dependencies on Debian or Ubuntu:
+
+```sh
+./scripts/install-deps.sh
+```
+
+Build and run the desktop UI:
+
+```sh
+cargo run --features ui
+```
+
+Run the audio-core tests:
 
 ```sh
 cargo test
-cargo run
 ```
 
-CLI smoke-test options:
+CLI smoke tests are useful without a desktop session:
 
 ```sh
 cargo run -- --preset woodblock
 cargo run -- --normal ./normal.wav --accent ./accent.wav
 ```
 
-To build and run the GTK UI, first install system development packages:
+On GNOME or Wayland, launch the application from the desktop session rather than a plain SSH environment.
 
-```sh
-./scripts/install-deps.sh
+## How it works
+
+The GUI only changes parameters and displays state. The audio callback owns the sample clock:
+
+```text
+GTK UI
+  → BPM, pattern, volume, sound
+  → audio engine
+
+Audio callback
+  → exact next-hit position in samples
+  → mixes the click into the output buffer
+  → publishes beat events to the UI
 ```
 
-Then run:
+This avoids drift and accumulated timing error, including at high tempos.
 
-```sh
-cargo run --features ui
-```
+## Audio assets
 
-On a GNOME/Wayland session, the binary should be launched from the desktop
-session rather than through an SSH-only environment.
+The Classic preset uses embedded CC0 1.0 OGG Vorbis samples from
+Kenney “Interface Sounds”. Details are in
+[`assets/audio/LICENSE.md`](assets/audio/LICENSE.md).
+
+## Status
+
+Metrognome is an active work-in-progress application. The audio scheduler,
+accent patterns, sound presets, WAV import, UI controls, settings persistence,
+and core scheduling tests are implemented.
+
+## License
+
+Released under the MIT License.

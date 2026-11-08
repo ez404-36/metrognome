@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-labelledby="title description">
+  <title id="title">Metrognome</title>
+  <desc id="description">A native GNOME-style metronome built with Rust, GTK 4 and libadwaita.</desc>
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".55" stop-color="#f7f5f3"/>
+      <stop offset="1" stop-color="#eff2f7"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3584e4"/>
+      <stop offset=".55" stop-color="#813d9c"/>
+      <stop offset="1" stop-color="#e66100"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".78"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".45"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#1a5fb4" flood-opacity=".16"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="300" rx="34" fill="url(#surface)"/>
+  <rect x="1" y="1" width="1198" height="298" rx="33" fill="none" stroke="#dedad5" stroke-width="2"/>
+  <circle cx="1062" cy="52" r="150" fill="url(#accent)" opacity=".045"/>
+  <circle cx="180" cy="255" r="120" fill="url(#accent)" opacity=".055"/>
+
+  <g transform="translate(82 55)" filter="url(#soft-shadow)">
+    <rect width="94" height="150" rx="26" fill="#ffffff"/>
+    <rect x="11" y="11" width="72" height="128" rx="19" fill="#f4f2ef"/>
+    <path d="M62 32 45 110" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="45" cy="110" r="9" fill="#1d7dab" opacity="0"/>
+    <circle cx="45" cy="110" r="8" fill="#813d9c"/>
+    <rect x="24" y="126" width="46" height="7" rx="3.5" fill="#dedad5"/>
+    <circle cx="47" cy="35" r="4" fill="#3584e4"/>
+    <circle cx="39" cy="59" r="3.5" fill="#3584e4" opacity=".68"/>
+    <circle cx="34" cy="80" r="3" fill="#3584e4" opacity=".42"/>
+  </g>
+
+  <g fill="#241f31">
+    <text x="222" y="130" font-family="Inter, system-ui, sans-serif" font-size="70" font-weight="750" letter-spacing="-2">Metrognome</text>
+    <text x="225" y="176" font-family="Inter, system-ui, sans-serif" font-size="23" font-weight="450" fill="#65747c">A stable and customizable GNOME metronome</text>
+  </g>
+
+  <g font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="650">
+    <g transform="translate(225 211)">
+      <rect width="87" height="37" rx="18.5" fill="url(#chip)" stroke="#d8d2cb"/>
+      <text x="43.5" y="24" text-anchor="middle" fill="#40515b">Rust</text>
+    </g>
+    <g transform="translate(324 211)">
+      <rect width="83" height="37" rx="18.5" fill="url(#chip)" stroke="#d8d2cb"/>
+      <text x="41.5" y="24" text-anchor="middle" fill="#40515b">GTK 4</text>
+    </g>
+    <g transform="translate(419 211)">
+      <rect width="124" height="37" rx="18.5" fill="url(#chip)" stroke="#d8d2cb"/>
+      <text x="62" y="24" text-anchor="middle" fill="#40515b">libadwaita</text>
+    </g>
+    <g transform="translate(555 211)">
+      <rect width="85" height="37" rx="18.5" fill="url(#chip)" stroke="#d8d2cb"/>
+      <text x="42.5" y="24" text-anchor="middle" fill="#40515b">cpal</text>
+    </g>
+  </g>
+
+  <g transform="translate(837 95)">
+    <rect width="272" height="116" rx="26" fill="#ffffff" stroke="#dedad5" filter="url(#soft-shadow)"/>
+    <circle cx="44" cy="46" r="22" fill="url(#accent)"/>
+    <path d="M38 34 L57 46 L38 58 Z" fill="#fff"/>
+    <circle cx="108" cy="46" r="15" fill="#3584e4"/>
+    <circle cx="153" cy="46" r="13" fill="#a9c7ea"/>
+    <circle cx="192" cy="46" r="10" fill="#d2e2f6"/>
+    <rect x="35" y="83" width="105" height="9" rx="4.5" fill="#e7e3de"/>
+    <rect x="35" y="83" width="64" height="9" rx="4.5" fill="url(#accent)"/>
+    <text x="215" y="55" font-family="Inter, system-ui, sans-serif" font-size="26" font-weight="700" fill="#241f31" text-anchor="middle">120</text>
+    <text x="215" y="76" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="650" fill="#798b93" text-anchor="middle">BPM</text>
+  </g>
+</svg>
