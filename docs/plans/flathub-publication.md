@@ -17,6 +17,7 @@ flatpak install flathub io.github.ez404_36.Takto
 | Артефакт | Статус |
 |---|---|
 | `packaging/flatpak/io.github.ez404_36.Takto.yml` — манифест (runtime `org.gnome.Platform 50`, vendored cargo-крейсы, офлайн-сборка) | готов |
+| `packaging/flatpak/io.github.ez404_36.Takto.flathub.yml` — git-вариант с pin на коммит переименования | готов |
 | `packaging/flatpak/cargo-sources.json` (генерируется `scripts/generate-cargo-sources.py`) | готов |
 | `packaging/io.github.ez404_36.Takto.metainfo.xml` — AppStream (валидация `appstreamcli validate --pedantic` проходит) | готов |
 | CI-сборка бандла на тег → `.flatpak` на GitHub Releases | готов |
@@ -115,7 +116,7 @@ flatpak run --command=flatpak-builder-lint org.flatpak.Builder \
 ## Чек-лист подачи
 
 - [ ] Решено: переименовывать иконки под app ID до подачи или нет
-- [ ] Создан `io.github.ez404_36.Takto.flathub.yml` (источник `type: git`, pin на тег)
+- [x] Создан `io.github.ez404_36.Takto.flathub.yml` (источник `type: git`, pin на коммит; после релиза заменить на тег)
 - [ ] `flatpak-builder-lint manifest` — без ошибок
 - [ ] Манифест и metainfo проверены локальной сборкой
 - [ ] Fork `flathub/flathub`, ветка от `new-pr`

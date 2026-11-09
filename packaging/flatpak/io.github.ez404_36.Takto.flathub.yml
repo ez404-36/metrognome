@@ -1,0 +1,81 @@
+# Flathub-specific manifest. The local CI/release manifest keeps the working
+# tree file/dir sources; this variant pins the exact published rename commit.
+id: io.github.ez404_36.Takto
+runtime: org.gnome.Platform
+# One release behind the newest GNOME runtime keeps the build environment
+# mature while staying inside Flathub's supported window (the previous runtime
+# is supported until the one after current ships). Bump to '51' (or newer)
+# deliberately, ideally with a full local build: flatpak-builder builds this
+# file the same way Flathub will.
+runtime-version: '50'
+sdk: org.gnome.Sdk
+# Versionless extension refs resolve to the branch the SDK declares, so the
+# Rust toolchain tracks the freedesktop release behind the GNOME runtime.
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: takto
+
+finish-args:
+  # Display: native Wayland with X11 fallback (XWayland or bare X11).
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Audio: the app renders through cpal/ALSA; inside the sandbox those
+  # samples reach the sound server via the ALSA pulse plugin (PulseAudio /
+  # PipeWire's pulse replacement, --socket=pulseaudio) or the ALSA pipewire
+  # plugin (--filesystem=xdg-run/pipewire-0). Both sockets together cover
+  # PulseAudio-only, pipewire-pulse, and native-PipeWire setups.
+  - --socket=pulseaudio
+  - --filesystem=xdg-run/pipewire-0:ro
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/pkgconfig
+  - /share/aclocal
+  - /man
+  - /share/man
+  - /share/gtk-doc
+  - /share/vala
+  - /share/devhelp
+  - '*.la'
+  - '*.a'
+
+modules:
+  - name: takto
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        # cargo-sources.json vendors every crates.io dependency into
+        # cargo/vendor; combined with the offline config below this keeps the
+        # build fully hermetic (a Flathub requirement).
+        CARGO_NET_OFFLINE: 'true'
+    build-commands:
+      - cargo --version && rustc --version
+      - cargo build --offline --release --features ui
+      - install -Dm755 target/release/takto -t /app/bin
+      - install -Dm644 packaging/io.github.ez404_36.Takto.desktop -t /app/share/applications
+      - install -Dm644 packaging/io.github.ez404_36.Takto.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 assets/brand/icons/takto-symbolic.svg /app/share/icons/hicolor/symbolic/apps/takto-symbolic.svg
+      - install -Dm644 assets/brand/icons/takto-64.png /app/share/icons/hicolor/64x64/apps/takto.png
+      - install -Dm644 assets/brand/icons/takto-128.png /app/share/icons/hicolor/128x128/apps/takto.png
+      - install -Dm644 assets/brand/icons/takto-256.png /app/share/icons/hicolor/256x256/apps/takto.png
+    sources:
+      # The commit includes the renamed source tree, Cargo.lock and vendored
+      # cargo source manifest. When v0.1.3 is released, replace `commit:` with
+      # both `tag:` and the matching `commit:` so updates can use x-checker.
+      - type: git
+        url: https://github.com/ez404-36/takto.git
+        commit: cf45b68476cead7a4751ee063c0aa970a647a531
+      # Vendored crates.io dependencies (regenerate with
+      # scripts/generate-cargo-sources.py after changing Cargo.lock).
+      - cargo-sources.json
+      # The generated cargo config lands at cargo/config; point cargo at it
+      # from the standard .cargo location relative to the build directory.
+      # https://github.com/flatpak/flatpak-builder-tools/tree/master/cargo#cargohome-is-set-by-buildsystem
+      - type: shell
+        commands:
+          - mkdir -p .cargo
+          - cp cargo/config .cargo/config.toml
