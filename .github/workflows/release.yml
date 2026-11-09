@@ -312,6 +312,13 @@ jobs:
           sudo apt-get install -y flatpak flatpak-builder
           sudo flatpak remote-add --if-not-exists flathub \
             https://dl.flathub.org/repo/flathub.flatpakrepo
+          # The runner user cannot deploy into the system installation
+          # (polkit), so pre-install the runtime the manifest needs; the
+          # action's --install-deps-from step then finds everything present.
+          sudo flatpak install -y --noninteractive flathub \
+            org.gnome.Platform//50 \
+            org.gnome.Sdk//50 \
+            org.freedesktop.Sdk.Extension.rust-stable//50
 
       - name: Resolve version
         id: version
