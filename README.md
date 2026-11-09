@@ -2,7 +2,7 @@
   <img src="assets/brand/icons/metrognome-256.png" alt="Metrognome — a stable and customizable GNOME metronome built with Rust, GTK 4, libadwaita, and cpal" width="128">
 
 <p align="center">
-  <a href="README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-3584E4?style=flat-square&labelColor=241F31"></a>
+  <img alt="English" src="https://img.shields.io/badge/EN-English-3584E4?style=flat-square&labelColor=241F31">
   <a href="docs/readme/README.zh-CN.md" title="中文"><img alt="中文" src="https://img.shields.io/badge/ZH-%E4%B8%AD%E6%96%87-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="docs/readme/README.hi.md" title="हिन्दी"><img alt="हिन्दी" src="https://img.shields.io/badge/HI-%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="docs/readme/README.es.md" title="Español"><img alt="Español" src="https://img.shields.io/badge/ES-Espa%C3%B1ol-8B949E?style=flat-square&labelColor=30363D"></a>

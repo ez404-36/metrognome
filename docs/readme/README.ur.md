@@ -11,7 +11,7 @@
   <a href="README.bn.md" title="বাংলা"><img alt="বাংলা" src="https://img.shields.io/badge/BN-%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.pt.md" title="Português"><img alt="Português" src="https://img.shields.io/badge/PT-Portugu%C3%AAs-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.ru.md" title="Русский"><img alt="Русский" src="https://img.shields.io/badge/RU-%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-8B949E?style=flat-square&labelColor=30363D"></a>
-  <a href="README.ur.md" title="اردو"><img alt="اردو" src="https://img.shields.io/badge/UR-%D8%A7%D8%B1%D8%AF%D9%88-3584E4?style=flat-square&labelColor=241F31"></a>
+  <img alt="اردو" src="https://img.shields.io/badge/UR-%D8%A7%D8%B1%D8%AF%D9%88-3584E4?style=flat-square&labelColor=241F31">
   <a href="README.de.md" title="Deutsch"><img alt="Deutsch" src="https://img.shields.io/badge/DE-Deutsch-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.ja.md" title="日本語"><img alt="日本語" src="https://img.shields.io/badge/JA-%E6%97%A5%E6%9C%AC%E8%AA%9E-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.pa.md" title="ਪੰਜਾਬੀ"><img alt="ਪੰਜਾਬੀ" src="https://img.shields.io/badge/PA-%E0%A8%AA%E0%A9%B0%E0%A8%9C%E0%A8%BE%E0%A8%AC%E0%A9%80-8B949E?style=flat-square&labelColor=30363D"></a>

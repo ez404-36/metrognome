@@ -3,7 +3,7 @@
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
-  <a href="README.zh-CN.md" title="中文"><img alt="中文" src="https://img.shields.io/badge/ZH-%E4%B8%AD%E6%96%87-3584E4?style=flat-square&labelColor=241F31"></a>
+  <img alt="中文" src="https://img.shields.io/badge/ZH-%E4%B8%AD%E6%96%87-3584E4?style=flat-square&labelColor=241F31">
   <a href="README.hi.md" title="हिन्दी"><img alt="हिन्दी" src="https://img.shields.io/badge/HI-%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.es.md" title="Español"><img alt="Español" src="https://img.shields.io/badge/ES-Espa%C3%B1ol-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.fr.md" title="Français"><img alt="Français" src="https://img.shields.io/badge/FR-Fran%C3%A7ais-8B949E?style=flat-square&labelColor=30363D"></a>

@@ -21,7 +21,7 @@
   <a href="README.ko.md" title="한국어"><img alt="한국어" src="https://img.shields.io/badge/KO-%ED%95%9C%EA%B5%AD%EC%96%B4-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.vi.md" title="Tiếng Việt"><img alt="Tiếng Việt" src="https://img.shields.io/badge/VI-Ti%E1%BA%BFng%20Vi%E1%BB%87t-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.it.md" title="Italiano"><img alt="Italiano" src="https://img.shields.io/badge/IT-Italiano-8B949E?style=flat-square&labelColor=30363D"></a>
-  <a href="README.id.md" title="Bahasa Indonesia"><img alt="Bahasa Indonesia" src="https://img.shields.io/badge/ID-Bahasa%20Indonesia-3584E4?style=flat-square&labelColor=241F31"></a>
+  <img alt="Bahasa Indonesia" src="https://img.shields.io/badge/ID-Bahasa%20Indonesia-3584E4?style=flat-square&labelColor=241F31">
   <a href="README.pl.md" title="Polski"><img alt="Polski" src="https://img.shields.io/badge/PL-Polski-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.uk.md" title="Українська"><img alt="Українська" src="https://img.shields.io/badge/UK-%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-8B949E?style=flat-square&labelColor=30363D"></a>
   <a href="README.nl.md" title="Nederlands"><img alt="Nederlands" src="https://img.shields.io/badge/NL-Nederlands-8B949E?style=flat-square&labelColor=30363D"></a>
