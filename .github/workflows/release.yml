@@ -316,9 +316,16 @@ jobs:
           # (polkit), so pre-install the runtime the manifest needs; the
           # action's --install-deps-from step then finds everything present.
           sudo flatpak install -y --noninteractive flathub \
-            org.gnome.Platform//50 \
-            org.gnome.Sdk//50 \
-            org.freedesktop.Sdk.Extension.rust-stable//50
+            org.gnome.Platform//50 org.gnome.Sdk//50
+          # The rust-stable extension branches per freedesktop version
+          # (GNOME 50 tracks freedesktop 25.08), not per GNOME version.
+          # Resolve the branch the SDK actually wants; fall back to 25.08.
+          rust_branch="$(flatpak info --show-metadata org.gnome.Sdk//50 \
+            | awk '/\[Extension org\.freedesktop\.Sdk\.Extension\.rust-stable\]/{f=1} f && /^version=/{gsub("version=","");print;exit}')"
+          if [ -z "$rust_branch" ]; then rust_branch="25.08"; fi
+          echo "Installing rust-stable//$rust_branch"
+          sudo flatpak install -y --noninteractive flathub \
+            "org.freedesktop.Sdk.Extension.rust-stable//$rust_branch"
 
       - name: Resolve version
         id: version
