@@ -288,7 +288,7 @@ jobs:
                 done
             gh api --method POST \
               -H "Content-Type: application/octet-stream" \
-              "repos/$repo/releases/$release_id/assets?name=$name" \
+              "https://uploads.github.com/repos/$repo/releases/$release_id/assets?name=$name" \
               --input "$file" >/dev/null
             echo "Uploaded $name to release $release_id."
           done
@@ -339,7 +339,7 @@ jobs:
                 done
             gh api --method POST \
               -H "Content-Type: application/octet-stream" \
-              "repos/$repo/releases/$release_id/assets?name=$name" \
+              "https://uploads.github.com/repos/$repo/releases/$release_id/assets?name=$name" \
               --input "$file" >/dev/null
             echo "Uploaded $name to release $release_id."
           done
