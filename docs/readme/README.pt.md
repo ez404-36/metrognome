@@ -40,6 +40,9 @@
   <p>
     <strong>Ritmo preciso.</strong> Sons personalizados. Experiência GNOME nativa.<br>O Metrognome mantém o tempo no callback de áudio, não em um temporizador da interface.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Destaques

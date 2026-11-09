@@ -40,6 +40,9 @@
   <p>
     <strong>Точный ритм.</strong> Свои звуки. нативный интерфейс GNOME.<br>Metrognome считает время в аудиокалбэке, а не в таймере GUI.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Основные возможности

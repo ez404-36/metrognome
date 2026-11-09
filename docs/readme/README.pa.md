@@ -40,6 +40,9 @@
   <p>
     <strong>ਸ਼ੁੱਧ ਲਯ।</strong> ਕਸਟਮ ਕਲਿੱਕ ਆਵਾਜ਼ਾਂ। ਨੇਟਿਵ GNOME ਤਜਰਬਾ।<br>Metrognome ਸਮਾਂ GUI ਟਾਈਮਰ ਵਿੱਚ ਨਹੀਂ, ਆਡੀਓ ਕਾਲਬੈਕ ਵਿੱਚ ਰੱਖਦਾ ਹੈ।
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## ਮੁੱਖ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ

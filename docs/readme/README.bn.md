@@ -40,6 +40,9 @@
   <p>
     <strong>নিখুঁত ছন্দ।</strong> কাস্টম ক্লিক শব্দ। নেটিভ GNOME অভিজ্ঞতা।<br>Metrognome সময় রাখে অডিও কলব্যাকে, GUI টাইমারে নয়।
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## প্রধান বৈশিষ্ট্য

@@ -40,6 +40,9 @@
   <p>
     <strong>正確なリズム。</strong> カスタムクリック音。ネイティブな GNOME 体験。<br>Metrognome は GUI タイマーではなく、オーディオコールバックで拍を保持します。
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## 主な特徴

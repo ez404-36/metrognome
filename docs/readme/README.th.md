@@ -40,6 +40,9 @@
   <p>
     <strong>จังหวะแม่นยำ</strong> เสียงคลิกแบบกำหนดเอง ประสบการณ์ GNOME แบบเนทีฟ<br>Metrognome คุมจังหวะใน audio callback ไม่ใช่ในตัวจับเวลาของ GUI
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## จุดเด่น

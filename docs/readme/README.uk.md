@@ -40,6 +40,9 @@
   <p>
     <strong>Точний ритм.</strong> Власні звуки. Нативний інтерфейс GNOME.<br>Metrognome відлічує час в аудіозворотному виклику, а не в таймері GUI.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Основні можливості

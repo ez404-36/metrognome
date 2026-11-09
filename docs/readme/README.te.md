@@ -40,6 +40,9 @@
   <p>
     <strong>ఖచ్చితమైన లయ.</strong> కస్టమ్ క్లిక్ శబ్దాలు. నేటివ GNOME అనుభవం.<br>Metrognome సమయాన్ని GUI టైమర్‌లో కాకుండా ఆడియో కాల్‌బ్యాక్‌లో నిర్వహిస్తుంది.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## ముఖ్య ఫీచర్లు

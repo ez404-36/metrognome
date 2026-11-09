@@ -40,6 +40,9 @@
   <p>
     <strong>Dokładny rytm.</strong> Własne dźwięki. Natywny interfejs GNOME.<br>Metrognome pilnuje czasu w callbacku audio, a nie w czasomierzu GUI.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Najważniejsze funkcje

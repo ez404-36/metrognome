@@ -40,6 +40,9 @@
   <p>
     <strong>정확한 리듬.</strong> 사용자 지정 클릭음. 네이티브 GNOME 경험.<br>Metrognome은 GUI 타이머가 아니라 오디오 콜백에서 박자를 유지합니다.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## 주요 기능

@@ -40,6 +40,9 @@
   <p>
     <strong>Hassas ritim.</strong> Özel tık sesleri. Yerel GNOME deneyimi.<br>Metrognome zamanı GUI zamanlayıcısında değil, ses geri çağırımında tutar.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Öne çıkanlar

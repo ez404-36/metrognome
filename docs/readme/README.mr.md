@@ -40,6 +40,9 @@
   <p>
     <strong>अचूक लय.</strong> कस्टम क्लिक आवाज़. नेटिव GNOME अनुभव.<br>Metrognome वेळ GUI टाइमरमध्ये नव्हे, तर ऑडिओ कॉलबॅकमध्ये ठेवतो.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## मुख्य वैशिष्ट्ये

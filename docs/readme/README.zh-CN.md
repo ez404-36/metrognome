@@ -40,6 +40,9 @@
   <p>
     <strong>精准节奏。</strong> 自定义敲击声。原生 GNOME 体验。<br>Metrognome 在音频回调中保持节拍，而不依赖 GUI 定时器。
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## 亮点

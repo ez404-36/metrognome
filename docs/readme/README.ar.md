@@ -40,6 +40,10 @@
   <p>
     <strong>إيقاع دقيق.</strong> أصوات نقر مخصصة. تجربة GNOME أصلية.<br>يحتفظ Metrognome بالزمن في رد نداء الصوت، لا في مؤقّت واجهة المستخدم.
   </p>
+
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 <div dir="rtl" align="right">
@@ -107,5 +111,6 @@ Audio callback
 ## الترخيص
 
 منشور تحت ترخيص MIT.
+
 
 </div>

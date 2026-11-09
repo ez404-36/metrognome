@@ -40,6 +40,10 @@
   <p>
     <strong>درست تال۔</strong> اپنے کلک کی آوازیں۔ مقامی GNOME تجربہ۔<br>Metrognome وقت GUI ٹائمر میں نہیں، آڈیو کال بیک میں رکھتا ہے۔
   </p>
+
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 <div dir="rtl" align="right">
@@ -107,5 +111,6 @@ Classic پری سیٹ Kenney “Interface Sounds” کے ایمبیڈیڈ CC0 1.
 ## لائسنس
 
 MIT لائسنس کے تحت جاری کیا گیا۔
+
 
 </div>

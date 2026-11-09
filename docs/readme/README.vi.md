@@ -40,6 +40,9 @@
   <p>
     <strong>Nhịp chính xác.</strong> Âm click tùy chỉnh. Trải nghiệm GNOME bản địa.<br>Metrognome giữ nhịp trong callback âm thanh, không phải trong bộ định thời của GUI.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Điểm nổi bật

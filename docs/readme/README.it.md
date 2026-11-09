@@ -40,6 +40,9 @@
   <p>
     <strong>Ritmo preciso.</strong> Suoni personalizzati. Esperienza GNOME nativa.<br>Metrognome tiene il tempo nel callback audio, non in un timer della GUI.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Punti principali

@@ -40,6 +40,9 @@
   <p>
     <strong>Rythmu sahihi.</strong> Sauti za kubofya zinazobadilishwa. Uzoefu wa asili wa GNOME.<br>Metrognome inahifadhi muda kwenye callback ya sauti, sio kwenye kipima muda cha GUI.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Vipengele muhimu

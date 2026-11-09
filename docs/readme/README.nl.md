@@ -40,6 +40,9 @@
   <p>
     <strong>Nauwkeurig ritme.</strong> Eigen klikgeluiden. Native GNOME-ervaring.<br>Metrognome houdt de tijd bij in de audio-callback, niet in een GUI-timer.
   </p>
+  <p>
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+  </p>
 </div>
 
 ## Hoogtepunten
