@@ -63,7 +63,17 @@
 |---|---|
 | Debian-пакет (x86_64) | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
 | Переносимый AppImage (x86_64) | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
+| Flatpak-бандл (x86_64) | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
 | Суммы SHA-256 | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
+
+Flatpak-бандл самодостаточен: GTK 4, libadwaita и ALSA входят в его рантайм,
+поэтому он работает в любом дистрибутиве, где установлен `flatpak`, — системе
+нужен только звуковой сервер (PipeWire или PulseAudio) и дисплей (Wayland или
+X11). Установка:
+
+```sh
+flatpak install --user ./metrognome_<версия>_x86_64.flatpak
+```
 
 Инструкции по разработке и сборке находятся в [DEVELOP.md](../../DEVELOP.md). Все релизы доступны на [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 

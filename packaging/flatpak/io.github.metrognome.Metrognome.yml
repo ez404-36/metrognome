@@ -1,0 +1,90 @@
+id: io.github.metrognome.Metrognome
+runtime: org.gnome.Platform
+# One release behind the newest GNOME runtime keeps the build environment
+# mature while staying inside Flathub's supported window (the previous runtime
+# is supported until the one after current ships). Bump to '51' (or newer)
+# deliberately, ideally with a full local build: flatpak-builder builds this
+# file the same way Flathub will.
+runtime-version: '50'
+sdk: org.gnome.Sdk
+# Versionless extension refs resolve to the branch the SDK declares, so the
+# Rust toolchain tracks the freedesktop release behind the GNOME runtime.
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: metrognome
+
+finish-args:
+  # Display: native Wayland with X11 fallback (XWayland or bare X11).
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Audio: the app renders through cpal/ALSA; inside the sandbox those
+  # samples reach the sound server via the ALSA pulse plugin (PulseAudio /
+  # PipeWire's pulse replacement, --socket=pulseaudio) or the ALSA pipewire
+  # plugin (--filesystem=xdg-run/pipewire-0). Both sockets together cover
+  # PulseAudio-only, pipewire-pulse, and native-PipeWire setups.
+  - --socket=pulseaudio
+  - --filesystem=xdg-run/pipewire-0:ro
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/pkgconfig
+  - /share/aclocal
+  - /man
+  - /share/man
+  - /share/gtk-doc
+  - /share/vala
+  - /share/devhelp
+  - '*.la'
+  - '*.a'
+
+modules:
+  - name: metrognome
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        # cargo-sources.json vendors every crates.io dependency into
+        # cargo/vendor; combined with the offline config below this keeps the
+        # build fully hermetic (a Flathub requirement).
+        CARGO_NET_OFFLINE: 'true'
+    build-commands:
+      - cargo --version && rustc --version
+      - cargo build --offline --release --features ui
+      - install -Dm755 target/release/metrognome -t /app/bin
+      - install -Dm644 packaging/io.github.metrognome.Metrognome.desktop -t /app/share/applications
+      - install -Dm644 packaging/io.github.metrognome.Metrognome.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 assets/brand/icons/metrognome-symbolic.svg /app/share/icons/hicolor/symbolic/apps/metrognome-symbolic.svg
+      - install -Dm644 assets/brand/icons/metrognome-64.png /app/share/icons/hicolor/64x64/apps/metrognome.png
+      - install -Dm644 assets/brand/icons/metrognome-128.png /app/share/icons/hicolor/128x128/apps/metrognome.png
+      - install -Dm644 assets/brand/icons/metrognome-256.png /app/share/icons/hicolor/256x256/apps/metrognome.png
+    sources:
+      # Sources resolve relative to this manifest's directory, so the manifest
+      # can live under packaging/flatpak and still build straight from a
+      # working tree (local testing and the release workflow both check the
+      # tree out first). Deliberately narrow: no target/ or VCS metadata is
+      # copied into the build sandbox.
+      - type: file
+        path: ../../Cargo.toml
+      - type: file
+        path: ../../Cargo.lock
+      - type: file
+        path: ../../build.rs
+      - type: dir
+        path: ../../src
+      - type: dir
+        path: ../../assets
+      - type: dir
+        path: ../../packaging
+      # Vendored crates.io dependencies (regenerate with
+      # scripts/generate-cargo-sources.py after changing Cargo.lock).
+      - cargo-sources.json
+      # The generated cargo config lands at cargo/config; point cargo at it
+      # from the standard .cargo location relative to the build directory.
+      # https://github.com/flatpak/flatpak-builder-tools/tree/master/cargo#cargohome-is-set-by-buildsystem
+      - type: shell
+        commands:
+          - mkdir -p .cargo
+          - cp cargo/config .cargo/config.toml

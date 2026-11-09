@@ -64,7 +64,17 @@ The latest release is available on [GitHub Releases](https://github.com/ez404-36
 |---|---|
 | Debian package (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
 | Portable AppImage (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
+| Flatpak bundle (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
 | SHA-256 checksums | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
+
+The Flatpak bundle is self-contained: its GNOME runtime ships GTK 4, libadwaita,
+and ALSA inside the bundle, so it runs on any distribution with `flatpak`
+installed — the system only needs to provide a sound server (PipeWire or
+PulseAudio) and a display (Wayland or X11). Install it with:
+
+```sh
+flatpak install --user ./metrognome_<version>_x86_64.flatpak
+```
 
 Development and build instructions are in [DEVELOP.md](DEVELOP.md).
 

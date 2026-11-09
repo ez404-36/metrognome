@@ -5,6 +5,9 @@ name: Release
 #     linked shared libraries: GTK 4, libadwaita, ALSA, glibc).
 #   - portable `.AppImage` via linuxdeploy, which bundles the non-glibc
 #     shared libraries (GTK 4, libadwaita, ALSA) into the image.
+#   - `.flatpak` bundle via flatpak-builder: self-contained against its
+#     runtime, so it runs on any distro that has flatpak (GTK, libadwaita,
+#     ALSA and even glibc come from the bundle's runtime).
 #
 # Triggers:
 #   - Pushing a tag like `v0.1.0` builds the artifacts and attaches them to a
@@ -13,7 +16,7 @@ name: Release
 #     workflow artifacts (no Release is created).
 #
 # Flow (mirrors the ProcMix release workflow):
-#   check -> create-release (draft) -> build-linux -> publish-release
+#   check -> create-release (draft) -> build-linux + build-flatpak -> publish-release
 
 on:
   push:
@@ -175,12 +178,13 @@ jobs:
           echo "Resolved release id: $release_id"
           echo "release-id=$release_id" >> "$GITHUB_OUTPUT"
 
-  # Skipped `needs` jobs (create-release on workflow_dispatch) do not block
-  # dependents: only failed or canceled ones do. On workflow_dispatch the
-  # release-id output is empty and the build job uploads workflow artifacts
-  # without touching any release.
+  # On workflow_dispatch create-release is skipped; an explicit `if` keeps
+  # the build jobs running anyway (a skipped `needs` job would otherwise
+  # skip its dependents too). The release-id output is then empty and the
+  # build jobs upload workflow artifacts without touching any release.
   build-linux:
     needs: [check, create-release]
+    if: ${{ !cancelled() && needs.check.result == 'success' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -289,13 +293,64 @@ jobs:
             echo "Uploaded $name to release $release_id."
           done
 
+  # Flatpak bundle: the manifest vendors all crates.io dependencies and the
+  # `dir` sources point at the checked-out tree, so this builds straight from
+  # the checkout without any extra setup. flatpak-builder downloads its
+  # runtimes from Flathub, so this job needs no GTK system packages.
+  build-flatpak:
+    needs: [check, create-release]
+    if: ${{ !cancelled() && needs.check.result == 'success' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          version="$(grep -m1 '^version' Cargo.toml | sed -E 's/^version = "(.*)"$/\1/')"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build Flatpak bundle
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: metrognome_${{ steps.version.outputs.version }}_x86_64.flatpak
+          manifest-path: packaging/flatpak/io.github.metrognome.Metrognome.yml
+          cache-key: flatpak-builder-${{ steps.version.outputs.version }}
+          upload-artifact: 'true'
+          artifact-name: metrognome-linux-flatpak
+
+      - name: Upload bundle to the draft release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          repo='${{ github.repository }}'
+          release_id='${{ needs.create-release.outputs.release-id }}'
+          # Same idempotent attach loop as the .deb/.AppImage step in
+          # build-linux: delete stale assets first, then upload.
+          for file in metrognome_*_x86_64.flatpak; do
+            name="$(basename "$file")"
+            gh api "repos/$repo/releases/$release_id/assets" \
+              -q ".[] | select(.name == \"$name\") | .id" \
+              | while read -r asset_id; do
+                  gh api --method DELETE "repos/$repo/releases/assets/$asset_id" >/dev/null
+                done
+            gh api --method POST \
+              -H "Content-Type: application/octet-stream" \
+              "repos/$repo/releases/$release_id/assets?name=$name" \
+              --input "$file" >/dev/null
+            echo "Uploaded $name to release $release_id."
+          done
+
   # Publish the draft release ONLY after the build job has uploaded its
   # artifacts, so the public release is never visible without them.
   # `gh release edit --draft=false` is idempotent: if a maintainer already
   # published the release manually while the build was running, this is a
   # no-op and the assets simply continue landing in that release.
   publish-release:
-    needs: build-linux
+    needs: [build-linux, build-flatpak]
     if: github.ref_type == 'tag'
     runs-on: ubuntu-24.04
     permissions:

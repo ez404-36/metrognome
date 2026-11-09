@@ -15,6 +15,56 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Cheap packaging checks: keep the Flatpak manifest, AppStream metadata,
+  # desktop entry and vendored cargo sources consistent without building
+  # anything (the release workflow does the full Flatpak build).
+  packaging-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-yaml \
+            appstream \
+            desktop-file-utils
+
+      # cargo-sources.json pins the crates.io dependencies for the Flatpak
+      # build; it must be regenerated whenever Cargo.lock changes.
+      - name: Check vendored cargo sources are up to date
+        run: python3 scripts/generate-cargo-sources.py --check
+
+      - name: Validate the Flatpak manifest
+        run: python3 -c "import yaml, sys; yaml.safe_load(open('packaging/flatpak/io.github.metrognome.Metrognome.yml')); print('manifest YAML ok')"
+
+      - name: Validate AppStream metadata
+        run: appstreamcli validate --no-net packaging/io.github.metrognome.Metrognome.metainfo.xml
+
+      - name: Validate the desktop entry
+        run: desktop-file-validate packaging/io.github.metrognome.Metrognome.desktop
+
+  # Full Flatpak build on PRs and master: this exercises the exact manifest
+  # the release workflow ships, so manifest breakage cannot first appear at
+  # release time. The GNOME runtimes download fresh on every runner (~2 GB);
+  # the action caches the build state, so vendored crates and compiled
+  # dependencies only rebuild when Cargo.lock changes.
+  build-flatpak:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: packaging/flatpak/io.github.metrognome.Metrognome.yml
+          cache-key: flatpak-builder-v1
+          # No bundle on CI: the release workflow produces the distributable
+          # bundle; here we only prove the manifest builds.
+          build-bundle: false
+          upload-artifact: 'false'
+
   check-and-build:
     runs-on: ubuntu-24.04
     # The `ui` feature needs GTK 4.12 / libadwaita 1.5 headers, which first
