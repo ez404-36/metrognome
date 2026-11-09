@@ -55,34 +55,17 @@
 ## Planlanan
 - 🎛 **Kendi sesleriniz** — 16 bit PCM ya da kayan nokta WAV dosyaları içe aktarın; Metrognome indirmix, yeniden örnekleme ve normalleştirme yapar.
 
-## Hızlı başlangıç
+## İndirme
 
-Debian ya da Ubuntu üzerinde GTK geliştirme bağımlılıklarını kurun:
+En son sürüm [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) sayfasında mevcuttur.
 
-```sh
-./scripts/install-deps.sh
-```
+| Artefakt | İndirme |
+|---|---|
+| Debian paketi (x86_64) | [İndirme](https://github.com/ez404-36/metrognome/releases/latest) |
+| Taşınabilir AppImage (x86_64) | [İndirme](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 sağlama toplamları | [İndirme](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Masaüstü arayüzünü derleyin ve çalıştırın:
-
-```sh
-cargo run --features ui
-```
-
-Ses çekirdeği testlerini çalıştırın:
-
-```sh
-cargo test
-```
-
-CLI duman testleri masaüstü oturumu olmadan kullanışlıdır:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-GNOME ya da Wayland’da uygulamayı yalnız SSH ortamından değil masaüstü oturumundan başlatın.
+Geliştirme ve derleme yönergeleri [DEVELOP.md](../../DEVELOP.md) dosyasındadır. Tüm sürümleri [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) sayfasında görün.
 
 ## Nasıl çalışır
 

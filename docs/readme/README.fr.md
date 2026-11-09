@@ -55,34 +55,17 @@
 ## Prévu
 - 🎛 **Vos sons** — Importez des fichiers WAV PCM 16 bits ou flottants ; Metrognome les mélange, rééchantillonne et normalise.
 
-## Démarrage rapide
+## Téléchargement
 
-Installez les dépendances de développement GTK sur Debian ou Ubuntu :
+La dernière version est disponible sur [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
-```sh
-./scripts/install-deps.sh
-```
+| Artefact | Téléchargement |
+|---|---|
+| Paquet Debian (x86_64) | [Téléchargement](https://github.com/ez404-36/metrognome/releases/latest) |
+| AppImage portable (x86_64) | [Téléchargement](https://github.com/ez404-36/metrognome/releases/latest) |
+| Sommes SHA-256 | [Téléchargement](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Compilez et lancez l’interface de bureau :
-
-```sh
-cargo run --features ui
-```
-
-Lancez les tests du cœur audio :
-
-```sh
-cargo test
-```
-
-Les tests de fumée en ligne de commande sont utiles sans session de bureau :
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-Sous GNOME ou Wayland, lancez l’application depuis la session de bureau plutôt qu’un environnement SSH seul.
+Les instructions de développement et de compilation sont dans [DEVELOP.md](../../DEVELOP.md). Consultez toutes les versions sur [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## Fonctionnement
 

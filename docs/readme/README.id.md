@@ -55,34 +55,17 @@
 ## Direncanakan
 - 🎛 **Suara Anda** — Impor berkas WAV PCM 16-bit atau floating-point; Metrognome melakukan downmix, resampling, dan normalisasi.
 
-## Mulai cepat
+## Unduh
 
-Instal dependensi pengembangan GTK di Debian atau Ubuntu:
+Rilis terbaru tersedia di [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
-```sh
-./scripts/install-deps.sh
-```
+| Artefak | Unduh |
+|---|---|
+| Paket Debian (x86_64) | [Unduh](https://github.com/ez404-36/metrognome/releases/latest) |
+| AppImage portabel (x86_64) | [Unduh](https://github.com/ez404-36/metrognome/releases/latest) |
+| Checksum SHA-256 | [Unduh](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Bangun dan jalankan antarmuka desktop:
-
-```sh
-cargo run --features ui
-```
-
-Jalankan tes inti audio:
-
-```sh
-cargo test
-```
-
-Uji smoke CLI berguna tanpa sesi desktop:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-Di GNOME atau Wayland, jalankan aplikasi dari sesi desktop, bukan dari lingkungan SSH saja.
+Petunjuk pengembangan dan build ada di [DEVELOP.md](../../DEVELOP.md). Lihat semua rilis di [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## Cara kerja
 

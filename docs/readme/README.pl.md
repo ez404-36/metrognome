@@ -55,34 +55,17 @@
 ## Planowane
 - 🎛 **Własne dźwięki** — Import plików WAV PCM 16-bit lub zmiennoprzecinkowych; Metrognome miesza, resampluje i normalizuje.
 
-## Szybki start
+## Pobieranie
 
-Zainstaluj pakiety deweloperskie GTK w Debianie lub Ubuntu:
+Najnowsze wydanie jest dostępne na stronie [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
-```sh
-./scripts/install-deps.sh
-```
+| Artefakt | Pobieranie |
+|---|---|
+| Pakiet Debian (x86_64) | [Pobieranie](https://github.com/ez404-36/metrognome/releases/latest) |
+| Przenośny AppImage (x86_64) | [Pobieranie](https://github.com/ez404-36/metrognome/releases/latest) |
+| Sumy SHA-256 | [Pobieranie](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Zbuduj i uruchom interfejs pulpitu:
-
-```sh
-cargo run --features ui
-```
-
-Uruchom testy rdzenia audio:
-
-```sh
-cargo test
-```
-
-Testy dymne CLI są przydatne bez sesji pulpitu:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-W GNOME lub Wayland uruchamiaj aplikację z sesji pulpitu, a nie przez samo środowisko SSH.
+Instrukcje dotyczące developmentu i kompilacji znajdują się w [DEVELOP.md](../../DEVELOP.md). Wszystkie wydania znajdziesz na stronie [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## Jak to działa
 

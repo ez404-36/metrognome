@@ -55,34 +55,17 @@
 ## Được lên kế hoạch
 - 🎛 **Âm thanh của bạn** — Nhập tệp WAV PCM 16-bit hoặc dấu phẩy động; Metrognome tự downmix, resample và chuẩn hóa.
 
-## Bắt đầu nhanh
+## Tải xuống
 
-Cài đặt các phần phụ thuộc phát triển GTK trên Debian hoặc Ubuntu:
+Bản phát hành mới nhất có tại [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
-```sh
-./scripts/install-deps.sh
-```
+| Artifact | Tải xuống |
+|---|---|
+| Gói Debian (x86_64) | [Tải xuống](https://github.com/ez404-36/metrognome/releases/latest) |
+| AppImage di động (x86_64) | [Tải xuống](https://github.com/ez404-36/metrognome/releases/latest) |
+| Tổng kiểm SHA-256 | [Tải xuống](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Biên dịch và chạy giao diện desktop:
-
-```sh
-cargo run --features ui
-```
-
-Chạy các kiểm thử lõi âm thanh:
-
-```sh
-cargo test
-```
-
-Kiểm thử smoke qua CLI hữu ích khi không có phiên desktop:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-Trên GNOME hoặc Wayland, hãy chạy ứng dụng từ phiên desktop thay vì môi trường chỉ có SSH.
+Hướng dẫn phát triển và build nằm trong [DEVELOP.md](../../DEVELOP.md). Xem tất cả bản phát hành tại [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## Cách hoạt động
 

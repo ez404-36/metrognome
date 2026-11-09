@@ -55,34 +55,17 @@
 ## 计划中
 - 🎛 **自定义声音** — 导入 16 位 PCM 或浮点 WAV；Metrognome 会进行混音、重采样和标准化。
 
-## 快速开始
+## 下载
 
-在 Debian 或 Ubuntu 上安装 GTK 开发依赖：
+最新版本可在 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) 获取。
 
-```sh
-./scripts/install-deps.sh
-```
+| 构件 | 下载 |
+|---|---|
+| Debian 软件包 (x86_64) | [下载](https://github.com/ez404-36/metrognome/releases/latest) |
+| 便携式 AppImage (x86_64) | [下载](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 校验和 | [下载](https://github.com/ez404-36/metrognome/releases/latest) |
 
-编译并运行桌面界面：
-
-```sh
-cargo run --features ui
-```
-
-运行音频核心测试：
-
-```sh
-cargo test
-```
-
-没有桌面会话时，CLI 冒烟测试很有用：
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-在 GNOME 或 Wayland 上，请从桌面会话启动应用，而不是仅通过 SSH 环境。
+开发和构建说明见 [DEVELOP.md](../../DEVELOP.md)。 所有版本请见 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)。
 
 ## 工作原理
 

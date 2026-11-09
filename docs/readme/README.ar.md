@@ -58,34 +58,17 @@
 ## مخطط له
 - 🎛 **أصواتك** — استورد ملفات WAV بنظام PCM ثنائي 16 بت أو فاصلة عائمة؛ ينفّذ Metrognome الخفض، وإعادة الاستعراء، والتطبيع.
 
-## بداية سريعة
+## تنزيل
 
-ثبّت تبعيات تطوير GTK على Debian أو Ubuntu:
+أحدث إصدار متاح في [إصدارات GitHub](https://github.com/ez404-36/metrognome/releases/latest).
 
-```sh
-./scripts/install-deps.sh
-```
+| الملف | التنزيل |
+|---|---|
+| حزمة Debian (x86_64) | [التنزيل](https://github.com/ez404-36/metrognome/releases/latest) |
+| AppImage محمول (x86_64) | [التنزيل](https://github.com/ez404-36/metrognome/releases/latest) |
+| مجاميع SHA-256 | [التنزيل](https://github.com/ez404-36/metrognome/releases/latest) |
 
-ابنِ واجهة سطح المكتب وشغّلها:
-
-```sh
-cargo run --features ui
-```
-
-شغّل اختبارات نواة الصوت:
-
-```sh
-cargo test
-```
-
-اختبارات سطر الأوامر الدخانية مفيدة بدون جلسة سطح مكتب:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-على GNOME أو Wayland، شغّل التطبيق من جلسة سطح المكتب لا من بيئة SSH فقط.
+إرشادات التطوير والبناء موجودة في [DEVELOP.md](../../DEVELOP.md). كل الإصدارات متاحة في [إصدارات GitHub](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## كيف يعمل
 

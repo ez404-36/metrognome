@@ -55,34 +55,17 @@
 ## পরিকল্পিত
 - 🎛 **নিজের শব্দ** — 16-বিট PCM বা ফ্লোটিং-পয়েন্ট WAV ইমপোর্ট করুন; Metrognome ডাউনমিক্স, রিস্যাম্পল ও নরমালাইজ করে।
 
-## দ্রুত শুরু
+## ডাউনলোড
 
-Debian বা Ubuntu-তে GTK ডেভেলপমেন্ট নির্ভরতা ইনস্টল করুন:
+সর্বশেষ রিলিজ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)-এ উপলব্ধ।
 
-```sh
-./scripts/install-deps.sh
-```
+| আর্টিফ্যাক্ট | ডাউনলোড |
+|---|---|
+| Debian প্যাকেজ (x86_64) | [ডাউনলোড](https://github.com/ez404-36/metrognome/releases/latest) |
+| পোর্টেবল AppImage (x86_64) | [ডাউনলোড](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 চেকসাম | [ডাউনলোড](https://github.com/ez404-36/metrognome/releases/latest) |
 
-ডেস্কটপ UI বিল্ড করে চালান:
-
-```sh
-cargo run --features ui
-```
-
-অডিও কোর টেস্ট চালান:
-
-```sh
-cargo test
-```
-
-ডেস্কটপ সেশন ছাড়া CLI স্মোক টেস্ট কাজে লাগে:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-GNOME বা Wayland-এ অ্যাপটি শুধু SSH পরিবেশ থেকে নয়, ডেস্কটপ সেশন থেকে চালান।
+ডেভেলপমেন্ট ও বিল্ড নির্দেশনা [DEVELOP.md](../../DEVELOP.md)-এ রয়েছে। সব রিলিজ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)-এ দেখুন।
 
 ## এটি কীভাবে কাজ করে
 

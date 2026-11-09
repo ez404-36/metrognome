@@ -58,34 +58,17 @@
 ## منصوبہ شدہ
 - 🎛 **آپ کی آوازیں** — 16 بٹ PCM یا فلوٹنگ پوائنٹ WAV درآمد کریں؛ Metrognome ڈاؤن مکس، ریسیمپلنگ اور نارملائزیشن کرتا ہے۔
 
-## تیز آغاز
+## ڈاؤن لوڈ
 
-Debian یا Ubuntu پر GTK ڈیولپمنٹ ڈیپینڈنسیاں انسٹال کریں:
+تازہ ترین ریلیز [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) پر دستیاب ہے۔
 
-```sh
-./scripts/install-deps.sh
-```
+| آرٹیفیکٹ | ڈاؤن لوڈ |
+|---|---|
+| Debian پیکج (x86_64) | [ڈاؤن لوڈ](https://github.com/ez404-36/metrognome/releases/latest) |
+| قابلِ حمل AppImage (x86_64) | [ڈاؤن لوڈ](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 چیکسم | [ڈاؤن لوڈ](https://github.com/ez404-36/metrognome/releases/latest) |
 
-ڈیسک ٹاپ UI بنائیں اور چلائیں:
-
-```sh
-cargo run --features ui
-```
-
-آڈیو کور ٹیسٹ چلائیں:
-
-```sh
-cargo test
-```
-
-ڈیسک ٹاپ سیشن کے بغیر CLI سموک ٹیسٹ مفید ہیں:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-GNOME یا Wayland پر ایپ کو صرف SSH ماحول سے نہیں، ڈیسک ٹاپ سیشن سے چلائیں۔
+ڈیولپمنٹ اور بلڈ ہدایات [DEVELOP.md](../../DEVELOP.md) میں ہیں۔ تمام ریلیزز [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) پر دیکھیں۔
 
 ## یہ کیسے کام کرتا ہے
 

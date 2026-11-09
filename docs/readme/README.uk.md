@@ -55,34 +55,17 @@
 ## Заплановано
 - 🎛 **Власні звуки** — Імпорт WAV у 16-бітному PCM або з рухомою комою; Metrognome робить даунмікс, ресемплінг і нормалізацію.
 
-## Швидкий старт
+## Завантаження
 
-Встановіть пакети розробки GTK у Debian або Ubuntu:
+Останній реліз доступний на сторінці [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
-```sh
-./scripts/install-deps.sh
-```
+| Артефакт | Завантаження |
+|---|---|
+| Debian-пакет (x86_64) | [Завантаження](https://github.com/ez404-36/metrognome/releases/latest) |
+| Переносний AppImage (x86_64) | [Завантаження](https://github.com/ez404-36/metrognome/releases/latest) |
+| Суми SHA-256 | [Завантаження](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Зберіть і запустіть настільний інтерфейс:
-
-```sh
-cargo run --features ui
-```
-
-Запустіть тести аудіоядра:
-
-```sh
-cargo test
-```
-
-CLI-смоук-тести корисні без графічної сесії:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-У GNOME або Wayland запускайте застосунок із настільної сесії, а не через SSH-середовище.
+Інструкції з розробки та збірки знаходяться в [DEVELOP.md](../../DEVELOP.md). Усі релізи доступні на [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## Як це працює
 

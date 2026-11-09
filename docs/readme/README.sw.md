@@ -55,34 +55,17 @@
 ## Iliyopangwa
 - 🎛 **Sauti zako** — Ingiza faili za WAV za PCM biti 16 au floating-point; Metrognome hufanya downmix, resample na normalization.
 
-## Anza haraka
+## Kupakua
 
-Sakisha mahitaji ya usanidi wa GTK kwenye Debian au Ubuntu:
+Toleo jipya zaidi linapatikana kwenye [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
-```sh
-./scripts/install-deps.sh
-```
+| Kifaa | Kupakua |
+|---|---|
+| Kifurushi cha Debian (x86_64) | [Kupakua](https://github.com/ez404-36/metrognome/releases/latest) |
+| AppImage inayobebeka (x86_64) | [Kupakua](https://github.com/ez404-36/metrognome/releases/latest) |
+| Sasisho za SHA-256 | [Kupakua](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Jenga na uendeshe UI ya desktop:
-
-```sh
-cargo run --features ui
-```
-
-Endesha vipimo vya kiini cha sauti:
-
-```sh
-cargo test
-```
-
-Vipimo vya smoke vya CLI ni muhimu bila kikao cha desktop:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-Kwenye GNOME au Wayland, anzisha programu kutoka kikao cha desktop, sio kutoka mazingira ya SSH pekee.
+Maelekezo ya usanidi na ujenzi yako kwenye [DEVELOP.md](../../DEVELOP.md). Tazama matoleo yote kwenye [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## Inavyofanya kazi
 

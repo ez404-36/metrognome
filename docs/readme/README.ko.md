@@ -55,34 +55,17 @@
 ## 계획됨
 - 🎛 **내 사운드** — 16비트 PCM 또는 부동소수점 WAV를 가져올 수 있으며, 다운믹스·리샘플링·정규화를 처리합니다.
 
-## 빠른 시작
+## 다운로드
 
-Debian 또는 Ubuntu에서 GTK 개발 의존성을 설치하세요:
+최신 릴리스는 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)에서 이용할 수 있습니다.
 
-```sh
-./scripts/install-deps.sh
-```
+| 아티팩트 | 다운로드 |
+|---|---|
+| Debian 패키지 (x86_64) | [다운로드](https://github.com/ez404-36/metrognome/releases/latest) |
+| 휴대용 AppImage (x86_64) | [다운로드](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 체크섬 | [다운로드](https://github.com/ez404-36/metrognome/releases/latest) |
 
-데스크톱 UI를 빌드하고 실행합니다:
-
-```sh
-cargo run --features ui
-```
-
-오디오 코어 테스트를 실행합니다:
-
-```sh
-cargo test
-```
-
-데스크톱 세션이 없을 때는 CLI 스모크 테스트가 유용합니다:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-GNOME 또는 Wayland에서는 SSH 전용 환경이 아니라 데스크톱 세션에서 앱을 실행하세요.
+개발 및 빌드 방법은 [DEVELOP.md](../../DEVELOP.md)에 있습니다. 모든 릴리스는 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)에서 확인하세요.
 
 ## 작동 방식
 

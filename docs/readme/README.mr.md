@@ -55,34 +55,17 @@
 ## नियोजित
 - 🎛 **तुमचे आवाज़** — 16-बिट PCM किंवा फ्लोटिंग-पॉइंट WAV आयात करा; Metrognome डाउनमिक्स, रीसॅम्पल आणि नॉर्मलायझेशन करतो.
 
-## झटपट सुरुवात
+## डाउनलोड
 
-Debian किंवा Ubuntu वर GTK विकास अवलंबित्वे इंस्टॉल करा:
+नवीनतम रिलीज [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) वर उपलब्ध आहे.
 
-```sh
-./scripts/install-deps.sh
-```
+| आर्टिफॅक्ट | डाउनलोड |
+|---|---|
+| Debian पॅकेज (x86_64) | [डाउनलोड](https://github.com/ez404-36/metrognome/releases/latest) |
+| पोर्टेबल AppImage (x86_64) | [डाउनलोड](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 चेकसम | [डाउनलोड](https://github.com/ez404-36/metrognome/releases/latest) |
 
-डेस्कटॉप UI बिल्ड करून चालवा:
-
-```sh
-cargo run --features ui
-```
-
-ऑडिओ कोर चाचण्या चालवा:
-
-```sh
-cargo test
-```
-
-डेस्कटॉप सेशनशिवाय CLI स्मोक चाचण्या उपयुक्त आहेत:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-GNOME किंवा Wayland वर अ‍ॅप फक्त SSH वातावरणातून नव्हे, तर डेस्कटॉप सेशनमधून चालवा.
+विकास आणि बिल्ड सूचना [DEVELOP.md](../../DEVELOP.md) मध्ये आहेत. सर्व रिलीज [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) येथे पहा.
 
 ## हे कसे कार्य करते
 

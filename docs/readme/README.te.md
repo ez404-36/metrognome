@@ -55,34 +55,17 @@
 ## ప్రణాళికలో ఉన్నవి
 - 🎛 **మీ ధ్వనులు** — 16-బిట్ PCM లేదా ఫ్లోటింగ్-పాయింట్ WAV దిగుమతి చేయండి; Metrognome డౌన్‌మిక్స్, రీస్యాంప్లింగ్, నార్మలైజేషన్ చేస్తుంది.
 
-## త్వరగా ప్రారంభించడం
+## డౌన్‌లోడ్
 
-Debian లేదా Ubuntu లో GTK డెవలప్‌మెంట్ డిపెండెన్సీలను ఇన్‌స్టాల్ చేయండి:
+అత్యంత కొత్త రిలీజ్ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)లో అందుబాటులో ఉంది.
 
-```sh
-./scripts/install-deps.sh
-```
+| ఆర్టిఫ్యాక్ట్ | డౌన్‌లోడ్ |
+|---|---|
+| Debian ప్యాకేజీ (x86_64) | [డౌన్‌లోడ్](https://github.com/ez404-36/metrognome/releases/latest) |
+| పోర్టబుల్ AppImage (x86_64) | [డౌన్‌లోడ్](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 చెక్‌సమ్‌లు | [డౌన్‌లోడ్](https://github.com/ez404-36/metrognome/releases/latest) |
 
-డెస్క్‌టాప్ UI బిల్డ్ చేసి రన్ చేయండి:
-
-```sh
-cargo run --features ui
-```
-
-ఆడియో కోర్ టెస్టులను రన్ చేయండి:
-
-```sh
-cargo test
-```
-
-డెస్క్‌టాప్ సెషన్ లేకుండా CLI స్మోక్ టెస్టులు ఉపయోగకరం:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-GNOME లేదా Wayland లో యాప్‌ను SSH మాత్రమే ఉన్న వాతావరణం నుంచి కాకుండా డెస్క్‌టాప్ సెషన్ నుంచి ప్రారంభించండి.
+డెవలప్‌మెంట్ మరియు బిల్డ్ సూచనలు [DEVELOP.md](../../DEVELOP.md)లో ఉన్నాయి. అన్ని రిలీజ్‌లు [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)లో చూడండి.
 
 ## ఇది ఎలా పనిచేస్తుంది
 

@@ -55,34 +55,17 @@
 ## Geplant
 - 🎛 **Eigene Sounds** — 16-Bit-PCM- oder Floating-Point-WAV-Dateien importieren; Metrognome mischt, resampelt und normalisiert sie.
 
-## Schnellstart
+## Download
 
-GTK-Entwicklungspakete unter Debian oder Ubuntu installieren:
+Die neueste Version ist auf [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) verfügbar.
 
-```sh
-./scripts/install-deps.sh
-```
+| Artefakt | Download |
+|---|---|
+| Debian-Paket (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
+| Tragbares AppImage (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256-Prüfsummen | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
 
-Desktop-Oberfläche bauen und starten:
-
-```sh
-cargo run --features ui
-```
-
-Tests des Audio-Kerns ausführen:
-
-```sh
-cargo test
-```
-
-CLI-Smoke-Tests sind ohne Desktop-Sitzung nützlich:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-Unter GNOME oder Wayland starte die Anwendung aus der Desktop-Sitzung statt über eine reine SSH-Umgebung.
+Entwicklungs- und Build-Anleitungen stehen in der [DEVELOP.md](../../DEVELOP.md). Alle Releases finden Sie unter [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
 
 ## So funktioniert es
 

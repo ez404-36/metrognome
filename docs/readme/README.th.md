@@ -55,34 +55,17 @@
 ## กำลังวางแผน
 - 🎛 **เสียงของคุณ** — นำเข้าไฟล์ WAV แบบ PCM 16 บิตหรือจุดทศนิยม Metrognomeจะ downmix, resample และ normalize ให้
 
-## เริ่มต้นอย่างรวดเร็ว
+## ดาวน์โหลด
 
-ติดตั้งแพ็กเกจพัฒนา GTK บน Debian หรือ Ubuntu:
+รีลีสล่าสุดดูได้ที่ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)
 
-```sh
-./scripts/install-deps.sh
-```
+| อาร์ติแฟกต์ | ดาวน์โหลด |
+|---|---|
+| แพ็กเกจ Debian (x86_64) | [ดาวน์โหลด](https://github.com/ez404-36/metrognome/releases/latest) |
+| AppImage แบบพกพา (x86_64) | [ดาวน์โหลด](https://github.com/ez404-36/metrognome/releases/latest) |
+| เช็กซัม SHA-256 | [ดาวน์โหลด](https://github.com/ez404-36/metrognome/releases/latest) |
 
-คอมไพล์และรัน UI เดสก์ท็อป:
-
-```sh
-cargo run --features ui
-```
-
-รันการทดสอบแกนเสียง:
-
-```sh
-cargo test
-```
-
-การทดสอบ smoke ผ่าน CLI มีประโยชน์เมื่อไม่มีเดสก์ท็อปเซสชัน:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-บน GNOME หรือ Wayland ให้เปิดแอปจากเดสก์ท็อปเซสชัน ไม่ใช่จากสภาพแวดล้อม SSH เท่านั้น
+คำแนะนำการพัฒนาและการบิลด์อยู่ใน [DEVELOP.md](../../DEVELOP.md) ดูรีลีสทั้งหมดได้ที่ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)
 
 ## วิธีทำงาน
 

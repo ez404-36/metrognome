@@ -55,34 +55,17 @@
 ## ਯੋਜਨਾ ਵਿੱਚ
 - 🎛 **ਆਪਣੀਆਂ ਆਵਾਜ਼ਾਂ** — 16-ਬਿੱਟ PCM ਜਾਂ ਫਲੋਟਿੰਗ-ਪੁਆਇੰਟ WAV ਇੰਪੋਰਟ ਕਰੋ; Metrognome ਡਾਊਨਮਿਕਸ, ਰੀਸੈਂਪਲ ਅਤੇ ਨਾਰਮਲਾਈਜ਼ ਕਰਦਾ ਹੈ।
 
-## ਤੇਜ਼ ਸ਼ੁਰੂਆਤ
+## ਡਾਊਨਲੋਡ
 
-Debian ਜਾਂ Ubuntu ਤੇ GTK ਵਿਕਾਸ ਨਿਰਭਰਤਾਵਾਂ ਇੰਸਟਾਲ ਕਰੋ:
+ਨਵੀਨਤਮ ਰੀਲਿਜ਼ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) ਤੇ ਉਪਲਬਧ ਹੈ।
 
-```sh
-./scripts/install-deps.sh
-```
+| ਆਰਟੀਫੈਕਟ | ਡਾਊਨਲੋਡ |
+|---|---|
+| Debian ਪੈਕੇਜ (x86_64) | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/metrognome/releases/latest) |
+| ਪੋਰਟੇਬਲ AppImage (x86_64) | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/metrognome/releases/latest) |
+| SHA-256 ਚੈੱਕਸਮ | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/metrognome/releases/latest) |
 
-ਡੈਸਕਟਾਪ UI ਬਣਾ ਕੇ ਚਲਾਓ:
-
-```sh
-cargo run --features ui
-```
-
-ਆਡੀਓ ਕੋਰ ਟੈਸਟ ਚਲਾਓ:
-
-```sh
-cargo test
-```
-
-ਡੈਸਕਟਾਪ ਸੈਸ਼ਨ ਤੋਂ ਬਿਨਾਂ CLI ਸਮੋਕ ਟੈਸਟ ਲਾਭਦਾਇਕ ਹਨ:
-
-```sh
-cargo run -- --preset woodblock
-cargo run -- --normal ./normal.wav --accent ./accent.wav
-```
-
-GNOME ਜਾਂ Wayland ਤੇ ਐਪ ਨੂੰ ਸਿਰਫ਼ SSH ਵਾਤਾਵਰਣ ਤੋਂ ਨਹੀਂ, ਡੈਸਕਟਾਪ ਸੈਸ਼ਨ ਤੋਂ ਚਲਾਓ।
+ਵਿਕਾਸ ਅਤੇ ਬਿਲਡ ਨਿਰਦੇਸ਼ [DEVELOP.md](../../DEVELOP.md) ਵਿੱਚ ਹਨ। ਸਾਰੇ ਰੀਲਿਜ਼ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) ’ਤੇ ਵੇਖੋ।
 
 ## ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ
 
