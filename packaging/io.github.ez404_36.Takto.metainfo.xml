@@ -49,7 +49,7 @@
   <releases>
     <release version="0.1.3" date="2026-11-10">
       <description>
-        <p>Rename the project to Takto, refresh branding and screenshots, preserve settings from the former Metrognome config directory, and add a pinned Flathub manifest.</p>
+        <p>Rename the project to Takto, refresh branding and screenshots, preserve settings from the previous config directory, and add a pinned Flathub manifest.</p>
       </description>
     </release>
     <release version="0.1.2" date="2026-11-09">
