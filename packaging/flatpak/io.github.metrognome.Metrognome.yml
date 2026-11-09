@@ -74,10 +74,13 @@ modules:
         path: ../../build.rs
       - type: dir
         path: ../../src
+        dest: src
       - type: dir
         path: ../../assets
+        dest: assets
       - type: dir
         path: ../../packaging
+        dest: packaging
       # Vendored crates.io dependencies (regenerate with
       # scripts/generate-cargo-sources.py after changing Cargo.lock).
       - cargo-sources.json
