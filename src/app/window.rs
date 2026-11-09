@@ -794,7 +794,17 @@ fn replace_beat_buttons(
     let mut created = Vec::with_capacity(states.len());
 
     for (index, state) in states.iter().copied().enumerate() {
-        let button = gtk::Button::with_label("\u{25CF}");
+        // The dot is drawn as a CSS circle instead of a font glyph: a text
+        // bullet sits on the baseline inside its line box, so its optical
+        // center is lower than the centered button background and the playing
+        // highlight looked uneven. currentColor keeps the state colors.
+        let dot = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        dot.add_css_class("dot");
+        dot.set_halign(gtk::Align::Center);
+        dot.set_valign(gtk::Align::Center);
+
+        let button = gtk::Button::new();
+        button.set_child(Some(&dot));
         button.add_css_class("beat-toggle");
         button.set_valign(gtk::Align::Center);
         button.set_cursor_from_name(Some("pointer"));
