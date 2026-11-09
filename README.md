@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>Precise rhythm.</strong> Custom click sounds. Native GNOME experience.<br>Metrognome keeps timing in the audio callback, not in a GUI timer.
+    <strong>Metronome.</strong> Precise rhythm, rich set of sounds. <br>Native GNOME interface.
   </p>
 
   <p>
@@ -48,13 +48,13 @@
 
 ## Highlights
 
-- 🎯 **Sample-clock scheduling** — Beats are planned in audio samples, with a continuous `cpal` output stream.
-- 🎚 **20–300 BPM** — Continuous tempo changes and tap tempo without losing the beat.
-- 🥁 **Clickable accents** — 2/4, 3/4, 4/4, and 6/8 patterns; tap a beat to customize accents.
-- 🔊 **Built-in sounds** — Classic, Woodblock, Digital, and Soft presets.
+- 🎚 **20–300 BPM** — Smooth tempo changes and tap tempo.
+- 🥁 **Custom time signatures** — 2/4, 3/4, 4/4, and 6/8 are supported.
+- 🎯 **Beat muting** — Turn off the sound on any beat.
+- 🔊 **19 built-in samples.**
+
+## Planned
 - 🎛 **Your sounds** — Import 16-bit PCM or floating-point WAV files; Metrognome downmixes, resamples, and normalizes them.
-- 🖤 **libadwaita UI** — Native GNOME controls with light and dark theme support.
-- 💾 **Reliable settings** — Settings persist through atomic temporary-file writes.
 
 ## Quick start
 

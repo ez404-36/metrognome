@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>정확한 리듬.</strong> 사용자 지정 클릭음. 네이티브 GNOME 경험.<br>Metrognome은 GUI 타이머가 아니라 오디오 콜백에서 박자를 유지합니다.
+    <strong>메트로놈.</strong> 정확한 리듬과 풍부한 사운드 세트.<br>네이티브 GNOME 인터페이스.
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## 주요 기능
 
-- 🎯 **샘플 클록 스케줄링** — 연속적인 `cpal` 출력 스트림에서 박자를 오디오 샘플 단위로 계획합니다.
-- 🎚 **20–300 BPM** — 박자를 잃지 않고 연속적인 템포 변경과 탭 템포를 지원합니다.
-- 🥁 **클릭 가능한 악센트** — 2/4, 3/4, 4/4, 6/8 패턴을 제공하며, 박자를 클릭해 악센트를 바꿀 수 있습니다.
-- 🔊 **내장 사운드** — Classic, Woodblock, Digital, Soft 프리셋이 포함됩니다.
+- 🎚 **20–300 BPM** — 부드러운 템포 변경 및 탭 템포.
+- 🥁 **조절 가능한 박자** — 2/4, 3/4, 4/4, 6/8 박자 지원.
+- 🎯 **비트 음소거** — 원하는 비트의 소리를 끌 수 있습니다.
+- 🔊 **내장 샘플 19개.**
+
+## 계획됨
 - 🎛 **내 사운드** — 16비트 PCM 또는 부동소수점 WAV를 가져올 수 있으며, 다운믹스·리샘플링·정규화를 처리합니다.
-- 🖤 **libadwaita UI** — 라이트 및 다크 테마를 지원하는 네이티브 GNOME 컨트롤.
-- 💾 **신뢰할 수 있는 설정** — 임시 파일에 원자적으로 기록해 설정을 저장합니다.
 
 ## 빠른 시작
 

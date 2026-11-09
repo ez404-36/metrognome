@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>Ritmo preciso.</strong> Sons personalizados. Experiência GNOME nativa.<br>O Metrognome mantém o tempo no callback de áudio, não em um temporizador da interface.
+    <strong>Metrônomo.</strong> Ritmo preciso e um rico conjunto de sons. <br>Interface GNOME nativa.
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## Destaques
 
-- 🎯 **Agendamento pelo clock de amostras** — As batidas são planejadas em amostras de áudio, com fluxo contínuo de saída `cpal`.
-- 🎚 **20–300 BPM** — Mudanças contínuas de tempo e tap tempo sem perder a batida.
-- 🥁 **Acentos clicáveis** — Padrões 2/4, 3/4, 4/4 e 6/8; toque em uma batida para personalizar os acentos.
-- 🔊 **Sons integrados** — Predefinições Classic, Woodblock, Digital e Soft.
+- 🎚 **20–300 BPM** — Mudanças suaves de tempo e tap tempo.
+- 🥁 **Compassos personalizáveis** — Compatibilidade com 2/4, 3/4, 4/4 e 6/8.
+- 🎯 **Silenciamento de batidas** — É possível desativar o som de qualquer batida.
+- 🔊 **19 amostras integradas.**
+
+## Planejado
 - 🎛 **Seus sons** — Importe arquivos WAV PCM de 16 bits ou de ponto flutuante; o Metrognome mistura, reamostra e normaliza.
-- 🖤 **Interface libadwaita** — Controles nativos do GNOME com suporte aos temas claro e escuro.
-- 💾 **Configurações confiáveis** — As configurações são salvas com gravação atômica em arquivo temporário.
 
 ## Começo rápido
 

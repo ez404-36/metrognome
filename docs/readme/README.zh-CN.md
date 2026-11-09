@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>精准节奏。</strong> 自定义敲击声。原生 GNOME 体验。<br>Metrognome 在音频回调中保持节拍，而不依赖 GUI 定时器。
+    <strong>节拍器。</strong> 精准节奏，丰富音色。<br>原生 GNOME 界面。
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## 亮点
 
-- 🎯 **采样时钟调度** — 节拍按音频采样计划，并使用连续的 `cpal` 输出流。
-- 🎚 **20–300 BPM** — 支持连续变速和轻拍测速，不会丢失节拍。
-- 🥁 **可点击重音** — 提供 2/4、3/4、4/4 和 6/8 节奏型；点击某拍即可自定义重音。
-- 🔊 **内置音色** — 包含 Classic、Woodblock、Digital 和 Soft 预设。
+- 🎚 **20–300 BPM** — 平滑变速和轻拍测速。
+- 🥁 **可自定义节拍** — 支持 2/4、3/4、4/4 和 6/8。
+- 🎯 **节拍静音** — 可关闭任意节拍的声音。
+- 🔊 **内置 19 个采样。**
+
+## 计划中
 - 🎛 **自定义声音** — 导入 16 位 PCM 或浮点 WAV；Metrognome 会进行混音、重采样和标准化。
-- 🖤 **libadwaita 界面** — 原生 GNOME 控件，支持浅色和深色主题。
-- 💾 **可靠的设置** — 通过临时文件的原子写入保存设置。
 
 ## 快速开始
 

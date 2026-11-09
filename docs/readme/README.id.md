@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>Ritme presisi.</strong> Suara klik khusus. Pengalaman GNOME native.<br>Metrognome menjaga waktu di callback audio, bukan di timer GUI.
+    <strong>Metronom.</strong> Ritme presisi dan kumpulan suara yang kaya. <br>Antarmuka GNOME native.
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## Sorotan
 
-- 🎯 **Penjadwalan berbasis jam sampel** — Ketukan dijadwalkan dalam sampel audio dengan aliran keluaran `cpal` yang berkelanjutan.
-- 🎚 **20–300 BPM** — Perubahan tempo berkelanjutan dan tap tempo tanpa kehilangan ketukan.
-- 🥁 **Aksen yang dapat diklik** — Pola 2/4, 3/4, 4/4, dan 6/8; ketuk satu ketukan untuk mengatur aksen.
-- 🔊 **Suara bawaan** — Preset Classic, Woodblock, Digital, dan Soft.
+- 🎚 **20–300 BPM** — Perubahan tempo halus dan tap tempo.
+- 🥁 **Ukuran birama yang dapat disesuaikan** — Mendukung ukuran 2/4, 3/4, 4/4, dan 6/8.
+- 🎯 **Bisukan ketukan** — Dapat mematikan suara pada ketukan mana pun.
+- 🔊 **19 sampel bawaan.**
+
+## Direncanakan
 - 🎛 **Suara Anda** — Impor berkas WAV PCM 16-bit atau floating-point; Metrognome melakukan downmix, resampling, dan normalisasi.
-- 🖤 **Antarmuka libadwaita** — Kontrol GNOME native dengan dukungan tema terang dan gelap.
-- 💾 **Pengaturan andal** — Pengaturan disimpan lewat penulisan atomik ke berkas sementara.
 
 ## Mulai cepat
 

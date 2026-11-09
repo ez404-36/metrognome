@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>Nhịp chính xác.</strong> Âm click tùy chỉnh. Trải nghiệm GNOME bản địa.<br>Metrognome giữ nhịp trong callback âm thanh, không phải trong bộ định thời của GUI.
+    <strong>Máy đếm nhịp.</strong> Nhịp chính xác, bộ âm thanh phong phú. <br>Giao diện GNOME gốc.
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## Điểm nổi bật
 
-- 🎯 **Lập lịch theo đồng hồ mẫu** — Các nhịp được lập kế hoạch theo mẫu âm thanh, với luồng ra `cpal` liên tục.
-- 🎚 **20–300 BPM** — Thay đổi tempo liên tục và tap tempo mà không mất nhịp.
-- 🥁 **Dấu nhấn bấm được** — Kiểu 2/4, 3/4, 4/4 và 6/8; bấm vào một nhịp để tùy chỉnh dấu nhấn.
-- 🔊 **Âm thanh tích hợp** — Bộ preset Classic, Woodblock, Digital và Soft.
+- 🎚 **20–300 BPM** — Thay đổi tempo mượt mà và tap tempo.
+- 🥁 **Số nhịp tùy chỉnh** — Hỗ trợ kiểu 2/4, 3/4, 4/4 và 6/8.
+- 🎯 **Tắt nhịp** — Có thể tắt âm thanh của bất kỳ nhịp nào.
+- 🔊 **19 mẫu âm thanh tích hợp.**
+
+## Được lên kế hoạch
 - 🎛 **Âm thanh của bạn** — Nhập tệp WAV PCM 16-bit hoặc dấu phẩy động; Metrognome tự downmix, resample và chuẩn hóa.
-- 🖤 **Giao diện libadwaita** — Điều khiển GNOME bản địa, hỗ trợ chủ đề sáng và tối.
-- 💾 **Cài đặt tin cậy** — Cài đặt được lưu bằng ghi đè nguyên tử qua tệp tạm thời.
 
 ## Bắt đầu nhanh
 

@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>Hassas ritim.</strong> Özel tık sesleri. Yerel GNOME deneyimi.<br>Metrognome zamanı GUI zamanlayıcısında değil, ses geri çağırımında tutar.
+    <strong>Metronom.</strong> Hassas ritim, zengin ses koleksiyonu. <br>Yerel GNOME arayüzü.
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## Öne çıkanlar
 
-- 🎯 **Örnek saatli zamanlama** — Vuruşlar, sürekli bir `cpal` çıkış akışıyla ses örnekleri içinde planlanır.
-- 🎚 **20–300 BPM** — Ritmi kaybetmeden sürekli tempo değişimi ve tap tempo.
-- 🥁 **Tıklanabilir vurgular** — 2/4, 3/4, 4/4 ve 6/8 desenleri; vurguları özelleştirmek için bir vuruşa dokunun.
-- 🔊 **Yerleşik sesler** — Classic, Woodblock, Digital ve Soft ön ayarları.
+- 🎚 **20–300 BPM** — Akıcı tempo değişimi ve tap tempo.
+- 🥁 **Özelleştirilebilir ölçüler** — 2/4, 3/4, 4/4 ve 6/8 ölçüleri desteklenir.
+- 🎯 **Vuruşları susturma** — Herhangi bir vuruşun sesi kapatılabilir.
+- 🔊 **19 yerleşik örnek.**
+
+## Planlanan
 - 🎛 **Kendi sesleriniz** — 16 bit PCM ya da kayan nokta WAV dosyaları içe aktarın; Metrognome indirmix, yeniden örnekleme ve normalleştirme yapar.
-- 🖤 **libadwaita arayüzü** — Açık ve koyu temaları destekleyen yerel GNOME kontrolleri.
-- 💾 **Güvenilir ayarlar** — Ayarlar atomik geçici dosya yazımıyla kaydedilir.
 
 ## Hızlı başlangıç
 

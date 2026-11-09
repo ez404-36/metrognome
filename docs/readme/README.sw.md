@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>Rythmu sahihi.</strong> Sauti za kubofya zinazobadilishwa. Uzoefu wa asili wa GNOME.<br>Metrognome inahifadhi muda kwenye callback ya sauti, sio kwenye kipima muda cha GUI.
+    <strong>Metronomu.</strong> Rhythm sahihi na mkusanyiko tajiri wa sauti. <br>Kiolesura cha GNOME asili.
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## Vipengele muhimu
 
-- 🎯 **Upangaji kwa saa ya sampuli** — Vibrationo hupangwa kama sampuli za sauti kwa mtiririko endelevu wa `cpal`.
-- 🎚 **20–300 BPM** — Mabadiliko endelevu ya tempo na tap tempo bila kupoteza rythmu.
-- 🥁 **Misisitizo inayobofyeka** — Mifumo ya 2/4, 3/4, 4/4 na 6/8; bofya vibrationo kubadilisha msisitizo.
-- 🔊 **Sauti zilizojengwa ndani** — Preset za Classic, Woodblock, Digital na Soft.
+- 🎚 **20–300 BPM** — Mabadiliko laini ya tempo na tap tempo.
+- 🥁 **Vipimo vya wakati vinavyoweza kubadilishwa** — Vipimo 2/4, 3/4, 4/4 na 6/8 vinaungwa mkono.
+- 🎯 **Kuzima mdundo** — Inawezekana kuzima sauti ya mdundo wowote.
+- 🔊 **Sampuli 19 zilizojengwa ndani.**
+
+## Iliyopangwa
 - 🎛 **Sauti zako** — Ingiza faili za WAV za PCM biti 16 au floating-point; Metrognome hufanya downmix, resample na normalization.
-- 🖤 **UI ya libadwaita** — Vidhibiti vya asili vya GNOME vinavyounga mkono mandhari nyepesi na nyeusi.
-- 💾 **Mipangilio ya kuaminika** — Mipangilio huhifadhiwa kwa uandishi atomik wa faili ya muda.
 
 ## Anza haraka
 

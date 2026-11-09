@@ -38,7 +38,7 @@
   </p>
 
   <p>
-    <strong>Nauwkeurig ritme.</strong> Eigen klikgeluiden. Native GNOME-ervaring.<br>Metrognome houdt de tijd bij in de audio-callback, niet in een GUI-timer.
+    <strong>Metronoom.</strong> Nauwkeurig ritme en een rijke geluidsset. <br>Native GNOME-interface.
   </p>
   <p>
     <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
@@ -47,13 +47,13 @@
 
 ## Hoogtepunten
 
-- 🎯 **Planning met sample-klok** — Slagen worden gepland in audiosamples, met een continue `cpal`-uitvoerstroom.
-- 🎚 **20–300 BPM** — Doorlopende tempowijzigingen en tap tempo zonder het ritme te verliezen.
-- 🥁 **Klikbare accenten** — 2/4-, 3/4-, 4/4- en 6/8-patronen; tik op een slag om accenten aan te passen.
-- 🔊 **Ingebouwde geluiden** — Classic-, Woodblock-, Digital- en Soft-presets.
+- 🎚 **20–300 BPM** — Vloeiende tempowijzigingen en tap tempo.
+- 🥁 **Aanpasbare maatsoorten** — Maatsoorten 2/4, 3/4, 4/4 en 6/8 worden ondersteund.
+- 🎯 **Slagen dempen** — Het geluid van elke slag kan worden uitgeschakeld.
+- 🔊 **19 ingebouwde samples.**
+
+## Gepland
 - 🎛 **Eigen geluiden** — Importeer 16-bits PCM- of floating-point-WAV-bestanden; Metrognome mixt, resampelt en normaliseert.
-- 🖤 **libadwaita-interface** — Native GNOME-besturingselementen met ondersteuning voor lichte en donkere thema’s.
-- 💾 **Betrouwbare instellingen** — Instellingen worden atomair opgeslagen via een tijdelijk bestand.
 
 ## Snelstart
 
