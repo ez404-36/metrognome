@@ -238,7 +238,7 @@ jobs:
           cp assets/brand/icons/metrognome-symbolic.svg \
             "$appdir/usr/share/icons/hicolor/symbolic/apps/metrognome-symbolic.svg"
           cp target/release/metrognome "$appdir/usr/bin/"
-          cp packaging/metrognome.desktop "$appdir/usr/share/applications/"
+          cp packaging/io.github.metrognome.Metrognome.desktop "$appdir/usr/share/applications/"
 
           curl -fsSL -o linuxdeploy \
             "https://github.com/linuxdeploy/linuxdeploy/releases/download/${LINUXDEPLOY_VERSION}/linuxdeploy-x86_64.AppImage"
