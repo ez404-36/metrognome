@@ -858,22 +858,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "metrognome"
-version = "0.1.2"
-dependencies = [
- "anyhow",
- "arc-swap",
- "cpal",
- "dirs",
- "gtk4",
- "hound",
- "libadwaita",
- "serde",
- "serde_json",
- "symphonia",
-]
-
-[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1332,6 +1316,22 @@ dependencies = [
  "pkg-config",
  "toml",
  "version-compare",
+]
+
+[[package]]
+name = "takto"
+version = "0.1.2"
+dependencies = [
+ "anyhow",
+ "arc-swap",
+ "cpal",
+ "dirs",
+ "gtk4",
+ "hound",
+ "libadwaita",
+ "serde",
+ "serde_json",
+ "symphonia",
 ]
 
 [[package]]

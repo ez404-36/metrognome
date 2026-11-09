@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: مترونوم GNOME مستقر وقابل للتخصيص، مبني باستخدام Rust وGTK 4 وlibadwaita وcpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: مترونوم GNOME مستقر وقابل للتخصيص، مبني باستخدام Rust وGTK 4 وlibadwaita وcpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -42,7 +42,7 @@
   </p>
 
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -56,19 +56,19 @@
 - 🔊 **19 عينة مدمجة.**
 
 ## مخطط له
-- 🎛 **أصواتك** — استورد ملفات WAV بنظام PCM ثنائي 16 بت أو فاصلة عائمة؛ ينفّذ Metrognome الخفض، وإعادة الاستعراء، والتطبيع.
+- 🎛 **أصواتك** — استورد ملفات WAV بنظام PCM ثنائي 16 بت أو فاصلة عائمة؛ ينفّذ Takto الخفض، وإعادة الاستعراء، والتطبيع.
 
 ## تنزيل
 
-أحدث إصدار متاح في [إصدارات GitHub](https://github.com/ez404-36/metrognome/releases/latest).
+أحدث إصدار متاح في [إصدارات GitHub](https://github.com/ez404-36/takto/releases/latest).
 
 | الملف | التنزيل |
 |---|---|
-| حزمة Debian (x86_64) | [التنزيل](https://github.com/ez404-36/metrognome/releases/latest) |
-| AppImage محمول (x86_64) | [التنزيل](https://github.com/ez404-36/metrognome/releases/latest) |
-| مجاميع SHA-256 | [التنزيل](https://github.com/ez404-36/metrognome/releases/latest) |
+| حزمة Debian (x86_64) | [التنزيل](https://github.com/ez404-36/takto/releases/latest) |
+| AppImage محمول (x86_64) | [التنزيل](https://github.com/ez404-36/takto/releases/latest) |
+| مجاميع SHA-256 | [التنزيل](https://github.com/ez404-36/takto/releases/latest) |
 
-إرشادات التطوير والبناء موجودة في [DEVELOP.md](../../DEVELOP.md). كل الإصدارات متاحة في [إصدارات GitHub](https://github.com/ez404-36/metrognome/releases/latest).
+إرشادات التطوير والبناء موجودة في [DEVELOP.md](../../DEVELOP.md). كل الإصدارات متاحة في [إصدارات GitHub](https://github.com/ez404-36/takto/releases/latest).
 
 ## كيف يعمل
 

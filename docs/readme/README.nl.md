@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: een stabiele en aanpasbare GNOME-metronoom gemaakt met Rust, GTK 4, libadwaita en cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: een stabiele en aanpasbare GNOME-metronoom gemaakt met Rust, GTK 4, libadwaita en cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Metronoom.</strong> Nauwkeurig ritme en een rijke geluidsset. <br>Native GNOME-interface.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 ingebouwde samples.**
 
 ## Gepland
-- 🎛 **Eigen geluiden** — Importeer 16-bits PCM- of floating-point-WAV-bestanden; Metrognome mixt, resampelt en normaliseert.
+- 🎛 **Eigen geluiden** — Importeer 16-bits PCM- of floating-point-WAV-bestanden; Takto mixt, resampelt en normaliseert.
 
 ## Download
 
-De nieuwste release is beschikbaar op [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+De nieuwste release is beschikbaar op [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Artefact | Download |
 |---|---|
-| Debian-pakket (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
-| Draagbaar AppImage (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256-controlesommen | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian-pakket (x86_64) | [Download](https://github.com/ez404-36/takto/releases/latest) |
+| Draagbaar AppImage (x86_64) | [Download](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256-controlesommen | [Download](https://github.com/ez404-36/takto/releases/latest) |
 
-Ontwikkel- en buildinstructies staan in de [DEVELOP.md](../../DEVELOP.md). Bekijk alle releases op [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Ontwikkel- en buildinstructies staan in de [DEVELOP.md](../../DEVELOP.md). Bekijk alle releases op [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## Hoe het werkt
 

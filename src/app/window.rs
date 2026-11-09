@@ -25,7 +25,7 @@ enum SettingsText {
     ClassicBundled,
     PlayMeasure,
     HighlightFirstBeat,
-    AboutMetrognome,
+    AboutTakto,
 }
 
 /// One row per `Language`, one column per `SettingsText`.
@@ -37,7 +37,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Classic (bundled)",
         "Play measure",
         "Highlight first beat",
-        "About Metrognome",
+        "About Takto",
     ],
     [
         "设置",
@@ -46,7 +46,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "经典（内置）",
         "播放一小节",
         "突出第一拍",
-        "关于 Metrognome",
+        "关于 Takto",
     ],
     [
         "सेटिंग्स",
@@ -55,7 +55,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "क्लासिक (बिल्ट-इन)",
         "एक माप बजाएँ",
         "पहला बीट हाइलाइट करें",
-        "Metrognome के बारे में",
+        "Takto के बारे में",
     ],
     [
         "Ajustes",
@@ -64,7 +64,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Clásica (incluida)",
         "Reproducir compás",
         "Resaltar primer tiempo",
-        "Acerca de Metrognome",
+        "Acerca de Takto",
     ],
     [
         "Paramètres",
@@ -73,7 +73,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Classique (intégré)",
         "Jouer une mesure",
         "Mettre en valeur le premier temps",
-        "À propos de Metrognome",
+        "À propos de Takto",
     ],
     [
         "الإعدادات",
@@ -82,7 +82,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "كلاسيكي (مدمج)",
         "تشغيل ميزان",
         "تمييز النبضة الأولى",
-        "حول Metrognome",
+        "حول Takto",
     ],
     [
         "সেটিংস",
@@ -91,7 +91,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "ক্লাসিক (অন্তর্ভুক্ত)",
         "মাপ বাজান",
         "প্রথম বিট হাইলাইট করুন",
-        "Metrognome সম্পর্কে",
+        "Takto সম্পর্কে",
     ],
     [
         "Configurações",
@@ -100,7 +100,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Clássico (integrado)",
         "Tocar compasso",
         "Destacar primeiro tempo",
-        "Sobre o Metrognome",
+        "Sobre o Takto",
     ],
     [
         "Настройки",
@@ -118,7 +118,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "کلاسک (شامل)",
         "میزان چلائیں",
         "پہلی دھن نمایاں کریں",
-        "Metrognome کے بارے میں",
+        "Takto کے بارے میں",
     ],
     [
         "Einstellungen",
@@ -127,7 +127,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Klassisch (integriert)",
         "Takt abspielen",
         "Ersten Schlag hervorheben",
-        "Über Metrognome",
+        "Über Takto",
     ],
     [
         "設定",
@@ -136,7 +136,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "クラシック（内蔵）",
         "1小節を再生",
         "最初のビートを強調",
-        "Metrognome について",
+        "Takto について",
     ],
     [
         "ਸੈਟਿੰਗਾਂ",
@@ -145,7 +145,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "ਕਲਾਸਿਕ (ਸ਼ਾਮਲ)",
         "ਤਾਲ ਚਲਾਓ",
         "ਪਹਿਲਾ ਬੀਟ ਉਭਾਰੋ",
-        "Metrognome ਬਾਰੇ",
+        "Takto ਬਾਰੇ",
     ],
     [
         "सेटिंग्ज",
@@ -154,7 +154,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "क्लासिक (अंतर्भूत)",
         "ताल वाजवा",
         "पहिला ठोका ठळक करा",
-        "Metrognome विषयी",
+        "Takto विषयी",
     ],
     [
         "సెట్టింగ్‌లు",
@@ -163,7 +163,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "క్లాసిక్ (అంతర్భుతం)",
         "తాళం వాయించు",
         "మొదటి బీట్ హైలైట్ చేయండి",
-        "Metrognome గురించి",
+        "Takto గురించి",
     ],
     [
         "Ayarlar",
@@ -172,7 +172,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Klasik (yerleşik)",
         "Ölçüyü çal",
         "İlk vurguyu öne çıkar",
-        "Metrognome Hakkında",
+        "Takto Hakkında",
     ],
     [
         "설정",
@@ -181,7 +181,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "클래식(내장)",
         "마디 재생",
         "첫 박자 강조",
-        "Metrognome 정보",
+        "Takto 정보",
     ],
     [
         "Cài đặt",
@@ -190,7 +190,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Cổ điển (nhúng)",
         "Phát một ô nhịp",
         "Làm nổi bật nhịp đầu",
-        "Giới thiệu Metrognome",
+        "Giới thiệu Takto",
     ],
     [
         "Impostazioni",
@@ -199,7 +199,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Classico (integrato)",
         "Riproduci misura",
         "Evidenzia primo battito",
-        "Informazioni su Metrognome",
+        "Informazioni su Takto",
     ],
     [
         "Pengaturan",
@@ -208,7 +208,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Classic (bawaan)",
         "Putar birama",
         "Sorot ketukan pertama",
-        "Tentang Metrognome",
+        "Tentang Takto",
     ],
     [
         "Ustawienia",
@@ -217,7 +217,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Classic (wbudowany)",
         "Zagraj takt",
         "Wyróżnij pierwsze uderzenie",
-        "O Metrognome",
+        "O Takto",
     ],
     [
         "Налаштування",
@@ -235,7 +235,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Classic (ingebed)",
         "Maat afspelen",
         "Eerste slag markeren",
-        "Over Metrognome",
+        "Over Takto",
     ],
     [
         "การตั้งค่า",
@@ -244,7 +244,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "คลาสสิก (ในตัว)",
         "เล่นหนึ่งห้อง",
         "เน้นจังหวะแรก",
-        "เกี่ยวกับ Metrognome",
+        "เกี่ยวกับ Takto",
     ],
     [
         "Mipangilio",
@@ -253,7 +253,7 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Classic (ndani)",
         "Cheza kipimo",
         "Angazia mdundo wa kwanza",
-        "Kuhusu Metrognome",
+        "Kuhusu Takto",
     ],
 ];
 
@@ -262,14 +262,14 @@ fn settings_text(language: Language, text: SettingsText) -> &'static str {
 }
 
 fn about_text(language: Language) -> &'static str {
-    settings_text(language, SettingsText::AboutMetrognome)
+    settings_text(language, SettingsText::AboutTakto)
 }
 
 fn show_about(parent: &adw::Window) {
     adw::AboutWindow::builder()
         .transient_for(parent)
-        .application_name("Metrognome")
-        .application_icon("metrognome")
+        .application_name("Takto")
+        .application_icon("takto")
         .version(env!("CARGO_PKG_VERSION"))
         .comments("A stable and customizable GNOME metronome built with Rust, GTK 4, libadwaita, and cpal.")
         .developer_name("ez404-36")
@@ -380,7 +380,7 @@ impl ErrorToast {
 pub fn launch() -> anyhow::Result<()> {
     register_icon_resources();
     let app = Application::builder()
-        .application_id("io.github.metrognome.Metrognome")
+        .application_id("io.github.ez404_36.Takto")
         .build();
 
     app.connect_activate(|app| {
@@ -420,7 +420,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     load_css();
     let window = adw::ApplicationWindow::builder()
         .application(app)
-        .title("Metrognome")
+        .title("Takto")
         .default_width(430)
         .default_height(590)
         .build();
@@ -524,14 +524,14 @@ fn build_header() -> adw::HeaderBar {
     let title = gtk::Box::new(gtk::Orientation::Horizontal, 7);
 
     let logo = gtk::Image::builder()
-        .icon_name("metrognome-header")
+        .icon_name("takto-header")
         .pixel_size(18)
         .build();
     logo.add_css_class("app-logo");
     title.append(&logo);
 
-    let label = gtk::Label::new(Some("Metrognome"));
-    label.add_css_class("metrognome-title");
+    let label = gtk::Label::new(Some("Takto"));
+    label.add_css_class("takto-title");
     title.append(&label);
     title.set_halign(gtk::Align::Center);
 
@@ -1353,7 +1353,7 @@ mod icon_resource_tests {
         let theme = gtk::IconTheme::new();
         theme.add_resource_path(crate::app::style::ICON_RESOURCE_PATH);
 
-        for name in ["metrognome", "metrognome-symbolic", "metrognome-header"] {
+        for name in ["takto", "takto-symbolic", "takto-header"] {
             theme.lookup_icon(
                 name,
                 &[],

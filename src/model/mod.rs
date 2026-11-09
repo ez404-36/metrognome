@@ -322,6 +322,10 @@ fn default_highlight_first() -> bool {
 
 impl AppSettings {
     pub fn path() -> Option<std::path::PathBuf> {
+        dirs::config_dir().map(|dir| dir.join("takto").join("settings.json"))
+    }
+
+    fn legacy_path() -> Option<std::path::PathBuf> {
         dirs::config_dir().map(|dir| dir.join("metrognome").join("settings.json"))
     }
 
@@ -329,6 +333,16 @@ impl AppSettings {
         let path = Self::path();
 
         if let Some(path) = path {
+            if let Ok(text) = std::fs::read_to_string(path) {
+                if let Ok(settings) = serde_json::from_str::<Self>(&text) {
+                    return settings;
+                }
+            }
+        }
+
+        // The application moved to its Takto config directory. Existing users
+        // keep their preferences until the first autosave writes the new file.
+        if let Some(path) = Self::legacy_path() {
             if let Ok(text) = std::fs::read_to_string(path) {
                 if let Ok(settings) = serde_json::from_str::<Self>(&text) {
                     return settings;
@@ -413,6 +427,9 @@ impl AppSettings {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
+
+    static CONFIG_ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
     fn states_are_clamped_and_preserved() {
@@ -494,15 +511,16 @@ mod tests {
 
     #[test]
     fn save_is_atomic_and_leaves_no_temporary_file() {
+        let _config_env = CONFIG_ENV_LOCK.lock().unwrap();
         let config_root =
-            std::env::temp_dir().join(format!("metrognome-config-test-{}", std::process::id()));
+            std::env::temp_dir().join(format!("takto-config-test-{}", std::process::id()));
         std::env::set_var("XDG_CONFIG_HOME", &config_root);
         std::fs::create_dir_all(&config_root).unwrap();
 
         let settings = AppSettings::default();
         settings.save().unwrap();
 
-        let path = config_root.join("metrognome").join("settings.json");
+        let path = config_root.join("takto").join("settings.json");
         let saved_text = std::fs::read_to_string(&path).unwrap();
         let loaded: AppSettings = serde_json::from_str(&saved_text).unwrap();
         assert_eq!(loaded, settings);
@@ -540,6 +558,31 @@ mod tests {
         assert_eq!(loaded.highlight_first, settings.highlight_first);
         assert_eq!(loaded.sample, settings.sample);
         assert_eq!(loaded.language, Language::Russian);
+    }
+
+    #[test]
+    fn legacy_metrognome_settings_still_load() {
+        let _config_env = CONFIG_ENV_LOCK.lock().unwrap();
+        let config_root =
+            std::env::temp_dir().join(format!("takto-legacy-config-test-{}", std::process::id()));
+        std::env::set_var("XDG_CONFIG_HOME", &config_root);
+        let legacy_dir = config_root.join("metrognome");
+        std::fs::create_dir_all(&legacy_dir).unwrap();
+        std::fs::write(
+            legacy_dir.join("settings.json"),
+            r#"{"bpm":184,"volume":0.5,"beats":3,"highlight_first":false,"sample":2,"language":"ru"}"#,
+        )
+        .unwrap();
+
+        let settings = AppSettings::load();
+        assert_eq!(settings.bpm, 184);
+        assert_eq!(settings.volume, 0.5);
+        assert_eq!(settings.beats, 3);
+        assert!(!settings.highlight_first);
+        assert_eq!(settings.sample, Some(2));
+        assert_eq!(settings.language, Language::Russian);
+
+        std::fs::remove_dir_all(&config_root).unwrap();
     }
 
     #[test]

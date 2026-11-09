@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: Rust، GTK 4، libadwaita اور cpal سے بنایا گیا ایک مستحکم اور قابلِ تخصیص GNOME میٹرونوم" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: Rust، GTK 4، libadwaita اور cpal سے بنایا گیا ایک مستحکم اور قابلِ تخصیص GNOME میٹرونوم" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -42,7 +42,7 @@
   </p>
 
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -56,19 +56,19 @@
 - 🔊 **19 بلٹ اِن سیمپل۔**
 
 ## منصوبہ شدہ
-- 🎛 **آپ کی آوازیں** — 16 بٹ PCM یا فلوٹنگ پوائنٹ WAV درآمد کریں؛ Metrognome ڈاؤن مکس، ریسیمپلنگ اور نارملائزیشن کرتا ہے۔
+- 🎛 **آپ کی آوازیں** — 16 بٹ PCM یا فلوٹنگ پوائنٹ WAV درآمد کریں؛ Takto ڈاؤن مکس، ریسیمپلنگ اور نارملائزیشن کرتا ہے۔
 
 ## ڈاؤن لوڈ
 
-تازہ ترین ریلیز [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) پر دستیاب ہے۔
+تازہ ترین ریلیز [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) پر دستیاب ہے۔
 
 | آرٹیفیکٹ | ڈاؤن لوڈ |
 |---|---|
-| Debian پیکج (x86_64) | [ڈاؤن لوڈ](https://github.com/ez404-36/metrognome/releases/latest) |
-| قابلِ حمل AppImage (x86_64) | [ڈاؤن لوڈ](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 چیکسم | [ڈاؤن لوڈ](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian پیکج (x86_64) | [ڈاؤن لوڈ](https://github.com/ez404-36/takto/releases/latest) |
+| قابلِ حمل AppImage (x86_64) | [ڈاؤن لوڈ](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 چیکسم | [ڈاؤن لوڈ](https://github.com/ez404-36/takto/releases/latest) |
 
-ڈیولپمنٹ اور بلڈ ہدایات [DEVELOP.md](../../DEVELOP.md) میں ہیں۔ تمام ریلیزز [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) پر دیکھیں۔
+ڈیولپمنٹ اور بلڈ ہدایات [DEVELOP.md](../../DEVELOP.md) میں ہیں۔ تمام ریلیزز [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) پر دیکھیں۔
 
 ## یہ کیسے کام کرتا ہے
 

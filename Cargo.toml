@@ -1,5 +1,5 @@
 [package]
-name = "metrognome"
+name = "takto"
 version = "0.1.2"
 edition = "2021"
 description = "A stable and customizable GNOME metronome"
@@ -29,7 +29,7 @@ ui = ["dep:gtk", "dep:adw"]
 maintainer = "ez404-36 <210903914+ez404-36@users.noreply.github.com>"
 copyright = "2026, ez404-36"
 extended-description = """\
-Metrognome keeps timing in the audio callback, not in a GUI timer: beats are \
+Takto keeps timing in the audio callback, not in a GUI timer: beats are \
 planned in audio samples over a continuous cpal output stream. It offers \
 20–300 BPM with continuous tempo changes and tap tempo, 2/4, 3/4, 4/4 and \
 6/8 accent patterns, built-in click presets, WAV import, a native \
@@ -38,10 +38,10 @@ depends = "$auto"
 section = "sound"
 priority = "optional"
 assets = [
-    ["target/release/metrognome", "usr/bin/", "755"],
-    ["packaging/io.github.metrognome.Metrognome.desktop", "usr/share/applications/", "644"],
-    ["assets/brand/icons/metrognome-symbolic.svg", "usr/share/icons/hicolor/symbolic/apps/metrognome-symbolic.svg", "644"],
-    ["assets/brand/icons/metrognome-64.png", "usr/share/icons/hicolor/64x64/apps/metrognome.png", "644"],
-    ["assets/brand/icons/metrognome-128.png", "usr/share/icons/hicolor/128x128/apps/metrognome.png", "644"],
-    ["assets/brand/icons/metrognome-256.png", "usr/share/icons/hicolor/256x256/apps/metrognome.png", "644"],
+    ["target/release/takto", "usr/bin/", "755"],
+    ["packaging/io.github.ez404_36.Takto.desktop", "usr/share/applications/", "644"],
+    ["assets/brand/icons/takto-symbolic.svg", "usr/share/icons/hicolor/symbolic/apps/takto-symbolic.svg", "644"],
+    ["assets/brand/icons/takto-64.png", "usr/share/icons/hicolor/64x64/apps/takto.png", "644"],
+    ["assets/brand/icons/takto-128.png", "usr/share/icons/hicolor/128x128/apps/takto.png", "644"],
+    ["assets/brand/icons/takto-256.png", "usr/share/icons/hicolor/256x256/apps/takto.png", "644"],
 ]

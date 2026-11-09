@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "assets" / "audio" / "candidates"
 RUST_PATH = ROOT / "src" / "audio" / "candidate_assets.rs"
 MANIFEST_PATH = OUT_DIR / "MANIFEST.md"
-UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 metrognome-candidate-fetch"
+UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 takto-candidate-fetch"
 TARGET_PEAK_DB = -1.2
 ACCENT_PITCH_FACTOR = 1.25
 
@@ -431,7 +431,7 @@ def emit_manifest(fs_entries: list[dict], synth_entries: list[dict]) -> None:
 
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    work = Path("/tmp/metrognome_candidates")
+    work = Path("/tmp/takto_candidates")
     work.mkdir(parents=True, exist_ok=True)
 
     print("Scraping Freesound CC0 search results…")

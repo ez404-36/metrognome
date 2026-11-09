@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome：Rust、GTK 4、libadwaita、cpal で構築された安定したカスタマイズ可能な GNOME メトロノーム" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto：Rust、GTK 4、libadwaita、cpal で構築された安定したカスタマイズ可能な GNOME メトロノーム" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>メトロノーム。</strong> 正確なリズムと豊富なサウンドセット。<br>ネイティブな GNOME インターフェース。
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -57,15 +57,15 @@
 
 ## ダウンロード
 
-最新リリースは [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) から利用できます。
+最新リリースは [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) から利用できます。
 
 | 成果物 | ダウンロード |
 |---|---|
-| Debian パッケージ (x86_64) | [ダウンロード](https://github.com/ez404-36/metrognome/releases/latest) |
-| ポータブル AppImage (x86_64) | [ダウンロード](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 チェックサム | [ダウンロード](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian パッケージ (x86_64) | [ダウンロード](https://github.com/ez404-36/takto/releases/latest) |
+| ポータブル AppImage (x86_64) | [ダウンロード](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 チェックサム | [ダウンロード](https://github.com/ez404-36/takto/releases/latest) |
 
-開発とビルドの手順は [DEVELOP.md](../../DEVELOP.md) を参照してください。 すべてのリリースは [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) をご覧ください。
+開発とビルドの手順は [DEVELOP.md](../../DEVELOP.md) を参照してください。 すべてのリリースは [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) をご覧ください。
 
 ## 仕組み
 

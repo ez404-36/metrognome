@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: metronom GNOME yang stabil dan dapat disesuaikan, dibuat dengan Rust, GTK 4, libadwaita, dan cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: metronom GNOME yang stabil dan dapat disesuaikan, dibuat dengan Rust, GTK 4, libadwaita, dan cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Metronom.</strong> Ritme presisi dan kumpulan suara yang kaya. <br>Antarmuka GNOME native.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 sampel bawaan.**
 
 ## Direncanakan
-- 🎛 **Suara Anda** — Impor berkas WAV PCM 16-bit atau floating-point; Metrognome melakukan downmix, resampling, dan normalisasi.
+- 🎛 **Suara Anda** — Impor berkas WAV PCM 16-bit atau floating-point; Takto melakukan downmix, resampling, dan normalisasi.
 
 ## Unduh
 
-Rilis terbaru tersedia di [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Rilis terbaru tersedia di [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Artefak | Unduh |
 |---|---|
-| Paket Debian (x86_64) | [Unduh](https://github.com/ez404-36/metrognome/releases/latest) |
-| AppImage portabel (x86_64) | [Unduh](https://github.com/ez404-36/metrognome/releases/latest) |
-| Checksum SHA-256 | [Unduh](https://github.com/ez404-36/metrognome/releases/latest) |
+| Paket Debian (x86_64) | [Unduh](https://github.com/ez404-36/takto/releases/latest) |
+| AppImage portabel (x86_64) | [Unduh](https://github.com/ez404-36/takto/releases/latest) |
+| Checksum SHA-256 | [Unduh](https://github.com/ez404-36/takto/releases/latest) |
 
-Petunjuk pengembangan dan build ada di [DEVELOP.md](../../DEVELOP.md). Lihat semua rilis di [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Petunjuk pengembangan dan build ada di [DEVELOP.md](../../DEVELOP.md). Lihat semua rilis di [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## Cara kerja
 

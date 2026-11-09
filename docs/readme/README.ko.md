@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: Rust, GTK 4, libadwaita, cpal로 만든 안정적이고 사용자 지정 가능한 GNOME 메트로놈" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: Rust, GTK 4, libadwaita, cpal로 만든 안정적이고 사용자 지정 가능한 GNOME 메트로놈" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>메트로놈.</strong> 정확한 리듬과 풍부한 사운드 세트.<br>네이티브 GNOME 인터페이스.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -57,15 +57,15 @@
 
 ## 다운로드
 
-최신 릴리스는 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)에서 이용할 수 있습니다.
+최신 릴리스는 [GitHub Releases](https://github.com/ez404-36/takto/releases/latest)에서 이용할 수 있습니다.
 
 | 아티팩트 | 다운로드 |
 |---|---|
-| Debian 패키지 (x86_64) | [다운로드](https://github.com/ez404-36/metrognome/releases/latest) |
-| 휴대용 AppImage (x86_64) | [다운로드](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 체크섬 | [다운로드](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian 패키지 (x86_64) | [다운로드](https://github.com/ez404-36/takto/releases/latest) |
+| 휴대용 AppImage (x86_64) | [다운로드](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 체크섬 | [다운로드](https://github.com/ez404-36/takto/releases/latest) |
 
-개발 및 빌드 방법은 [DEVELOP.md](../../DEVELOP.md)에 있습니다. 모든 릴리스는 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)에서 확인하세요.
+개발 및 빌드 방법은 [DEVELOP.md](../../DEVELOP.md)에 있습니다. 모든 릴리스는 [GitHub Releases](https://github.com/ez404-36/takto/releases/latest)에서 확인하세요.
 
 ## 작동 방식
 

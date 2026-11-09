@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome : un métronome GNOME stable et personnalisable, réalisé avec Rust, GTK 4, libadwaita et cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto : un métronome GNOME stable et personnalisable, réalisé avec Rust, GTK 4, libadwaita et cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Métronome.</strong> Rythme précis, riche palette de sons. <br>Interface GNOME native.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 échantillons intégrés.**
 
 ## Prévu
-- 🎛 **Vos sons** — Importez des fichiers WAV PCM 16 bits ou flottants ; Metrognome les mélange, rééchantillonne et normalise.
+- 🎛 **Vos sons** — Importez des fichiers WAV PCM 16 bits ou flottants ; Takto les mélange, rééchantillonne et normalise.
 
 ## Téléchargement
 
-La dernière version est disponible sur [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+La dernière version est disponible sur [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Artefact | Téléchargement |
 |---|---|
-| Paquet Debian (x86_64) | [Téléchargement](https://github.com/ez404-36/metrognome/releases/latest) |
-| AppImage portable (x86_64) | [Téléchargement](https://github.com/ez404-36/metrognome/releases/latest) |
-| Sommes SHA-256 | [Téléchargement](https://github.com/ez404-36/metrognome/releases/latest) |
+| Paquet Debian (x86_64) | [Téléchargement](https://github.com/ez404-36/takto/releases/latest) |
+| AppImage portable (x86_64) | [Téléchargement](https://github.com/ez404-36/takto/releases/latest) |
+| Sommes SHA-256 | [Téléchargement](https://github.com/ez404-36/takto/releases/latest) |
 
-Les instructions de développement et de compilation sont dans [DEVELOP.md](../../DEVELOP.md). Consultez toutes les versions sur [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Les instructions de développement et de compilation sont dans [DEVELOP.md](../../DEVELOP.md). Consultez toutes les versions sur [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## Fonctionnement
 

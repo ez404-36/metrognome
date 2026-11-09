@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=Metrognome
+Name=Takto
 GenericName=Metronome
 Comment=Keep time with customizable sounds and accent patterns
-Exec=metrognome
-Icon=metrognome
-StartupWMClass=metrognome
+Exec=takto
+Icon=takto
+StartupWMClass=takto
 Terminal=false
 Categories=AudioVideo;Audio;Music;GTK;
 Keywords=metronome;music;practice;tempo;rhythm;

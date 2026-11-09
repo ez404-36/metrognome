@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: แม่แบบจังหวะ GNOME ที่เสถียรและปรับแต่งได้ สร้างด้วย Rust, GTK 4, libadwaita และ cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: แม่แบบจังหวะ GNOME ที่เสถียรและปรับแต่งได้ สร้างด้วย Rust, GTK 4, libadwaita และ cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>เมโทรนอม.</strong> จังหวะที่แม่นยำ ชุดเสียงที่หลากหลาย <br>อินเทอร์เฟซ GNOME แบบเนทีฟ
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **มีตัวอย่างเสียงในตัว 19 ชิ้น**
 
 ## กำลังวางแผน
-- 🎛 **เสียงของคุณ** — นำเข้าไฟล์ WAV แบบ PCM 16 บิตหรือจุดทศนิยม Metrognomeจะ downmix, resample และ normalize ให้
+- 🎛 **เสียงของคุณ** — นำเข้าไฟล์ WAV แบบ PCM 16 บิตหรือจุดทศนิยม Taktoจะ downmix, resample และ normalize ให้
 
 ## ดาวน์โหลด
 
-รีลีสล่าสุดดูได้ที่ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)
+รีลีสล่าสุดดูได้ที่ [GitHub Releases](https://github.com/ez404-36/takto/releases/latest)
 
 | อาร์ติแฟกต์ | ดาวน์โหลด |
 |---|---|
-| แพ็กเกจ Debian (x86_64) | [ดาวน์โหลด](https://github.com/ez404-36/metrognome/releases/latest) |
-| AppImage แบบพกพา (x86_64) | [ดาวน์โหลด](https://github.com/ez404-36/metrognome/releases/latest) |
-| เช็กซัม SHA-256 | [ดาวน์โหลด](https://github.com/ez404-36/metrognome/releases/latest) |
+| แพ็กเกจ Debian (x86_64) | [ดาวน์โหลด](https://github.com/ez404-36/takto/releases/latest) |
+| AppImage แบบพกพา (x86_64) | [ดาวน์โหลด](https://github.com/ez404-36/takto/releases/latest) |
+| เช็กซัม SHA-256 | [ดาวน์โหลด](https://github.com/ez404-36/takto/releases/latest) |
 
-คำแนะนำการพัฒนาและการบิลด์อยู่ใน [DEVELOP.md](../../DEVELOP.md) ดูรีลีสทั้งหมดได้ที่ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)
+คำแนะนำการพัฒนาและการบิลด์อยู่ใน [DEVELOP.md](../../DEVELOP.md) ดูรีลีสทั้งหมดได้ที่ [GitHub Releases](https://github.com/ez404-36/takto/releases/latest)
 
 ## วิธีทำงาน
 

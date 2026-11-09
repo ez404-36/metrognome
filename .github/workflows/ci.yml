@@ -37,13 +37,13 @@ jobs:
         run: python3 scripts/generate-cargo-sources.py --check
 
       - name: Validate the Flatpak manifest
-        run: python3 -c "import yaml, sys; yaml.safe_load(open('packaging/flatpak/io.github.metrognome.Metrognome.yml')); print('manifest YAML ok')"
+        run: python3 -c "import yaml, sys; yaml.safe_load(open('packaging/flatpak/io.github.ez404_36.Takto.yml')); print('manifest YAML ok')"
 
       - name: Validate AppStream metadata
-        run: appstreamcli validate --no-net packaging/io.github.metrognome.Metrognome.metainfo.xml
+        run: appstreamcli validate --no-net packaging/io.github.ez404_36.Takto.metainfo.xml
 
       - name: Validate the desktop entry
-        run: desktop-file-validate packaging/io.github.metrognome.Metrognome.desktop
+        run: desktop-file-validate packaging/io.github.ez404_36.Takto.desktop
 
   # Full Flatpak build on PRs and master: this exercises the exact manifest
   # the release workflow ships, so manifest breakage cannot first appear at
@@ -81,7 +81,7 @@ jobs:
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          manifest-path: packaging/flatpak/io.github.metrognome.Metrognome.yml
+          manifest-path: packaging/flatpak/io.github.ez404_36.Takto.yml
           cache-key: flatpak-builder-v1
           # No bundle on CI: the release workflow produces the distributable
           # bundle; here we only prove the manifest builds.

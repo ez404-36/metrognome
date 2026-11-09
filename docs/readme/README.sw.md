@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: mitambo ya GNOME imara na inayobadilishwa, iliyoandaliwa kwa Rust, GTK 4, libadwaita na cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: mitambo ya GNOME imara na inayobadilishwa, iliyoandaliwa kwa Rust, GTK 4, libadwaita na cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Metronomu.</strong> Rhythm sahihi na mkusanyiko tajiri wa sauti. <br>Kiolesura cha GNOME asili.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **Sampuli 19 zilizojengwa ndani.**
 
 ## Iliyopangwa
-- 🎛 **Sauti zako** — Ingiza faili za WAV za PCM biti 16 au floating-point; Metrognome hufanya downmix, resample na normalization.
+- 🎛 **Sauti zako** — Ingiza faili za WAV za PCM biti 16 au floating-point; Takto hufanya downmix, resample na normalization.
 
 ## Kupakua
 
-Toleo jipya zaidi linapatikana kwenye [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Toleo jipya zaidi linapatikana kwenye [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Kifaa | Kupakua |
 |---|---|
-| Kifurushi cha Debian (x86_64) | [Kupakua](https://github.com/ez404-36/metrognome/releases/latest) |
-| AppImage inayobebeka (x86_64) | [Kupakua](https://github.com/ez404-36/metrognome/releases/latest) |
-| Sasisho za SHA-256 | [Kupakua](https://github.com/ez404-36/metrognome/releases/latest) |
+| Kifurushi cha Debian (x86_64) | [Kupakua](https://github.com/ez404-36/takto/releases/latest) |
+| AppImage inayobebeka (x86_64) | [Kupakua](https://github.com/ez404-36/takto/releases/latest) |
+| Sasisho za SHA-256 | [Kupakua](https://github.com/ez404-36/takto/releases/latest) |
 
-Maelekezo ya usanidi na ujenzi yako kwenye [DEVELOP.md](../../DEVELOP.md). Tazama matoleo yote kwenye [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Maelekezo ya usanidi na ujenzi yako kwenye [DEVELOP.md](../../DEVELOP.md). Tazama matoleo yote kwenye [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## Inavyofanya kazi
 

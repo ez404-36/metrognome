@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: Rust, GTK 4, libadwaita మరియు cpal తో నిర్మించిన స్థిరమైన, అనుకూలీకరించదగిన GNOME మెట్రోనోమ్" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: Rust, GTK 4, libadwaita మరియు cpal తో నిర్మించిన స్థిరమైన, అనుకూలీకరించదగిన GNOME మెట్రోనోమ్" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>మెట్రోనమ్.</strong> ఖచ్చితమైన లయ మరియు సుసంపన్న ధ్వని సెట్. <br>నేటివ GNOME ఇంటర్‌ఫేస్.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 అంతర్భాగ నమూనాలు.**
 
 ## ప్రణాళికలో ఉన్నవి
-- 🎛 **మీ ధ్వనులు** — 16-బిట్ PCM లేదా ఫ్లోటింగ్-పాయింట్ WAV దిగుమతి చేయండి; Metrognome డౌన్‌మిక్స్, రీస్యాంప్లింగ్, నార్మలైజేషన్ చేస్తుంది.
+- 🎛 **మీ ధ్వనులు** — 16-బిట్ PCM లేదా ఫ్లోటింగ్-పాయింట్ WAV దిగుమతి చేయండి; Takto డౌన్‌మిక్స్, రీస్యాంప్లింగ్, నార్మలైజేషన్ చేస్తుంది.
 
 ## డౌన్‌లోడ్
 
-అత్యంత కొత్త రిలీజ్ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)లో అందుబాటులో ఉంది.
+అత్యంత కొత్త రిలీజ్ [GitHub Releases](https://github.com/ez404-36/takto/releases/latest)లో అందుబాటులో ఉంది.
 
 | ఆర్టిఫ్యాక్ట్ | డౌన్‌లోడ్ |
 |---|---|
-| Debian ప్యాకేజీ (x86_64) | [డౌన్‌లోడ్](https://github.com/ez404-36/metrognome/releases/latest) |
-| పోర్టబుల్ AppImage (x86_64) | [డౌన్‌లోడ్](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 చెక్‌సమ్‌లు | [డౌన్‌లోడ్](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian ప్యాకేజీ (x86_64) | [డౌన్‌లోడ్](https://github.com/ez404-36/takto/releases/latest) |
+| పోర్టబుల్ AppImage (x86_64) | [డౌన్‌లోడ్](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 చెక్‌సమ్‌లు | [డౌన్‌లోడ్](https://github.com/ez404-36/takto/releases/latest) |
 
-డెవలప్‌మెంట్ మరియు బిల్డ్ సూచనలు [DEVELOP.md](../../DEVELOP.md)లో ఉన్నాయి. అన్ని రిలీజ్‌లు [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)లో చూడండి.
+డెవలప్‌మెంట్ మరియు బిల్డ్ సూచనలు [DEVELOP.md](../../DEVELOP.md)లో ఉన్నాయి. అన్ని రిలీజ్‌లు [GitHub Releases](https://github.com/ez404-36/takto/releases/latest)లో చూడండి.
 
 ## ఇది ఎలా పనిచేస్తుంది
 

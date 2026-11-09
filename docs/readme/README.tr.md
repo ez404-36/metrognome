@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: Rust, GTK 4, libadwaita ve cpal ile geliştirilmiş kararlı ve özelleştirilebilir bir GNOME metronomu" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: Rust, GTK 4, libadwaita ve cpal ile geliştirilmiş kararlı ve özelleştirilebilir bir GNOME metronomu" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Metronom.</strong> Hassas ritim, zengin ses koleksiyonu. <br>Yerel GNOME arayüzü.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 yerleşik örnek.**
 
 ## Planlanan
-- 🎛 **Kendi sesleriniz** — 16 bit PCM ya da kayan nokta WAV dosyaları içe aktarın; Metrognome indirmix, yeniden örnekleme ve normalleştirme yapar.
+- 🎛 **Kendi sesleriniz** — 16 bit PCM ya da kayan nokta WAV dosyaları içe aktarın; Takto indirmix, yeniden örnekleme ve normalleştirme yapar.
 
 ## İndirme
 
-En son sürüm [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) sayfasında mevcuttur.
+En son sürüm [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) sayfasında mevcuttur.
 
 | Artefakt | İndirme |
 |---|---|
-| Debian paketi (x86_64) | [İndirme](https://github.com/ez404-36/metrognome/releases/latest) |
-| Taşınabilir AppImage (x86_64) | [İndirme](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 sağlama toplamları | [İndirme](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian paketi (x86_64) | [İndirme](https://github.com/ez404-36/takto/releases/latest) |
+| Taşınabilir AppImage (x86_64) | [İndirme](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 sağlama toplamları | [İndirme](https://github.com/ez404-36/takto/releases/latest) |
 
-Geliştirme ve derleme yönergeleri [DEVELOP.md](../../DEVELOP.md) dosyasındadır. Tüm sürümleri [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) sayfasında görün.
+Geliştirme ve derleme yönergeleri [DEVELOP.md](../../DEVELOP.md) dosyasındadır. Tüm sürümleri [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) sayfasında görün.
 
 ## Nasıl çalışır
 

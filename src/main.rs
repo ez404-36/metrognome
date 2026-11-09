@@ -29,7 +29,7 @@ fn run_audio_smoke_test(arguments: Vec<String>) -> anyhow::Result<()> {
 
     apply_audio_options(&engine, &arguments)?;
     println!(
-        "Metrognome audio core ready at {} Hz; playing {} BPM for 5 seconds.",
+        "Takto audio core ready at {} Hz; playing {} BPM for 5 seconds.",
         engine.sample_rate,
         engine.params().bpm()
     );

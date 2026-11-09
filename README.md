@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/brand/icons/metrognome-256.png" alt="Metrognome — a stable and customizable GNOME metronome built with Rust, GTK 4, libadwaita, and cpal" width="128">
+  <img src="assets/brand/icons/takto-256.png" alt="Takto — a stable and customizable GNOME metronome built with Rust, GTK 4, libadwaita, and cpal" width="128">
 
 <p align="center">
   <img alt="English" src="https://img.shields.io/badge/EN-English-3584E4?style=flat-square&labelColor=241F31">
@@ -42,7 +42,7 @@
   </p>
 
   <p>
-    <img src="assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -54,18 +54,18 @@
 - 🔊 **19 built-in samples.**
 
 ## Planned
-- 🎛 **Your sounds** — Import 16-bit PCM or floating-point WAV files; Metrognome downmixes, resamples, and normalizes them.
+- 🎛 **Your sounds** — Import 16-bit PCM or floating-point WAV files; Takto downmixes, resamples, and normalizes them.
 
 ## Download
 
-The latest release is available on [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+The latest release is available on [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Artifact | Link |
 |---|---|
-| Debian package (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
-| Portable AppImage (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
-| Flatpak bundle (x86_64) | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 checksums | [Download](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian package (x86_64) | [Download](https://github.com/ez404-36/takto/releases/latest) |
+| Portable AppImage (x86_64) | [Download](https://github.com/ez404-36/takto/releases/latest) |
+| Flatpak bundle (x86_64) | [Download](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 checksums | [Download](https://github.com/ez404-36/takto/releases/latest) |
 
 The Flatpak bundle is self-contained: its GNOME runtime ships GTK 4, libadwaita,
 and ALSA inside the bundle, so it runs on any distribution with `flatpak`
@@ -73,7 +73,7 @@ installed — the system only needs to provide a sound server (PipeWire or
 PulseAudio) and a display (Wayland or X11). Install it with:
 
 ```sh
-flatpak install --user ./metrognome_<version>_x86_64.flatpak
+flatpak install --user ./takto_<version>_x86_64.flatpak
 ```
 
 Development and build instructions are in [DEVELOP.md](DEVELOP.md).
@@ -101,7 +101,7 @@ The Classic preset uses embedded CC0 1.0 OGG Vorbis samples from Kenney “Inter
 
 ## Releases
 
-See all releases on [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+See all releases on [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## License
 

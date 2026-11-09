@@ -4,4 +4,4 @@ pub const CSS: &str = include_str!("style.css");
 pub const ICONS: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/icons.gresource"));
 
 /// Registered with GTK's display-local icon theme at startup.
-pub const ICON_RESOURCE_PATH: &str = "/io/github/metrognome/icons/hicolor";
+pub const ICON_RESOURCE_PATH: &str = "/io/github/takto/icons/hicolor";

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-labelledby="title description">
-  <title id="title">Metrognome</title>
+  <title id="title">Takto</title>
   <desc id="description">A native GNOME-style metronome built with Rust, GTK 4 and libadwaita.</desc>
   <defs>
     <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
@@ -39,7 +39,7 @@
   </g>
 
   <g fill="#241f31">
-    <text x="222" y="130" font-family="Inter, system-ui, sans-serif" font-size="70" font-weight="750" letter-spacing="-2">Metrognome</text>
+    <text x="222" y="130" font-family="Inter, system-ui, sans-serif" font-size="70" font-weight="750" letter-spacing="-2">Takto</text>
     <text x="225" y="176" font-family="Inter, system-ui, sans-serif" font-size="23" font-weight="450" fill="#65747c">A stable and customizable GNOME metronome</text>
   </g>
 

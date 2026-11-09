@@ -1,6 +1,6 @@
 name: Release
 
-# Builds the Metrognome Linux artifacts:
+# Builds the Takto Linux artifacts:
 #   - `.deb` package via cargo-deb (runtime `Depends:` auto-derived from the
 #     linked shared libraries: GTK 4, libadwaita, ALSA, glibc).
 #   - portable `.AppImage` via linuxdeploy, which bundles the non-glibc
@@ -157,8 +157,8 @@ jobs:
             release_url="$(gh release create "$tag" \
               --repo "$repo" \
               --draft \
-              --title "Metrognome $tag" \
-              --notes "Metrognome $tag — .deb package and portable AppImage.")"
+              --title "Takto $tag" \
+              --notes "Takto $tag — .deb package and portable AppImage.")"
             echo "Created draft release: $release_url"
             url_id="$(gh api --paginate "repos/$repo/releases" \
               -q ".[] | select(.html_url == \"$release_url\") | .id" 2>/dev/null \
@@ -228,7 +228,7 @@ jobs:
       - name: Build AppImage
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          OUTPUT: metrognome_${{ steps.version.outputs.version }}_x86_64.AppImage
+          OUTPUT: takto_${{ steps.version.outputs.version }}_x86_64.AppImage
         run: |
           set -euo pipefail
           appdir=AppDir
@@ -236,13 +236,13 @@ jobs:
           mkdir -p "$appdir/usr/share/icons/hicolor/symbolic/apps"
           for size in 64x64 128x128 256x256; do
             mkdir -p "$appdir/usr/share/icons/hicolor/$size/apps"
-            cp "assets/brand/icons/metrognome-${size%%x*}.png" \
-              "$appdir/usr/share/icons/hicolor/$size/apps/metrognome.png"
+            cp "assets/brand/icons/takto-${size%%x*}.png" \
+              "$appdir/usr/share/icons/hicolor/$size/apps/takto.png"
           done
-          cp assets/brand/icons/metrognome-symbolic.svg \
-            "$appdir/usr/share/icons/hicolor/symbolic/apps/metrognome-symbolic.svg"
-          cp target/release/metrognome "$appdir/usr/bin/"
-          cp packaging/io.github.metrognome.Metrognome.desktop "$appdir/usr/share/applications/"
+          cp assets/brand/icons/takto-symbolic.svg \
+            "$appdir/usr/share/icons/hicolor/symbolic/apps/takto-symbolic.svg"
+          cp target/release/takto "$appdir/usr/bin/"
+          cp packaging/io.github.ez404_36.Takto.desktop "$appdir/usr/share/applications/"
 
           curl -fsSL -o linuxdeploy \
             "https://github.com/linuxdeploy/linuxdeploy/releases/download/${LINUXDEPLOY_VERSION}/linuxdeploy-x86_64.AppImage"
@@ -254,15 +254,15 @@ jobs:
       - name: Upload deb artifact
         uses: actions/upload-artifact@v4
         with:
-          name: metrognome-linux-deb
+          name: takto-linux-deb
           path: target/debian/*.deb
           if-no-files-found: error
 
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: metrognome-linux-appimage
-          path: metrognome_*_x86_64.AppImage
+          name: takto-linux-appimage
+          path: takto_*_x86_64.AppImage
           if-no-files-found: error
 
       - name: Upload artifacts to the draft release
@@ -279,7 +279,7 @@ jobs:
           # Stale assets from a previous run are deleted first, giving the
           # same effect as `gh release upload --clobber` for idempotent
           # re-runs.
-          for file in target/debian/*.deb metrognome_*_x86_64.AppImage; do
+          for file in target/debian/*.deb takto_*_x86_64.AppImage; do
             name="$(basename "$file")"
             gh api "repos/$repo/releases/$release_id/assets" \
               -q ".[] | select(.name == \"$name\") | .id" \
@@ -337,11 +337,11 @@ jobs:
       - name: Build Flatpak bundle
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          bundle: metrognome_${{ steps.version.outputs.version }}_x86_64.flatpak
-          manifest-path: packaging/flatpak/io.github.metrognome.Metrognome.yml
+          bundle: takto_${{ steps.version.outputs.version }}_x86_64.flatpak
+          manifest-path: packaging/flatpak/io.github.ez404_36.Takto.yml
           cache-key: flatpak-builder-${{ steps.version.outputs.version }}
           upload-artifact: 'true'
-          artifact-name: metrognome-linux-flatpak
+          artifact-name: takto-linux-flatpak
 
       - name: Upload bundle to the draft release
         if: github.ref_type == 'tag'
@@ -353,7 +353,7 @@ jobs:
           release_id='${{ needs.create-release.outputs.release-id }}'
           # Same idempotent attach loop as the .deb/.AppImage step in
           # build-linux: delete stale assets first, then upload.
-          for file in metrognome_*_x86_64.flatpak; do
+          for file in takto_*_x86_64.flatpak; do
             name="$(basename "$file")"
             gh api "repos/$repo/releases/$release_id/assets" \
               -q ".[] | select(.name == \"$name\") | .id" \

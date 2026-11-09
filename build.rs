@@ -28,16 +28,14 @@ fn main() {
     println!("cargo:rerun-if-changed={}", resource_xml.display());
     println!(
         "cargo:rerun-if-changed={}",
-        root.join("assets/brand/icons/metrognome-symbolic.svg")
-            .display()
+        root.join("assets/brand/icons/takto-symbolic.svg").display()
     );
     println!(
         "cargo:rerun-if-changed={}",
-        root.join("assets/brand/icons/metrognome-header.svg")
-            .display()
+        root.join("assets/brand/icons/takto-header.svg").display()
     );
     println!(
         "cargo:rerun-if-changed={}",
-        root.join("assets/brand/icons/metrognome-256.png").display()
+        root.join("assets/brand/icons/takto-256.png").display()
     );
 }

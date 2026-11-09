@@ -1,6 +1,6 @@
 # Development guide
 
-This document contains the setup, build, test, and release workflow for Metrognome.
+This document contains the setup, build, test, and release workflow for Takto.
 
 ## Prerequisites
 
@@ -41,9 +41,9 @@ Pushing a `v<version>` tag that matches the version in `Cargo.toml` builds the L
 
 | Artifact | Description |
 |---|---|
-| `metrognome_<version>-1_amd64.deb` | Debian package built with `cargo-deb`; runtime dependencies are derived from the linked libraries, so it targets the Ubuntu 24.04-era GNOME stack it was built against. |
-| `metrognome_<version>_x86_64.AppImage` | Portable AppImage that bundles GTK 4, libadwaita, and ALSA; requires a host glibc at least as new as the build runner's (Ubuntu 24.04). |
-| `metrognome_<version>_x86_64.flatpak` | Self-contained Flatpak bundle built from [`packaging/flatpak/io.github.metrognome.Metrognome.yml`](packaging/flatpak/io.github.metrognome.Metrognome.yml); its GNOME runtime carries GTK 4, libadwaita, ALSA, and glibc, so it runs on any distro with flatpak. |
+| `takto_<version>-1_amd64.deb` | Debian package built with `cargo-deb`; runtime dependencies are derived from the linked libraries, so it targets the Ubuntu 24.04-era GNOME stack it was built against. |
+| `takto_<version>_x86_64.AppImage` | Portable AppImage that bundles GTK 4, libadwaita, and ALSA; requires a host glibc at least as new as the build runner's (Ubuntu 24.04). |
+| `takto_<version>_x86_64.flatpak` | Self-contained Flatpak bundle built from [`packaging/flatpak/io.github.ez404_36.Takto.yml`](packaging/flatpak/io.github.ez404_36.Takto.yml); its GNOME runtime carries GTK 4, libadwaita, ALSA, and glibc, so it runs on any distro with flatpak. |
 
 The pipeline lives in `.github/workflows/`:
 
@@ -70,8 +70,8 @@ The pipeline lives in `.github/workflows/`:
 
   ```sh
   flatpak-builder --force-clean --user --install \
-    build packaging/flatpak/io.github.metrognome.Metrognome.yml
-  flatpak run io.github.metrognome.Metrognome
+    build packaging/flatpak/io.github.ez404_36.Takto.yml
+  flatpak run io.github.ez404_36.Takto
   ```
 
   First run downloads the GNOME 50 platform/SDK and the Rust SDK extension

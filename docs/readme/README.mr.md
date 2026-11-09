@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: Rust, GTK 4, libadwaita आणि cpal वापरून बनवलेला स्थिर आणि सानुकूल करण्यायोग्य GNOME मेट्रोनोम" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: Rust, GTK 4, libadwaita आणि cpal वापरून बनवलेला स्थिर आणि सानुकूल करण्यायोग्य GNOME मेट्रोनोम" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>मेट्रोनोम.</strong> अचूक लय आणि समृद्ध आवाज़ संच. <br>नेटिव GNOME इंटरफेस.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 अंतर्भूत सॅम्पल.**
 
 ## नियोजित
-- 🎛 **तुमचे आवाज़** — 16-बिट PCM किंवा फ्लोटिंग-पॉइंट WAV आयात करा; Metrognome डाउनमिक्स, रीसॅम्पल आणि नॉर्मलायझेशन करतो.
+- 🎛 **तुमचे आवाज़** — 16-बिट PCM किंवा फ्लोटिंग-पॉइंट WAV आयात करा; Takto डाउनमिक्स, रीसॅम्पल आणि नॉर्मलायझेशन करतो.
 
 ## डाउनलोड
 
-नवीनतम रिलीज [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) वर उपलब्ध आहे.
+नवीनतम रिलीज [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) वर उपलब्ध आहे.
 
 | आर्टिफॅक्ट | डाउनलोड |
 |---|---|
-| Debian पॅकेज (x86_64) | [डाउनलोड](https://github.com/ez404-36/metrognome/releases/latest) |
-| पोर्टेबल AppImage (x86_64) | [डाउनलोड](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 चेकसम | [डाउनलोड](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian पॅकेज (x86_64) | [डाउनलोड](https://github.com/ez404-36/takto/releases/latest) |
+| पोर्टेबल AppImage (x86_64) | [डाउनलोड](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 चेकसम | [डाउनलोड](https://github.com/ez404-36/takto/releases/latest) |
 
-विकास आणि बिल्ड सूचना [DEVELOP.md](../../DEVELOP.md) मध्ये आहेत. सर्व रिलीज [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) येथे पहा.
+विकास आणि बिल्ड सूचना [DEVELOP.md](../../DEVELOP.md) मध्ये आहेत. सर्व रिलीज [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) येथे पहा.
 
 ## हे कसे कार्य करते
 

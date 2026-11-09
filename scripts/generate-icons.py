@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the Metrognome app icons from the brand logomark.
+"""Render the Takto app icons from the brand logomark.
 
 The generated PNGs are committed to the repository so packaging (cargo-deb,
 AppImage) does not need an SVG rasterizer at build time. Re-run this script
@@ -131,7 +131,7 @@ def render(size: int) -> None:
         ):
             raise RuntimeError(f"librsvg could not render {LOGO.name} at {size}px")
 
-        destination = OUT_DIR / f"metrognome-{size}.png"
+        destination = OUT_DIR / f"takto-{size}.png"
         status = cairo.cairo_surface_write_to_png(surface, os.fsencode(destination))
         if status != CAIRO_STATUS_SUCCESS:
             raise RuntimeError(f"cairo returned PNG status {status} at {size}px")
@@ -145,7 +145,7 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for size in SIZES:
         render(size)
-        print(f"wrote {(OUT_DIR / f'metrognome-{size}.png').relative_to(ROOT)}")
+        print(f"wrote {(OUT_DIR / f'takto-{size}.png').relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

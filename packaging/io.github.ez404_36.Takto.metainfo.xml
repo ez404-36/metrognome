@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.metrognome.Metrognome</id>
+  <id>io.github.ez404_36.Takto</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <developer id="io.github.ez404-36">
     <name>ez404-36</name>
   </developer>
 
-  <name>Metrognome</name>
+  <name>Takto</name>
   <summary>A stable and customizable GNOME metronome</summary>
 
   <description>
     <p>
-      Metrognome keeps precise rhythm on stage and in the practice room.
+      Takto keeps precise rhythm on stage and in the practice room.
       Timing lives in the audio callback, not in a GUI timer: beats are
       planned in audio samples over a continuous output stream, so the click
       stays rock-solid even while the interface repaints.
@@ -27,23 +27,23 @@
     </ul>
   </description>
 
-  <launchable type="desktop-id">io.github.metrognome.Metrognome.desktop</launchable>
+  <launchable type="desktop-id">io.github.ez404_36.Takto.desktop</launchable>
 
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/ez404-36/metrognome/master/assets/screenshots/main-window.png</image>
+      <image>https://raw.githubusercontent.com/ez404-36/takto/master/assets/screenshots/main-window.png</image>
       <caption>Main window with time signatures, tempo, beat indicators and sample presets</caption>
     </screenshot>
   </screenshots>
 
-  <url type="homepage">https://github.com/ez404-36/metrognome</url>
-  <url type="bugtracker">https://github.com/ez404-36/metrognome/issues</url>
-  <url type="vcs-browser">https://github.com/ez404-36/metrognome</url>
+  <url type="homepage">https://github.com/ez404-36/takto</url>
+  <url type="bugtracker">https://github.com/ez404-36/takto/issues</url>
+  <url type="vcs-browser">https://github.com/ez404-36/takto</url>
 
   <content_rating type="oars-1.1" />
 
   <provides>
-    <binary>metrognome</binary>
+    <binary>takto</binary>
   </provides>
 
   <releases>

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: Rust, GTK 4, libadwaita ਅਤੇ cpal ਨਾਲ ਬਣਿਆ ਇੱਕ ਸਥਿਰ ਅਤੇ ਕਸਟਮਾਈਜ਼ ਕਰਨਯੋਗ GNOME ਮੈਟ੍ਰੋਨੋਮ" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: Rust, GTK 4, libadwaita ਅਤੇ cpal ਨਾਲ ਬਣਿਆ ਇੱਕ ਸਥਿਰ ਅਤੇ ਕਸਟਮਾਈਜ਼ ਕਰਨਯੋਗ GNOME ਮੈਟ੍ਰੋਨੋਮ" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>ਮੈਟਰੋਨੋਮ।</strong> ਸ਼ੁੱਧ ਲਯ ਅਤੇ ਸੰਘਣੀ ਆਵਾਜ਼ਾਂ ਦਾ ਸੈੱਟ। <br>ਨੇਟਿਵ GNOME ਇੰਟਰਫੇਸ।
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 ਸ਼ਾਮਲ ਸੈਂਪਲ।**
 
 ## ਯੋਜਨਾ ਵਿੱਚ
-- 🎛 **ਆਪਣੀਆਂ ਆਵਾਜ਼ਾਂ** — 16-ਬਿੱਟ PCM ਜਾਂ ਫਲੋਟਿੰਗ-ਪੁਆਇੰਟ WAV ਇੰਪੋਰਟ ਕਰੋ; Metrognome ਡਾਊਨਮਿਕਸ, ਰੀਸੈਂਪਲ ਅਤੇ ਨਾਰਮਲਾਈਜ਼ ਕਰਦਾ ਹੈ।
+- 🎛 **ਆਪਣੀਆਂ ਆਵਾਜ਼ਾਂ** — 16-ਬਿੱਟ PCM ਜਾਂ ਫਲੋਟਿੰਗ-ਪੁਆਇੰਟ WAV ਇੰਪੋਰਟ ਕਰੋ; Takto ਡਾਊਨਮਿਕਸ, ਰੀਸੈਂਪਲ ਅਤੇ ਨਾਰਮਲਾਈਜ਼ ਕਰਦਾ ਹੈ।
 
 ## ਡਾਊਨਲੋਡ
 
-ਨਵੀਨਤਮ ਰੀਲਿਜ਼ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) ਤੇ ਉਪਲਬਧ ਹੈ।
+ਨਵੀਨਤਮ ਰੀਲਿਜ਼ [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) ਤੇ ਉਪਲਬਧ ਹੈ।
 
 | ਆਰਟੀਫੈਕਟ | ਡਾਊਨਲੋਡ |
 |---|---|
-| Debian ਪੈਕੇਜ (x86_64) | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/metrognome/releases/latest) |
-| ਪੋਰਟੇਬਲ AppImage (x86_64) | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 ਚੈੱਕਸਮ | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian ਪੈਕੇਜ (x86_64) | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/takto/releases/latest) |
+| ਪੋਰਟੇਬਲ AppImage (x86_64) | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 ਚੈੱਕਸਮ | [ਡਾਊਨਲੋਡ](https://github.com/ez404-36/takto/releases/latest) |
 
-ਵਿਕਾਸ ਅਤੇ ਬਿਲਡ ਨਿਰਦੇਸ਼ [DEVELOP.md](../../DEVELOP.md) ਵਿੱਚ ਹਨ। ਸਾਰੇ ਰੀਲਿਜ਼ [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) ’ਤੇ ਵੇਖੋ।
+ਵਿਕਾਸ ਅਤੇ ਬਿਲਡ ਨਿਰਦੇਸ਼ [DEVELOP.md](../../DEVELOP.md) ਵਿੱਚ ਹਨ। ਸਾਰੇ ਰੀਲਿਜ਼ [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) ’ਤੇ ਵੇਖੋ।
 
 ## ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ
 

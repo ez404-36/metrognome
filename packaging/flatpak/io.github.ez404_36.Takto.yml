@@ -1,4 +1,4 @@
-id: io.github.metrognome.Metrognome
+id: io.github.ez404_36.Takto
 runtime: org.gnome.Platform
 # One release behind the newest GNOME runtime keeps the build environment
 # mature while staying inside Flathub's supported window (the previous runtime
@@ -11,7 +11,7 @@ sdk: org.gnome.Sdk
 # Rust toolchain tracks the freedesktop release behind the GNOME runtime.
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
-command: metrognome
+command: takto
 
 finish-args:
   # Display: native Wayland with X11 fallback (XWayland or bare X11).
@@ -41,7 +41,7 @@ cleanup:
   - '*.a'
 
 modules:
-  - name: metrognome
+  - name: takto
     buildsystem: simple
     build-options:
       append-path: /usr/lib/sdk/rust-stable/bin
@@ -53,13 +53,13 @@ modules:
     build-commands:
       - cargo --version && rustc --version
       - cargo build --offline --release --features ui
-      - install -Dm755 target/release/metrognome -t /app/bin
-      - install -Dm644 packaging/io.github.metrognome.Metrognome.desktop -t /app/share/applications
-      - install -Dm644 packaging/io.github.metrognome.Metrognome.metainfo.xml -t /app/share/metainfo
-      - install -Dm644 assets/brand/icons/metrognome-symbolic.svg /app/share/icons/hicolor/symbolic/apps/metrognome-symbolic.svg
-      - install -Dm644 assets/brand/icons/metrognome-64.png /app/share/icons/hicolor/64x64/apps/metrognome.png
-      - install -Dm644 assets/brand/icons/metrognome-128.png /app/share/icons/hicolor/128x128/apps/metrognome.png
-      - install -Dm644 assets/brand/icons/metrognome-256.png /app/share/icons/hicolor/256x256/apps/metrognome.png
+      - install -Dm755 target/release/takto -t /app/bin
+      - install -Dm644 packaging/io.github.ez404_36.Takto.desktop -t /app/share/applications
+      - install -Dm644 packaging/io.github.ez404_36.Takto.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 assets/brand/icons/takto-symbolic.svg /app/share/icons/hicolor/symbolic/apps/takto-symbolic.svg
+      - install -Dm644 assets/brand/icons/takto-64.png /app/share/icons/hicolor/64x64/apps/takto.png
+      - install -Dm644 assets/brand/icons/takto-128.png /app/share/icons/hicolor/128x128/apps/takto.png
+      - install -Dm644 assets/brand/icons/takto-256.png /app/share/icons/hicolor/256x256/apps/takto.png
     sources:
       # Sources resolve relative to this manifest's directory, so the manifest
       # can live under packaging/flatpak and still build straight from a

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome: một máy gõ nhịp GNOME ổn định và tùy biến được, xây dựng bằng Rust, GTK 4, libadwaita và cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto: một máy gõ nhịp GNOME ổn định và tùy biến được, xây dựng bằng Rust, GTK 4, libadwaita và cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Máy đếm nhịp.</strong> Nhịp chính xác, bộ âm thanh phong phú. <br>Giao diện GNOME gốc.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 mẫu âm thanh tích hợp.**
 
 ## Được lên kế hoạch
-- 🎛 **Âm thanh của bạn** — Nhập tệp WAV PCM 16-bit hoặc dấu phẩy động; Metrognome tự downmix, resample và chuẩn hóa.
+- 🎛 **Âm thanh của bạn** — Nhập tệp WAV PCM 16-bit hoặc dấu phẩy động; Takto tự downmix, resample và chuẩn hóa.
 
 ## Tải xuống
 
-Bản phát hành mới nhất có tại [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Bản phát hành mới nhất có tại [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Artifact | Tải xuống |
 |---|---|
-| Gói Debian (x86_64) | [Tải xuống](https://github.com/ez404-36/metrognome/releases/latest) |
-| AppImage di động (x86_64) | [Tải xuống](https://github.com/ez404-36/metrognome/releases/latest) |
-| Tổng kiểm SHA-256 | [Tải xuống](https://github.com/ez404-36/metrognome/releases/latest) |
+| Gói Debian (x86_64) | [Tải xuống](https://github.com/ez404-36/takto/releases/latest) |
+| AppImage di động (x86_64) | [Tải xuống](https://github.com/ez404-36/takto/releases/latest) |
+| Tổng kiểm SHA-256 | [Tải xuống](https://github.com/ez404-36/takto/releases/latest) |
 
-Hướng dẫn phát triển và build nằm trong [DEVELOP.md](../../DEVELOP.md). Xem tất cả bản phát hành tại [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Hướng dẫn phát triển và build nằm trong [DEVELOP.md](../../DEVELOP.md). Xem tất cả bản phát hành tại [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## Cách hoạt động
 

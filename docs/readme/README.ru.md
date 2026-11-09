@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome — стабильный и настраиваемый метроном для GNOME, созданный на Rust, GTK 4, libadwaita и cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto — стабильный и настраиваемый метроном для GNOME, созданный на Rust, GTK 4, libadwaita и cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Метроном.</strong> Точный ритм, богатый набор звуков. <br>Нативный интерфейс GNOME.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,18 +53,18 @@
 - 🔊 **Встроенные звуки** — 19 встроенных сэмплов.
 
 ## Планируется
-- 🎛 **Свои звуки** — Импорт WAV в 16-битном PCM или с плавающей точкой; Metrognome выполняет даунмикс, ресемплинг и нормализацию.
+- 🎛 **Свои звуки** — Импорт WAV в 16-битном PCM или с плавающей точкой; Takto выполняет даунмикс, ресемплинг и нормализацию.
 
 ## Загрузка
 
-Последний релиз доступен на странице [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Последний релиз доступен на странице [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Артефакт | Загрузка |
 |---|---|
-| Debian-пакет (x86_64) | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
-| Переносимый AppImage (x86_64) | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
-| Flatpak-бандл (x86_64) | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
-| Суммы SHA-256 | [Загрузка](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian-пакет (x86_64) | [Загрузка](https://github.com/ez404-36/takto/releases/latest) |
+| Переносимый AppImage (x86_64) | [Загрузка](https://github.com/ez404-36/takto/releases/latest) |
+| Flatpak-бандл (x86_64) | [Загрузка](https://github.com/ez404-36/takto/releases/latest) |
+| Суммы SHA-256 | [Загрузка](https://github.com/ez404-36/takto/releases/latest) |
 
 Flatpak-бандл самодостаточен: GTK 4, libadwaita и ALSA входят в его рантайм,
 поэтому он работает в любом дистрибутиве, где установлен `flatpak`, — системе
@@ -72,10 +72,10 @@ Flatpak-бандл самодостаточен: GTK 4, libadwaita и ALSA вх�
 X11). Установка:
 
 ```sh
-flatpak install --user ./metrognome_<версия>_x86_64.flatpak
+flatpak install --user ./takto_<версия>_x86_64.flatpak
 ```
 
-Инструкции по разработке и сборке находятся в [DEVELOP.md](../../DEVELOP.md). Все релизы доступны на [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Инструкции по разработке и сборке находятся в [DEVELOP.md](../../DEVELOP.md). Все релизы доступны на [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## Как это работает
 

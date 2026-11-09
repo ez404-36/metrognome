@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome：一个稳定且可自定义的 GNOME 节拍器，使用 Rust、GTK 4、libadwaita 和 cpal 构建" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto：一个稳定且可自定义的 GNOME 节拍器，使用 Rust、GTK 4、libadwaita 和 cpal 构建" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>节拍器。</strong> 精准节奏，丰富音色。<br>原生 GNOME 界面。
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **内置 19 个采样。**
 
 ## 计划中
-- 🎛 **自定义声音** — 导入 16 位 PCM 或浮点 WAV；Metrognome 会进行混音、重采样和标准化。
+- 🎛 **自定义声音** — 导入 16 位 PCM 或浮点 WAV；Takto 会进行混音、重采样和标准化。
 
 ## 下载
 
-最新版本可在 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest) 获取。
+最新版本可在 [GitHub Releases](https://github.com/ez404-36/takto/releases/latest) 获取。
 
 | 构件 | 下载 |
 |---|---|
-| Debian 软件包 (x86_64) | [下载](https://github.com/ez404-36/metrognome/releases/latest) |
-| 便携式 AppImage (x86_64) | [下载](https://github.com/ez404-36/metrognome/releases/latest) |
-| SHA-256 校验和 | [下载](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian 软件包 (x86_64) | [下载](https://github.com/ez404-36/takto/releases/latest) |
+| 便携式 AppImage (x86_64) | [下载](https://github.com/ez404-36/takto/releases/latest) |
+| SHA-256 校验和 | [下载](https://github.com/ez404-36/takto/releases/latest) |
 
-开发和构建说明见 [DEVELOP.md](../../DEVELOP.md)。 所有版本请见 [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest)。
+开发和构建说明见 [DEVELOP.md](../../DEVELOP.md)。 所有版本请见 [GitHub Releases](https://github.com/ez404-36/takto/releases/latest)。
 
 ## 工作原理
 

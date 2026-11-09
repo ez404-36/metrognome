@@ -1,8 +1,8 @@
-# Metrognome — план реализации
+# Takto — план реализации
 
 ## Цель
 
-Собрать нативный GTK-метроном `metrognome` в каталоге `/home/egor/Projects/petrognome`.
+Собрать нативный GTK-метроном `takto` в каталоге `/home/egor/Projects/petrognome`.
 Приложение визуально опирается на gnome-metronome, но решает его основные проблемы:
 
 1. Настраиваемые звуки и акценты.

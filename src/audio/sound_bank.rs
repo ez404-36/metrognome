@@ -438,7 +438,7 @@ mod wav_tests {
     #[test]
     fn imports_and_resamples_16_bit_wav() {
         let path =
-            std::env::temp_dir().join(format!("metrognome-import-test-{}.wav", std::process::id()));
+            std::env::temp_dir().join(format!("takto-import-test-{}.wav", std::process::id()));
         let spec = hound::WavSpec {
             channels: 1,
             sample_rate: 24_000,
@@ -466,10 +466,8 @@ mod wav_tests {
 
     #[test]
     fn unsupported_bit_depths_fail_cleanly() {
-        let path = std::env::temp_dir().join(format!(
-            "metrognome-import-test24-{}.wav",
-            std::process::id()
-        ));
+        let path =
+            std::env::temp_dir().join(format!("takto-import-test24-{}.wav", std::process::id()));
         let spec = hound::WavSpec {
             channels: 1,
             sample_rate: 48_000,
@@ -491,7 +489,7 @@ mod wav_tests {
     #[test]
     fn empty_and_silent_wav_files_are_rejected() {
         let path = std::env::temp_dir().join(format!(
-            "metrognome-import-test-silent-{}.wav",
+            "takto-import-test-silent-{}.wav",
             std::process::id()
         ));
         let spec = hound::WavSpec {
@@ -513,10 +511,8 @@ mod wav_tests {
 
     #[test]
     fn wav_files_longer_than_five_seconds_are_rejected() {
-        let path = std::env::temp_dir().join(format!(
-            "metrognome-import-test-long-{}.wav",
-            std::process::id()
-        ));
+        let path =
+            std::env::temp_dir().join(format!("takto-import-test-long-{}.wav", std::process::id()));
         let spec = hound::WavSpec {
             channels: 1,
             sample_rate: 24_000,
@@ -542,10 +538,8 @@ mod wav_tests {
 
     #[test]
     fn wav_files_within_five_seconds_are_accepted() {
-        let path = std::env::temp_dir().join(format!(
-            "metrognome-import-test-4s-{}.wav",
-            std::process::id()
-        ));
+        let path =
+            std::env::temp_dir().join(format!("takto-import-test-4s-{}.wav", std::process::id()));
         let spec = hound::WavSpec {
             channels: 1,
             sample_rate: 24_000,

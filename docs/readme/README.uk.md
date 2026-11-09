@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../../assets/brand/icons/metrognome-256.png" alt="Metrognome — стабільний і налаштовуваний метроном для GNOME, створений на Rust, GTK 4, libadwaita та cpal" width="128">
+  <img src="../../assets/brand/icons/takto-256.png" alt="Takto — стабільний і налаштовуваний метроном для GNOME, створений на Rust, GTK 4, libadwaita та cpal" width="128">
 
 <p align="center">
   <a href="../../README.md" title="English"><img alt="English" src="https://img.shields.io/badge/EN-English-8B949E?style=flat-square&labelColor=30363D"></a>
@@ -41,7 +41,7 @@
     <strong>Метроном.</strong> Точний ритм, багатий набір звуків. <br>Нативний інтерфейс GNOME.
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
+    <img src="../../assets/screenshots/main-window.png" alt="Takto main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
@@ -53,19 +53,19 @@
 - 🔊 **19 вбудованих семплів.**
 
 ## Заплановано
-- 🎛 **Власні звуки** — Імпорт WAV у 16-бітному PCM або з рухомою комою; Metrognome робить даунмікс, ресемплінг і нормалізацію.
+- 🎛 **Власні звуки** — Імпорт WAV у 16-бітному PCM або з рухомою комою; Takto робить даунмікс, ресемплінг і нормалізацію.
 
 ## Завантаження
 
-Останній реліз доступний на сторінці [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Останній реліз доступний на сторінці [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 | Артефакт | Завантаження |
 |---|---|
-| Debian-пакет (x86_64) | [Завантаження](https://github.com/ez404-36/metrognome/releases/latest) |
-| Переносний AppImage (x86_64) | [Завантаження](https://github.com/ez404-36/metrognome/releases/latest) |
-| Суми SHA-256 | [Завантаження](https://github.com/ez404-36/metrognome/releases/latest) |
+| Debian-пакет (x86_64) | [Завантаження](https://github.com/ez404-36/takto/releases/latest) |
+| Переносний AppImage (x86_64) | [Завантаження](https://github.com/ez404-36/takto/releases/latest) |
+| Суми SHA-256 | [Завантаження](https://github.com/ez404-36/takto/releases/latest) |
 
-Інструкції з розробки та збірки знаходяться в [DEVELOP.md](../../DEVELOP.md). Усі релізи доступні на [GitHub Releases](https://github.com/ez404-36/metrognome/releases/latest).
+Інструкції з розробки та збірки знаходяться в [DEVELOP.md](../../DEVELOP.md). Усі релізи доступні на [GitHub Releases](https://github.com/ez404-36/takto/releases/latest).
 
 ## Як це працює
 
