@@ -41,7 +41,7 @@
     <strong>মেট্রোনম।</strong> নিখুঁত ছন্দ এবং সমৃদ্ধ শব্দসেট। <br>নেটিভ GNOME ইন্টারফেস।
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 

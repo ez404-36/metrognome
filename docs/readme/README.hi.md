@@ -41,7 +41,7 @@
     <strong>मेट्रोनोम।</strong> सटीक लय और समृद्ध ध्वनि सेट। <br>नेटिव GNOME इंटरफ़ेस।
   </p>
   <p>
-    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="560">
+    <img src="../../assets/screenshots/main-window.png" alt="Metrognome main window showing time signatures, 140 BPM, volume, beat indicators, tap tempo, playback, and settings controls" width="640">
   </p>
 </div>
 
