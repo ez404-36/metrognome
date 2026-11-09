@@ -55,6 +55,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ubuntu-24.04 runner images no longer ship flatpak-builder, and the
+      # flatpak-github-actions action (v6) does not install it itself.
+      - name: Install flatpak-builder
+        run: sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder
+
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
