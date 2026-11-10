@@ -4,7 +4,6 @@ use super::sound_bank::SoundBank;
 use crate::model::SharedParams;
 
 const VOICE_COUNT: usize = 8;
-const STARTUP_DELAY_SECONDS: f64 = 0.25;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum VoiceKind {
@@ -59,8 +58,10 @@ impl Scheduler {
         if running && !self.was_running {
             self.beat = 0;
             self.voices = [None; VOICE_COUNT];
-            self.next_hit =
-                self.sample_position as f64 + sample_rate as f64 * STARTUP_DELAY_SECONDS;
+            // Playback is sample-scheduled in the audio callback, so the
+            // first hit can start with the very next rendered frame. Adding
+            // a fixed delay here only makes Play feel unresponsive.
+            self.next_hit = self.sample_position as f64;
         }
 
         self.was_running = running;
@@ -225,21 +226,29 @@ mod tests {
     use crate::model::BeatState;
 
     #[test]
-    fn first_start_is_delayed_after_stream_activation() {
+    fn first_start_starts_on_the_next_rendered_frame() {
         let params = SharedParams::new();
         params.set_bpm(120);
         params.sample_rate.store(48_000, Ordering::Relaxed);
         params
             .running
             .store(true, std::sync::atomic::Ordering::Relaxed);
-        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
+        let bank = SoundBank {
+            normal: vec![0.1; 64],
+            first_source: vec![0.5; 64],
+            first: vec![0.9; 64],
+        };
         let mut scheduler = Scheduler::new(0, 4);
         let mut output = vec![0.0_f32; 20_000];
 
         scheduler.render(&params, &bank, &mut output, 1);
 
-        assert!(output[..12_000].iter().all(|sample| sample.abs() < 0.001));
-        assert!(output[12_000..].iter().any(|sample| sample.abs() > 0.001));
+        let gain = params.volume();
+        assert!((output[0] - 0.9 * gain).abs() < 1e-4);
+        assert!(output[1..64]
+            .iter()
+            .all(|sample| (*sample - 0.9 * gain).abs() < 1e-4));
+        // current_beat reports the beat that was just scheduled.
         assert_eq!(params.current_beat(), 0);
     }
 
@@ -252,12 +261,12 @@ mod tests {
             .store(true, std::sync::atomic::Ordering::Relaxed);
         let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
         let mut scheduler = Scheduler::new(0, 4);
-        // Start delay plus ten events at 9600 frames each.
-        let mut output = vec![0.0_f32; 108_001];
+        // Ten events at 9600 frames each.
+        let mut output = vec![0.0_f32; 96_000];
 
         scheduler.render(&params, &bank, &mut output, 2);
 
-        // 300 BPM gives an event every 9600 frames after the start delay. After ten events,
+        // 300 BPM gives an event every 9600 frames starting immediately. After ten events,
         // the 4/4 indicator has wrapped back to the downbeat.
         assert_eq!(params.current_beat(), 0);
     }
@@ -338,9 +347,9 @@ mod tests {
         scheduler.render(&params, &bank, &mut output, 1);
 
         let gain = params.volume();
-        assert!((output[12_000] - 0.9 * gain).abs() < 1e-4); // beat 0 sounds (first)
-        assert!(output[23_999].abs() < 1e-6); // muted beat 1: no sound at all
-        assert!((output[36_000] - 0.1 * gain).abs() < 1e-4); // beat 2 sounds normally
+        assert!((output[0] - 0.9 * gain).abs() < 1e-4); // beat 0 sounds (first)
+        assert!(output[11_999].abs() < 1e-6); // muted beat 1: no sound at all
+        assert!((output[24_000] - 0.1 * gain).abs() < 1e-4); // beat 2 sounds normally
         assert!(params.current_beat() > 0); // beat counter still advances
     }
 
@@ -370,13 +379,11 @@ mod tests {
         scheduler.render(&params, &bank, &mut output, 1);
 
         let gain = params.volume();
-        // Startup delay puts the first hit at 12_000; 240 BPM = 12_000 frames/beat.
-        assert!((output[12_000] - 0.9 * gain).abs() < 1e-4);
-        assert!(output[12_001..12_064]
-            .iter()
-            .all(|s| (*s - 0.9 * gain).abs() < 1e-4));
-        assert!((output[24_000] - 0.1 * gain).abs() < 1e-4); // unaccented beat 1 plays normal
-        assert!((output[36_000] - 0.1 * gain).abs() < 1e-4); // beat 2 plays normally
+        // Playback starts with the current buffer; 240 BPM = 12_000 frames/beat.
+        assert!((output[0] - 0.9 * gain).abs() < 1e-4);
+        assert!(output[1..64].iter().all(|s| (*s - 0.9 * gain).abs() < 1e-4));
+        assert!((output[12_000] - 0.1 * gain).abs() < 1e-4); // unaccented beat 1 plays normal
+        assert!((output[24_000] - 0.1 * gain).abs() < 1e-4); // beat 2 plays normally
     }
 
     #[test]
@@ -504,25 +511,25 @@ mod tests {
         };
         let mut scheduler = Scheduler::new(0, 4);
 
-        // Startup delay puts hits at 12_000 and 36_000; the next hit is
-        // pending at 60_000 when this buffer ends.
-        let mut first = vec![0.0_f32; 48_000];
+        // Immediate playback puts hits at 0, 24_000 and 48_000; the next hit
+        // is pending at 72_000 when this buffer ends.
+        let mut first = vec![0.0_f32; 72_000];
         scheduler.render(&params, &bank, &mut first, 1);
 
         params.set_bpm(240); // period halves to 12_000 frames per beat.
-        let mut second = vec![0.0_f32; 48_000]; // frames 48_000..96_000
+        let mut second = vec![0.0_f32; 48_000]; // frames 72_000..120_000
         scheduler.render(&params, &bank, &mut second, 1);
 
         let gain = params.volume();
         // The pending hit lands where it was scheduled under the old tempo,
         // then the new period applies. No restart gap, no burst.
-        for hit in [60_000, 72_000, 84_000] {
-            let sample = second[hit - 48_000];
+        for hit in [72_000, 84_000, 96_000] {
+            let sample = second[hit - 72_000];
             assert!((sample - gain).abs() < 1e-4, "expected hit at {hit}");
         }
-        for gap in [54_000, 66_000, 78_000, 90_000] {
+        for gap in [78_000, 90_000, 102_000, 114_000] {
             assert!(
-                second[gap - 48_000].abs() < 1e-6,
+                second[gap - 72_000].abs() < 1e-6,
                 "expected silence at {gap}"
             );
         }
@@ -542,24 +549,25 @@ mod tests {
         };
         let mut scheduler = Scheduler::new(0, 4);
 
-        // One full 4/4 measure: hits at 12_000..48_000, next pending at 60_000.
-        let mut first = vec![0.0_f32; 60_000];
+        // One full 4/4 measure: hits at 0..36_000, the next downbeat at
+        // 48_000, and its successor pending at 60_000.
+        let mut first = vec![0.0_f32; 48_000];
         scheduler.render(&params, &bank, &mut first, 1);
         let gain = params.volume();
-        assert!((first[12_000] - 0.8 * gain).abs() < 1e-4); // 4/4 downbeat
+        assert!((first[0] - 0.8 * gain).abs() < 1e-4); // 4/4 downbeat
         assert!((first[24_000] - 0.2 * gain).abs() < 1e-4);
 
         // Switch to 2/4 mid-stream: the packed pattern updates atomically and
         // the hit grid keeps its tempo phase while the beat cycle wraps.
         params.set_states(2, &[BeatState::Enabled; 2]);
-        let mut second = vec![0.0_f32; 60_000]; // frames 60_000..120_000
+        let mut second = vec![0.0_f32; 60_000]; // frames 48_000..108_000
         scheduler.render(&params, &bank, &mut second, 1);
 
         // Beat counter is at 4, so 4 % 2 = 0 is the 2/4 downbeat.
-        assert!((second[0] - 0.8 * gain).abs() < 1e-4); // 60_000
-        assert!((second[12_000] - 0.2 * gain).abs() < 1e-4); // 72_000
-        assert!((second[24_000] - 0.8 * gain).abs() < 1e-4); // 84_000
-        assert!((second[36_000] - 0.2 * gain).abs() < 1e-4); // 96_000
+        assert!((second[0] - 0.8 * gain).abs() < 1e-4); // 48_000
+        assert!((second[12_000] - 0.2 * gain).abs() < 1e-4); // 60_000
+        assert!((second[24_000] - 0.8 * gain).abs() < 1e-4); // 72_000
+        assert!((second[36_000] - 0.2 * gain).abs() < 1e-4); // 84_000
     }
 
     #[test]
