@@ -5,6 +5,7 @@ use anyhow::Context;
 mod app;
 mod audio;
 mod model;
+mod update;
 
 fn main() -> anyhow::Result<()> {
     #[cfg(feature = "ui")]

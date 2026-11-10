@@ -52,6 +52,7 @@
 - 🥁 **Custom time signatures** — 2/4, 3/4, 4/4, and 6/8 are supported.
 - 🎯 **Beat muting** — Turn off the sound on any beat.
 - 🔊 **18 built-in samples.**
+- 🔄 **In-app updates** — Takto checks the latest GitHub Release at launch and installs updates with one click.
 
 ## Planned
 - 🎛 **Your sounds** — Import 16-bit PCM or floating-point WAV files; Takto downmixes, resamples, and normalizes them.
@@ -66,6 +67,21 @@ The latest release is available on [GitHub Releases](https://github.com/ez404-36
 | Portable AppImage (x86_64) | [Download](https://github.com/ez404-36/takto/releases/latest) |
 | Flatpak bundle (x86_64) | [Download](https://github.com/ez404-36/takto/releases/latest) |
 | SHA-256 checksums | [Download](https://github.com/ez404-36/takto/releases/latest) |
+
+### In-app updates
+
+Shortly after launch Takto queries the latest published GitHub Release and,
+when a newer version exists, shows a banner. Its button downloads the matching
+artifact and installs it:
+
+- **`.deb` installs** are handed to the package manager via
+  `pkexec apt-get install`, so the system keeps ownership of `/usr/bin/takto`.
+- **AppImage installs** replace the running image in place and offer a
+  restart to switch to the new version.
+- **Flatpak bundles** and development builds cannot self-install; they open
+  the release page instead (update Flatpak through `flatpak update`).
+
+You can also check manually any time via *Settings → Check for updates*.
 
 The Flatpak bundle is self-contained: its GNOME runtime ships GTK 4, libadwaita,
 and ALSA inside the bundle, so it runs on any distribution with `flatpak`

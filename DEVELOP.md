@@ -35,6 +35,26 @@ cargo run -- --preset woodblock
 cargo run -- --normal ./normal.wav --accent ./accent.wav
 ```
 
+## Update mechanism
+
+`src/update` implements release-based update checking without the `ui`
+feature, so it is covered by the default `cargo test` run. It queries the
+GitHub API for the latest published release, compares the tag with
+`CARGO_PKG_VERSION`, and classifies the running instance as an AppImage
+(`APPIMAGE` env var), a `.deb` install (`/usr/bin` binary), a Flatpak sandbox
+(`/.flatpak-info`) or a development build.
+
+- AppImage and `.deb` installs download the matching asset and install it:
+  the AppImage is replaced in place (restart picks the new version), and the
+  `.deb` goes through `pkexec apt-get install` so the package manager stays
+  in charge. Flatpak and development builds open the release page instead.
+- The UI side (`UpdateUi` in `src/app/window.rs`) shows an `adw::Banner`
+  when a newer release exists, runs downloads on a worker thread, reports
+  progress through a `std::sync::mpsc` channel polled by the GTK main loop,
+  and offers a restart after a successful install.
+- The app checks once shortly after launch (errors stay on stderr), and a
+  manual *Check for updates* row lives in the settings modal.
+
 ## Release process
 
 Pushing a `v<version>` tag that matches the version in `Cargo.toml` builds the Linux artifacts and publishes a GitHub Release with them.

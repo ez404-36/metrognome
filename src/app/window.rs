@@ -13,6 +13,7 @@ use crate::audio::sound_bank::SoundBank;
 use crate::model::{
     default_states, AppSettings, BeatState, Language, SharedParams, LANGUAGES, MAX_VOLUME,
 };
+use crate::update::{self, AssetKind, InstallContext, Release};
 
 const TIME_SIGNATURES: [(&str, u32); 4] = [("2/4", 2), ("3/4", 3), ("4/4", 4), ("6/8", 6)];
 
@@ -27,10 +28,11 @@ enum SettingsText {
     PlayMeasure,
     HighlightFirstBeat,
     AboutTakto,
+    CheckForUpdates,
 }
 
 /// One row per `Language`, one column per `SettingsText`.
-const SETTINGS_TEXTS: [[&str; 6]; 25] = [
+const SETTINGS_TEXTS: [[&str; 7]; 25] = [
     [
         "Settings",
         "Language",
@@ -38,6 +40,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Play measure",
         "Highlight first beat",
         "About Takto",
+        "Check for updates",
     ],
     [
         "设置",
@@ -46,6 +49,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "播放一小节",
         "突出第一拍",
         "关于 Takto",
+        "检查更新",
     ],
     [
         "सेटिंग्स",
@@ -54,6 +58,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "एक माप बजाएँ",
         "पहला बीट हाइलाइट करें",
         "Takto के बारे में",
+        "अपडेट के लिए जाँच करें",
     ],
     [
         "Ajustes",
@@ -62,6 +67,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Reproducir compás",
         "Resaltar primer tiempo",
         "Acerca de Takto",
+        "Buscar actualizaciones",
     ],
     [
         "Paramètres",
@@ -70,6 +76,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Jouer une mesure",
         "Mettre en valeur le premier temps",
         "À propos de Takto",
+        "Rechercher des mises à jour",
     ],
     [
         "الإعدادات",
@@ -78,6 +85,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "تشغيل ميزان",
         "تمييز النبضة الأولى",
         "حول Takto",
+        "التحقق من التحديثات",
     ],
     [
         "সেটিংস",
@@ -86,6 +94,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "মাপ বাজান",
         "প্রথম বিট হাইলাইট করুন",
         "Takto সম্পর্কে",
+        "আপডেট চেক করুন",
     ],
     [
         "Configurações",
@@ -94,6 +103,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Tocar compasso",
         "Destacar primeiro tempo",
         "Sobre o Takto",
+        "Verificar atualizações",
     ],
     [
         "Настройки",
@@ -102,6 +112,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Воспроизвести такт",
         "Выделять первый удар",
         "О программе",
+        "Проверить обновления",
     ],
     [
         "ترتیبات",
@@ -110,6 +121,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "میزان چلائیں",
         "پہلی دھن نمایاں کریں",
         "Takto کے بارے میں",
+        "تازہ کاریں چیک کریں",
     ],
     [
         "Einstellungen",
@@ -118,6 +130,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Takt abspielen",
         "Ersten Schlag hervorheben",
         "Über Takto",
+        "Nach Updates suchen",
     ],
     [
         "設定",
@@ -126,6 +139,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "1小節を再生",
         "最初のビートを強調",
         "Takto について",
+        "アップデートを確認",
     ],
     [
         "ਸੈਟਿੰਗਾਂ",
@@ -134,6 +148,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "ਤਾਲ ਚਲਾਓ",
         "ਪਹਿਲਾ ਬੀਟ ਉਭਾਰੋ",
         "Takto ਬਾਰੇ",
+        "ਅੱਪਡੇਟ ਚੈੱਕ ਕਰੋ",
     ],
     [
         "सेटिंग्ज",
@@ -142,6 +157,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "ताल वाजवा",
         "पहिला ठोका ठळक करा",
         "Takto विषयी",
+        "अपडेट तपासा",
     ],
     [
         "సెట్టింగ్‌లు",
@@ -150,6 +166,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "తాళం వాయించు",
         "మొదటి బీట్ హైలైట్ చేయండి",
         "Takto గురించి",
+        "అప్‌డేట్‌లను తనిఖీ చేయండి",
     ],
     [
         "Ayarlar",
@@ -158,6 +175,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Ölçüyü çal",
         "İlk vurguyu öne çıkar",
         "Takto Hakkında",
+        "Güncellemeleri denetle",
     ],
     [
         "설정",
@@ -166,6 +184,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "마디 재생",
         "첫 박자 강조",
         "Takto 정보",
+        "업데이트 확인",
     ],
     [
         "Cài đặt",
@@ -174,6 +193,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Phát một ô nhịp",
         "Làm nổi bật nhịp đầu",
         "Giới thiệu Takto",
+        "Kiểm tra cập nhật",
     ],
     [
         "Impostazioni",
@@ -182,6 +202,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Riproduci misura",
         "Evidenzia primo battito",
         "Informazioni su Takto",
+        "Verifica aggiornamenti",
     ],
     [
         "Pengaturan",
@@ -190,6 +211,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Putar birama",
         "Sorot ketukan pertama",
         "Tentang Takto",
+        "Periksa pembaruan",
     ],
     [
         "Ustawienia",
@@ -198,6 +220,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Zagraj takt",
         "Wyróżnij pierwsze uderzenie",
         "O Takto",
+        "Sprawdź aktualizacje",
     ],
     [
         "Налаштування",
@@ -206,6 +229,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Відтворити такт",
         "Виділяти перший удар",
         "Про програму",
+        "Перевірити оновлення",
     ],
     [
         "Instellingen",
@@ -214,6 +238,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Maat afspelen",
         "Eerste slag markeren",
         "Over Takto",
+        "Controleren op updates",
     ],
     [
         "การตั้งค่า",
@@ -222,6 +247,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "เล่นหนึ่งห้อง",
         "เน้นจังหวะแรก",
         "เกี่ยวกับ Takto",
+        "ตรวจสอบการอัปเดต",
     ],
     [
         "Mipangilio",
@@ -230,6 +256,7 @@ const SETTINGS_TEXTS: [[&str; 6]; 25] = [
         "Cheza kipimo",
         "Angazia mdundo wa kwanza",
         "Kuhusu Takto",
+        "Angalia masasisho",
     ],
 ];
 
@@ -268,6 +295,8 @@ enum ErrorText {
     LoadSample,
     PlaySample,
     RecoverAudio,
+    CheckUpdates,
+    InstallUpdate,
 }
 
 fn error_text(language: Language, text: ErrorText) -> &'static str {
@@ -282,6 +311,8 @@ fn error_text(language: Language, text: ErrorText) -> &'static str {
             ErrorText::LoadSample => "Не удалось загрузить семпл",
             ErrorText::PlaySample => "Не удалось воспроизвести семпл",
             ErrorText::RecoverAudio => "Аудиовыход восстановлен",
+            ErrorText::CheckUpdates => "Не удалось проверить обновления",
+            ErrorText::InstallUpdate => "Не удалось установить обновление",
         };
     }
 
@@ -295,7 +326,422 @@ fn error_text(language: Language, text: ErrorText) -> &'static str {
         ErrorText::LoadSample => "Could not load sample",
         ErrorText::PlaySample => "Could not play sample",
         ErrorText::RecoverAudio => "Audio output recovered",
+        ErrorText::CheckUpdates => "Could not check for updates",
+        ErrorText::InstallUpdate => "Could not install the update",
     }
+}
+
+/// Copy for the update banner and the manual check feedback. Like
+/// `ErrorText`, Russian keeps a reviewed translation and every other
+/// language falls back to English.
+#[derive(Debug, Clone, Copy)]
+enum UpdateText {
+    /// Banner title prefix; the version is appended at the call site.
+    Available,
+    Update,
+    RestartToUpdate,
+    Restart,
+    UpToDate,
+    Downloading,
+    Installing,
+}
+
+fn update_text(language: Language, text: UpdateText) -> &'static str {
+    if language == Language::Russian {
+        return match text {
+            UpdateText::Available => "Доступна новая версия",
+            UpdateText::Update => "Обновить",
+            UpdateText::RestartToUpdate => "Перезапустите, чтобы применить обновление",
+            UpdateText::Restart => "Перезапустить",
+            UpdateText::UpToDate => "У вас последняя версия",
+            UpdateText::Downloading => "Загрузка обновления…",
+            UpdateText::Installing => "Установка обновления…",
+        };
+    }
+
+    match text {
+        UpdateText::Available => "New version available",
+        UpdateText::Update => "Update",
+        UpdateText::RestartToUpdate => "Restart to apply the update",
+        UpdateText::Restart => "Restart",
+        UpdateText::UpToDate => "You are on the latest version",
+        UpdateText::Downloading => "Downloading update…",
+        UpdateText::Installing => "Installing update…",
+    }
+}
+
+/// What the background update threads report back to the GTK main loop.
+enum UpdateEvent {
+    /// Release lookup finished; `Ok(None)` means the app is up to date.
+    Checked(Result<Option<Release>, String>),
+    /// Download progress as a percentage; `None` means indeterminate.
+    Progress(Option<u8>),
+    /// The downloaded artifact was installed (or failed to install).
+    InstallFinished(Result<(), String>),
+}
+
+/// Which terminal failure to synthesize when a task dies without reporting.
+#[derive(Debug, Clone, Copy)]
+enum UpdateTaskKind {
+    Check,
+    Install,
+}
+
+const UPDATE_TASK_DIED: &str = "update task ended unexpectedly";
+
+/// Banner-driven update coordination for the main window. One instance per
+/// window; the banner, the settings-modal check button and every background
+/// task report through [`UpdateUi::handle_event`].
+struct UpdateUi {
+    window: adw::ApplicationWindow,
+    app: Application,
+    banner: adw::Banner,
+    toast: Rc<ErrorToast>,
+    params: Arc<SharedParams>,
+    release: RefCell<Option<Release>>,
+    busy: Cell<bool>,
+    installed: Cell<bool>,
+}
+
+impl UpdateUi {
+    fn new(
+        window: &adw::ApplicationWindow,
+        app: &Application,
+        toast: Rc<ErrorToast>,
+        params: &Arc<SharedParams>,
+    ) -> Rc<Self> {
+        let banner = adw::Banner::new("");
+        banner.set_revealed(false);
+        let updates = Rc::new(Self {
+            window: window.clone(),
+            app: app.clone(),
+            banner,
+            toast,
+            params: params.clone(),
+            release: RefCell::new(None),
+            busy: Cell::new(false),
+            installed: Cell::new(false),
+        });
+        let updates_for_button = updates.clone();
+        updates
+            .banner
+            .connect_button_clicked(move |_| updates_for_button.on_banner_button());
+        updates
+    }
+
+    fn language(&self) -> Language {
+        self.params.language()
+    }
+
+    fn on_banner_button(self: &Rc<Self>) {
+        if self.installed.get() {
+            self.restart_application();
+            return;
+        }
+        if self.busy.get() {
+            return;
+        }
+        let Some(release) = self.release.borrow().clone() else {
+            return;
+        };
+
+        match update::detect_install_context() {
+            InstallContext::AppImage | InstallContext::Debian => self.start_install(release),
+            // Sandboxed and development builds cannot self-install; point at
+            // the release page instead of downloading anything.
+            _ => self.open_release_page(&release),
+        }
+    }
+
+    fn start_install(self: &Rc<Self>, release: Release) {
+        let kind = match update::detect_install_context() {
+            InstallContext::AppImage => AssetKind::AppImage,
+            InstallContext::Debian => AssetKind::Deb,
+            _ => return self.open_release_page(&release),
+        };
+        let Some(url) = release.asset_url(kind).map(str::to_string) else {
+            // A release without the matching artifact is rare, but a manual
+            // download beats a silent failure.
+            return self.open_release_page(&release);
+        };
+
+        self.busy.set(true);
+        self.banner.set_button_label(None::<&str>);
+        self.banner
+            .set_title(update_text(self.language(), UpdateText::Downloading));
+
+        let (sender, receiver) = std::sync::mpsc::channel::<UpdateEvent>();
+        std::thread::spawn(move || {
+            let result = run_install_task(kind, &url, &release.version, &sender);
+            let _ = sender.send(UpdateEvent::InstallFinished(
+                result.map_err(|error| format!("{error:#}")),
+            ));
+        });
+        attach_update_events(receiver, self, None, UpdateTaskKind::Install);
+    }
+
+    fn handle_event(&self, event: UpdateEvent, toast: Option<&Rc<ErrorToast>>) {
+        match event {
+            UpdateEvent::Checked(result) => self.handle_check_result(result, toast),
+            UpdateEvent::Progress(percent) => self.show_progress(percent),
+            UpdateEvent::InstallFinished(result) => self.handle_install_result(result),
+        }
+    }
+
+    fn handle_check_result(
+        &self,
+        result: Result<Option<Release>, String>,
+        toast: Option<&Rc<ErrorToast>>,
+    ) {
+        match result {
+            Ok(Some(release)) => {
+                self.release.replace(Some(release));
+                self.busy.set(false);
+                self.installed.set(false);
+                self.show_available_state();
+            }
+            Ok(None) => {
+                if let Some(toast) = toast {
+                    toast.show(update_text(self.language(), UpdateText::UpToDate));
+                }
+            }
+            Err(message) => {
+                // Startup checks stay silent apart from stderr; manual checks
+                // get an explicit toast.
+                eprintln!("Update check failed: {message}");
+                if let Some(toast) = toast {
+                    toast.show(&format!(
+                        "{}: {message}",
+                        error_text(self.language(), ErrorText::CheckUpdates)
+                    ));
+                }
+            }
+        }
+    }
+
+    fn show_progress(&self, percent: Option<u8>) {
+        if !self.busy.get() {
+            return;
+        }
+        let language = self.language();
+        let title = match percent {
+            Some(percent) => {
+                format!(
+                    "{} {percent}%",
+                    update_text(language, UpdateText::Downloading)
+                )
+            }
+            None => update_text(language, UpdateText::Installing).to_string(),
+        };
+        self.banner.set_title(&title);
+    }
+
+    fn handle_install_result(&self, result: Result<(), String>) {
+        self.busy.set(false);
+        let language = self.language();
+        match result {
+            Ok(()) => {
+                self.installed.set(true);
+                self.banner
+                    .set_title(update_text(language, UpdateText::RestartToUpdate));
+                self.banner
+                    .set_button_label(Some(update_text(language, UpdateText::Restart)));
+                self.banner.set_revealed(true);
+            }
+            Err(message) => {
+                self.installed.set(false);
+                eprintln!("Update install failed: {message}");
+                self.toast.show(&format!(
+                    "{}: {message}",
+                    error_text(language, ErrorText::InstallUpdate)
+                ));
+                self.show_available_state();
+            }
+        }
+    }
+
+    fn show_available_state(&self) {
+        let language = self.language();
+        let release = self.release.borrow();
+        let Some(release) = release.as_ref() else {
+            self.banner.set_revealed(false);
+            return;
+        };
+        self.banner.set_title(&format!(
+            "{}: Takto {}",
+            update_text(language, UpdateText::Available),
+            release.version
+        ));
+        self.banner
+            .set_button_label(Some(update_text(language, UpdateText::Update)));
+        self.banner.set_revealed(true);
+    }
+
+    /// Re-translates the banner after a language switch. In-progress titles
+    /// reflect task state instead and are left untouched.
+    fn sync_language(&self) {
+        if !self.banner.is_revealed() || self.busy.get() {
+            return;
+        }
+        if self.installed.get() {
+            let language = self.language();
+            self.banner
+                .set_title(update_text(language, UpdateText::RestartToUpdate));
+            self.banner
+                .set_button_label(Some(update_text(language, UpdateText::Restart)));
+        } else {
+            self.show_available_state();
+        }
+    }
+
+    fn open_release_page(&self, release: &Release) {
+        gtk::UriLauncher::new(&release.page_url).launch(
+            Some(&self.window),
+            None::<&gio::Cancellable>,
+            move |result| {
+                if let Err(error) = result {
+                    eprintln!("Could not open the release page: {error:#}");
+                }
+            },
+        );
+    }
+
+    fn restart_application(&self) {
+        match std::env::current_exe() {
+            Ok(executable) => {
+                if let Err(error) = std::process::Command::new(executable).spawn() {
+                    eprintln!("Could not restart the application: {error:#}");
+                }
+            }
+            Err(error) => eprintln!("Could not locate the application binary: {error:#}"),
+        }
+        self.app.quit();
+    }
+}
+
+/// Runs a release check on a worker thread and reports through `sender`.
+fn spawn_update_check(sender: std::sync::mpsc::Sender<UpdateEvent>) {
+    std::thread::spawn(move || {
+        let result = update::fetch_latest_release()
+            .map(|release| {
+                if update::is_newer(&release.version, env!("CARGO_PKG_VERSION")) {
+                    Some(release)
+                } else {
+                    None
+                }
+            })
+            .map_err(|error| format!("{error:#}"));
+        let _ = sender.send(UpdateEvent::Checked(result));
+    });
+}
+
+/// One manual check from the settings modal: spawns the lookup task and a
+/// result drain, and re-enables the button when either finishes.
+fn run_manual_update_check(updates: &Rc<UpdateUi>, toast: &Rc<ErrorToast>, button: &gtk::Button) {
+    button.set_sensitive(false);
+    let (sender, receiver) = std::sync::mpsc::channel::<UpdateEvent>();
+    spawn_update_check(sender);
+
+    let updates = updates.clone();
+    let toast = toast.clone();
+    let button = button.clone();
+    glib::timeout_add_local(Duration::from_millis(150), move || {
+        match receiver.try_recv() {
+            Ok(event) => {
+                button.set_sensitive(true);
+                updates.handle_event(event, Some(&toast));
+                glib::ControlFlow::Break
+            }
+            Err(std::sync::mpsc::TryRecvError::Empty) => glib::ControlFlow::Continue,
+            Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                button.set_sensitive(true);
+                updates.handle_event(
+                    UpdateEvent::Checked(Err(UPDATE_TASK_DIED.to_string())),
+                    Some(&toast),
+                );
+                glib::ControlFlow::Break
+            }
+        }
+    });
+}
+
+/// Downloads the release artifact and installs it for the detected context.
+/// Progress percentage events flow through `sender` while it works.
+fn run_install_task(
+    kind: AssetKind,
+    url: &str,
+    version: &str,
+    sender: &std::sync::mpsc::Sender<UpdateEvent>,
+) -> anyhow::Result<()> {
+    let dest = update::download_dest(kind, version);
+    let mut report = |total: Option<u64>, downloaded: u64| {
+        let percent = total
+            .filter(|total| *total > 0)
+            .map(|total| ((downloaded.min(total) as f64 / total as f64) * 100.0).round() as u8);
+        let _ = sender.send(UpdateEvent::Progress(percent));
+    };
+    update::download_to(url, &dest, &mut report)?;
+
+    match update::detect_install_context() {
+        InstallContext::AppImage => {
+            let appimage = update::appimage_path()?;
+            update::install_appimage(&appimage, &dest)?;
+        }
+        InstallContext::Debian => {
+            // No meaningful progress signal while polkit + apt-get run.
+            let _ = sender.send(UpdateEvent::Progress(None));
+            update::install_debian(&dest)?;
+        }
+        // Unreachable through `start_install`, but harmless to ignore.
+        _ => {}
+    }
+
+    // The staged copy is no longer needed: AppImage installs were copied
+    // into place and .deb installs went through apt-get.
+    let _ = std::fs::remove_file(&dest);
+    Ok(())
+}
+
+/// Drains the task's events from the GTK main loop until the terminal event
+/// arrives. `toast` decides whether failures surface as popups (manual
+/// checks) or stay on stderr (startup checks).
+fn attach_update_events(
+    receiver: std::sync::mpsc::Receiver<UpdateEvent>,
+    updates: &Rc<UpdateUi>,
+    toast: Option<Rc<ErrorToast>>,
+    kind: UpdateTaskKind,
+) {
+    let updates = updates.clone();
+    glib::timeout_add_local(Duration::from_millis(150), move || {
+        let outcome = match receiver.try_recv() {
+            Ok(event) => Ok(event),
+            Err(std::sync::mpsc::TryRecvError::Empty) => return glib::ControlFlow::Continue,
+            Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                // The thread died without reporting (a panic, for example);
+                // synthesize a terminal error so the banner and the settings
+                // button reset instead of hanging forever.
+                Err(UPDATE_TASK_DIED.to_string())
+            }
+        };
+
+        let event = match (kind, outcome) {
+            (UpdateTaskKind::Check | UpdateTaskKind::Install, Ok(event)) => event,
+            (UpdateTaskKind::Check, Err(message)) => UpdateEvent::Checked(Err(message)),
+            (UpdateTaskKind::Install, Err(message)) => UpdateEvent::InstallFinished(Err(message)),
+        };
+        // Download progress keeps the loop alive; only Checked and
+        // InstallFinished end the task.
+        let terminal = !matches!(event, UpdateEvent::Progress(_));
+        match toast.as_ref() {
+            Some(toast) => updates.handle_event(event, Some(toast)),
+            None => updates.handle_event(event, None),
+        }
+        if terminal {
+            glib::ControlFlow::Break
+        } else {
+            glib::ControlFlow::Continue
+        }
+    });
 }
 
 /// Bottom-right transient error popup. A single revealer is reused: every
@@ -422,10 +868,29 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     overlay.set_child(Some(&toolbar));
     let toast = ErrorToast::new(&overlay);
 
+    // Release-based updates: a banner surfaces new versions and its button
+    // downloads and installs the matching artifact (see the `update` module).
+    let updates = UpdateUi::new(&window, app, toast.clone(), &params);
+    vbox.prepend(&updates.banner);
+
+    // Check quietly once shortly after launch. Errors stay on stderr so a
+    // network hiccup never opens the app with an alarming popup.
+    let (update_sender, update_receiver) = std::sync::mpsc::channel::<UpdateEvent>();
+    let updates_for_startup = updates.clone();
+    glib::timeout_add_local_once(Duration::from_secs(2), move || {
+        spawn_update_check(update_sender);
+        attach_update_events(
+            update_receiver,
+            &updates_for_startup,
+            None,
+            UpdateTaskKind::Check,
+        );
+    });
+
     vbox.append(&build_pattern_row(&params));
     vbox.append(&build_tempo_card(&params));
     vbox.append(&build_beat_dots(&params));
-    vbox.append(&build_controls(&window, &engine, &params, &toast));
+    vbox.append(&build_controls(&window, &engine, &params, &toast, &updates));
 
     // The autosave loop persists every UI-relevant change (tempo, volume,
     // meter, beat toggles, highlight switch and sample choice) shortly after
@@ -874,6 +1339,7 @@ fn build_controls(
     engine: &Rc<RefCell<AudioEngine>>,
     params: &Arc<SharedParams>,
     toast: &Rc<ErrorToast>,
+    updates: &Rc<UpdateUi>,
 ) -> gtk::CenterBox {
     let row = gtk::CenterBox::new();
     row.set_hexpand(true);
@@ -908,7 +1374,7 @@ fn build_controls(
     settings_button.set_margin_end(24);
     let params_for_open = params.clone();
     let (settings_dialog, settings_sample_select, settings_language_select) =
-        build_settings_modal(window, engine, params);
+        build_settings_modal(window, engine, params, updates);
     let settings_button_for_language = settings_button.clone();
     let params_for_language_button = params.clone();
     settings_language_select.connect_selected_notify(move |select| {
@@ -990,6 +1456,7 @@ fn build_settings_modal(
     parent: &adw::ApplicationWindow,
     engine: &Rc<RefCell<AudioEngine>>,
     params: &Arc<SharedParams>,
+    updates: &Rc<UpdateUi>,
 ) -> (adw::Window, gtk::DropDown, gtk::DropDown) {
     let dialog = adw::Window::new();
     dialog.set_transient_for(Some(parent));
@@ -1113,6 +1580,17 @@ fn build_settings_modal(
     settings_group.add(&first_beat);
     content.append(&settings_group);
 
+    let update_button = gtk::Button::builder()
+        .label(settings_text(
+            params.language(),
+            SettingsText::CheckForUpdates,
+        ))
+        .css_classes(["flat", "caption", "about-button"])
+        .halign(gtk::Align::Center)
+        .margin_top(12)
+        .build();
+    content.append(&update_button);
+
     let about_button = gtk::Button::builder()
         .label(about_text(params.language()))
         .css_classes(["flat", "caption", "about-button"])
@@ -1128,6 +1606,16 @@ fn build_settings_modal(
     overlay.set_child(Some(&toolbar));
     let toast = ErrorToast::new(&overlay);
 
+    // Manual "Check for updates": each click gets a fresh task and result
+    // drain so repeated checks keep working. The button stays disabled until
+    // the terminal event arrives.
+    let updates_for_check = updates.clone();
+    let toast_for_check = toast.clone();
+    let button_for_check = update_button.clone();
+    update_button.connect_clicked(move |_| {
+        run_manual_update_check(&updates_for_check, &toast_for_check, &button_for_check);
+    });
+
     // Update the modal in place instead of rebuilding it, so the switch state
     // and any in-progress preview stay intact while the language changes.
     let dialog_for_language = dialog.clone();
@@ -1137,6 +1625,8 @@ fn build_settings_modal(
     let play_button_for_language = play_button.clone();
     let first_beat_for_language = first_beat.clone();
     let about_button_for_language = about_button.clone();
+    let update_button_for_language = update_button.clone();
+    let updates_for_language = updates.clone();
     let params_for_language = params.clone();
     language_select.connect_selected_notify(move |select| {
         let language = Language::from_index(select.selected() as usize);
@@ -1152,6 +1642,9 @@ fn build_settings_modal(
         first_beat_for_language
             .set_title(settings_text(language, SettingsText::HighlightFirstBeat));
         about_button_for_language.set_label(about_text(language));
+        update_button_for_language
+            .set_label(settings_text(language, SettingsText::CheckForUpdates));
+        updates_for_language.sync_language();
     });
 
     let engine_for_list = engine.clone();
