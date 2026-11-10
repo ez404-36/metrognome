@@ -638,6 +638,11 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
 
     let bpm = gtk::Label::new(Some(&params.bpm().to_string()));
     bpm.add_css_class("bpm-label");
+    // Reserve room for three digits and keep them anchored to the
+    // adjusters. Otherwise moving between 99 and 100 changes the label's
+    // request and visibly shifts the adjacent buttons.
+    bpm.set_width_chars(3);
+    bpm.set_xalign(1.0);
     top.append(&bpm);
 
     let adjusters = gtk::Box::new(gtk::Orientation::Vertical, 8);
