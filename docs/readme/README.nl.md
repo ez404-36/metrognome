@@ -69,7 +69,7 @@ Ontwikkel- en buildinstructies staan in de [DEVELOP.md](../../DEVELOP.md). Bekij
 
 ## Hoe het werkt
 
-De GUI wijzigt alleen parameters en toont de status. De audio-callback beheert de sample-klok:
+De GUI wijzigt alleen parameters en toont de status. Er zijn geen GUI-timers of `sleep`-aanroepen die de tel aansturen — de timing leeft volledig binnen de realtime-audio-callback (`cpal`), waar de volgende slag wordt berekend als exacte positie in samples, niet in wandklokseconden:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Zo worden drift en opgetelde tijdfouten voorkomen, ook bij hoge tempi.
+Zo worden drift en opgetelde tijdfouten vermeden, ook bij hoge tempi, en tempowijzigingen vereisen geen herstart: de wachtende slag blijft op zijn geplande positie en het nieuwe interval geldt vanaf de volgende slag.
 
 ## Audio-assets
 

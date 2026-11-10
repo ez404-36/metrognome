@@ -69,7 +69,7 @@ Entwicklungs- und Build-Anleitungen stehen in der [DEVELOP.md](../../DEVELOP.md)
 
 ## So funktioniert es
 
-Die GUI ändert nur Parameter und zeigt den Zustand an. Der Audio-Callback besitzt die Sample-Clock:
+Die GUI ändert nur Parameter und zeigt den Zustand an. Es gibt keine GUI-Timer oder `sleep`-Aufrufe, die den Takt steuern — das Timing liegt vollständig im Echtzeit-Audio-Callback (`cpal`), wo der nächste Schlag als exakte Position in Samples berechnet wird, nicht in Wanduhr-Sekunden:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-So werden Drift und kumulierte Zeitfehler vermieden, auch bei hohen Tempi.
+So werden Drift und kumulierte Zeitfehler vermieden, auch bei hohen Tempi, und Tempoänderungen bleiben ohne Neustart möglich: Der ausstehende Schlag bleibt an seiner geplanten Position, das neue Intervall gilt ab dem nächsten Schlag.
 
 ## Audio-Assets
 

@@ -69,7 +69,7 @@ Hướng dẫn phát triển và build nằm trong [DEVELOP.md](../../DEVELOP.md
 
 ## Cách hoạt động
 
-GUI chỉ thay đổi tham số và hiển thị trạng thái. Callback âm thanh sở hữu đồng hồ mẫu:
+GUI chỉ thay đổi tham số và hiển thị trạng thái. Không có bộ định thời của GUI hay lệnh gọi `sleep` điều khiển nhịp — toàn bộ định thời nằm trong callback âm thanh thời gian thực (`cpal`), nơi cú đánh tiếp theo được tính là vị trí chính xác theo mẫu, không theo giây đồng hồ:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Điều này tránh trôi nhịp và sai số thời gian tích lũy, kể cả ở tempo cao.
+Điều này tránh trôi nhịp và sai số thời gian tích lũy, kể cả ở tempo cao, và việc đổi tempo không cần khởi động lại: cú đánh đang chờ giữ nguyên vị trí đã lên lịch, chu kỳ mới áp dụng từ nhịp tiếp theo.
 
 ## Tài nguyên âm thanh
 

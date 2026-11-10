@@ -69,7 +69,7 @@ Maelekezo ya usanidi na ujenzi yako kwenye [DEVELOP.md](../../DEVELOP.md). Tazam
 
 ## Inavyofanya kazi
 
-GUI hubadilisha vigezo na kuonyesha hali tu. Callback ya sauti ina saa ya sampuli:
+GUI hubadilisha vigezo na kuonyesha hali tu. Hakuna vipima muda vya GUI wala miito ya `sleep` inayosukuma mdundo — muda mzima unaishi ndani ya callback ya sauti ya wakati halisi (`cpal`), ambapo mdundo ujao unahesabiwa kama eneo kamili la sampuli, si kwa sekunde za saa ya ukuta:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Hii huondoa drift na kosa la muda linalojikusanya, hata kwenye tempo za juu.
+Hii huondoa drift na kosa la muda linalojikusanya, hata kwenye tempo za juu, na mabadiliko ya tempo yanafanyika bila kuanzisha upya: mdundo unaosubiri unabaki alipopangwa, na kipindi kipya kinaanza kwenye mdundo ujao.
 
 ## Vipengele vya sauti
 

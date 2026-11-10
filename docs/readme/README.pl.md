@@ -69,7 +69,7 @@ Instrukcje dotyczące developmentu i kompilacji znajdują się w [DEVELOP.md](..
 
 ## Jak to działa
 
-GUI tylko zmienia parametry i wyświetla stan. Callback audio posiada zegar próbek:
+GUI zmienia tylko parametry i pokazuje stan. Brak timerów GUI ani wywołań `sleep` napędzających rytm — cały timing żyje wewnątrz callbacku audio czasu rzeczywistego (`cpal`), gdzie następne uderzenie jest wyliczane jako dokładna pozycja w sampelach, a nie w sekundach zegara ściennego:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-To zapobiega dryfowi i narastającemu błędowi czasu, także przy wysokich tempach.
+To zapobiega dryfowi i narastającemu błędowi czasu, także przy wysokich tempach, a zmiany tempa nie wymagają restartu: oczekujące uderzenie zostaje na zaplanowanej pozycji, a nowy okres obowiązuje od następnego uderzenia.
 
 ## Zasoby audio
 

@@ -69,7 +69,7 @@ Petunjuk pengembangan dan build ada di [DEVELOP.md](../../DEVELOP.md). Lihat sem
 
 ## Cara kerja
 
-GUI hanya mengubah parameter dan menampilkan status. Callback audio memiliki jam sampel:
+GUI hanya mengubah parameter dan menampilkan status. Tidak ada timer GUI atau panggilan `sleep` yang menggerakkan ketukan — pewaktuan sepenuhnya hidup di dalam callback audio waktu nyata (`cpal`), di mana hit berikutnya dihitung sebagai posisi tepat dalam sampel, bukan dalam detik jam dinding:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Ini mencegah drift dan kesalahan waktu yang menumpuk, termasuk pada tempo tinggi.
+Ini mencegah drift dan kesalahan waktu yang menumpuk, termasuk pada tempo tinggi, dan perubahan tempo tanpa perlu memulai ulang: hit yang tertunda tetap di posisi yang dijadwalkan, periode baru berlaku mulai ketukan berikutnya.
 
 ## Aset audio
 

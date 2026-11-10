@@ -80,7 +80,10 @@ Development and build instructions are in [DEVELOP.md](DEVELOP.md).
 
 ## How it works
 
-The GUI only changes parameters and displays state. The audio callback owns the sample clock:
+The GUI only changes parameters and displays state. There are no GUI timers or
+`sleep` calls driving the beat — timing lives entirely inside the real-time
+audio callback (`cpal`), where the next hit is computed as an exact position in
+samples, not in wall-clock seconds:
 
 ```text
 GTK UI
@@ -93,7 +96,9 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-This avoids drift and accumulated timing error, including at high tempos.
+This avoids drift and accumulated timing error, including at high tempos, and
+keeps tempo changes restart-free: the pending hit stays where it was scheduled,
+and the new period applies from the next beat.
 
 ## Audio assets
 

@@ -69,7 +69,7 @@ Le istruzioni per sviluppo e compilazione sono in [DEVELOP.md](../../DEVELOP.md)
 
 ## Come funziona
 
-La GUI cambia solo i parametri e mostra lo stato. Il callback audio controlla il clock dei campioni:
+La GUI cambia solo i parametri e mostra lo stato. Non ci sono timer della GUI o chiamate `sleep` che guidano il battito — il timing vive interamente nel callback audio in tempo reale (`cpal`), dove il battito successivo viene calcolato come posizione esatta in campioni, non in secondi di orologio:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Questo evita deriva ed errore temporale accumulato, anche ai tempi elevati.
+Questo evita deriva ed errore temporale accumulato, anche ai tempi elevati, e le variazioni di tempo non richiedono riavvii: il battito in attesa resta nella sua posizione pianificata e il nuovo periodo si applica dal battito successivo.
 
 ## Risorse audio
 

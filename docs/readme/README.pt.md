@@ -69,7 +69,7 @@ As instruções de desenvolvimento e build estão em [DEVELOP.md](../../DEVELOP.
 
 ## Como funciona
 
-A interface apenas muda parâmetros e mostra o estado. O callback de áudio é responsável pelo clock de amostras:
+A interface apenas muda parâmetros e mostra o estado. Não há timers da interface nem chamadas `sleep` que conduzam o pulso — o sincronismo vive inteiramente dentro do callback de áudio em tempo real (`cpal`), onde o próximo golpe é calculado como uma posição exata em amostras, não em segundos de relógio:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Isso evita desvio e erro de tempo acumulado, inclusive em tempos altos.
+Isso evita desvio e erro de tempo acumulado, inclusive em tempos altos, e as mudanças de tempo não exigem reinício: o golpe pendente fica onde foi agendado e o novo período se aplica a partir do golpe seguinte.
 
 ## Recursos de áudio
 

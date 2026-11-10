@@ -69,7 +69,7 @@ Les instructions de développement et de compilation sont dans [DEVELOP.md](../.
 
 ## Fonctionnement
 
-L’interface modifie seulement les paramètres et affiche l’état. Le callback audio possède l’horloge d’échantillons :
+L’interface modifie seulement les paramètres et affiche l’état. Aucun minuteur d’interface ni appel `sleep` ne pilote le temps — le minutage vit entièrement dans le callback audio temps réel (`cpal`), où le coup suivant est calculé comme une position exacte en échantillons, et non en secondes d’horloge :
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Cela évite la dérive et l’erreur de température accumulée, y compris aux tempos élevés.
+Cela évite la dérive et l’erreur de temps accumulée, y compris aux tempos élevés, et les changements de tempo ne nécessitent aucun redémarrage : le coup en attente reste à sa position planifiée, et le nouvel intervalle s’applique à partir du coup suivant.
 
 ## Ressources audio
 

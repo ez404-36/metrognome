@@ -69,7 +69,7 @@ Las instrucciones de desarrollo y compilación están en [DEVELOP.md](../../DEVE
 
 ## Cómo funciona
 
-La interfaz solo cambia parámetros y muestra el estado. El callback de audio controla el reloj de muestras:
+La interfaz solo cambia parámetros y muestra el estado. No hay temporizadores de GUI ni llamadas `sleep` que impulsen el pulso — el temporizado vive por completo dentro del callback de audio en tiempo real (`cpal`), donde el siguiente golpe se calcula como una posición exacta en muestras, no en segundos de reloj:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Así se evita la desviación y el error acumulado de tiempo, incluso a tempos altos.
+Así se evita la desviación y el error acumulado de tiempo, incluso a tempos altos, y los cambios de tempo no requieren reinicio: el golpe pendiente se queda donde fue programado y el nuevo período se aplica desde el golpe siguiente.
 
 ## Recursos de audio
 

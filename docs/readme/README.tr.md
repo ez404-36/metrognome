@@ -69,7 +69,7 @@ Geliştirme ve derleme yönergeleri [DEVELOP.md](../../DEVELOP.md) dosyasındad�
 
 ## Nasıl çalışır
 
-GUI yalnızca parametreleri değiştirir ve durumu gösterir. Ses geri çağırımı örnek saatine sahiptir:
+GUI yalnızca parametreleri değiştirir ve durumu gösterir. Ritmi yöneten GUI zamanlayıcısı veya `sleep` çağrısı yok — zamanlama tamamen gerçek zamanlı ses geri çağrımının (`cpal`) içinde yaşar; bir sonraki vuruş duvar saati saniyesinde değil, örnekte kesin bir konum olarak hesaplanır:
 
 ```text
 GTK UI
@@ -82,7 +82,7 @@ Audio callback
   → publishes beat events to the UI
 ```
 
-Bu, yüksek temposlarda bile sürüklenmeyi ve birikmiş zaman hatasını önler.
+Bu, yüksek temposlarda bile sürüklenmeyi ve birikmiş zaman hatasını önler ve tempo değişiklikleri yeniden başlatma gerektirmez: bekleyen vuruş planlandığı yerde kalır, yeni periyot bir sonraki vuruştan itibaren uygulanır.
 
 ## Ses varlıkları
 
