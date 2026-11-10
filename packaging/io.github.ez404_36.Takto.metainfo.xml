@@ -47,6 +47,11 @@
   </provides>
 
   <releases>
+    <release version="0.1.4" date="2026-11-10">
+      <description>
+        <p>Remove the Classic (bundled) sound: the sample selector now lists only the 18 candidate samples, and the headless smoke-test build defaults to the Woodblock preset.</p>
+      </description>
+    </release>
     <release version="0.1.3" date="2026-11-10">
       <description>
         <p>Rename the project to Takto, refresh branding and screenshots, preserve settings from the previous config directory, and add a pinned Flathub manifest.</p>
