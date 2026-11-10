@@ -1,6 +1,10 @@
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
 
 pub const MAX_BEATS: u32 = 16;
+/// Upper volume multiplier. 1.0 is unity (100%); values above it boost the
+/// click through the renderer's soft limiter, mirroring GNOME's
+/// over-amplification idea.
+pub const MAX_VOLUME: f32 = 2.0;
 
 /// Per-beat playback state. The application exposes two states: `Enabled`
 /// beats sound (the plain tick, or the special first-beat sound when the
@@ -181,12 +185,14 @@ impl SharedParams {
     }
 
     pub fn volume(&self) -> f32 {
-        f32::from_bits(self.volume.load(Ordering::Relaxed)).clamp(0.0, 1.0)
+        f32::from_bits(self.volume.load(Ordering::Relaxed)).clamp(0.0, MAX_VOLUME)
     }
 
     pub fn set_volume(&self, volume: f32) {
-        self.volume
-            .store(f32::to_bits(volume.clamp(0.0, 1.0)), Ordering::Relaxed);
+        self.volume.store(
+            f32::to_bits(volume.clamp(0.0, MAX_VOLUME)),
+            Ordering::Relaxed,
+        );
     }
 
     pub fn beat_count(&self) -> u32 {
@@ -487,7 +493,7 @@ mod tests {
         settings.apply_to(&params);
 
         assert_eq!(params.bpm(), 20);
-        assert_eq!(params.volume(), 1.0);
+        assert_eq!(params.volume(), MAX_VOLUME);
         assert_eq!(params.beat_count(), 16);
         assert_eq!(params.states(), default_states(16));
         // The sample index is restored raw; the UI's load_sample falls back

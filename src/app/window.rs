@@ -10,7 +10,9 @@ use gtk::{gdk, gio, glib, CssProvider, IconTheme, STYLE_PROVIDER_PRIORITY_APPLIC
 
 use crate::audio::engine::AudioEngine;
 use crate::audio::sound_bank::SoundBank;
-use crate::model::{default_states, AppSettings, BeatState, Language, SharedParams, LANGUAGES};
+use crate::model::{
+    default_states, AppSettings, BeatState, Language, SharedParams, LANGUAGES, MAX_VOLUME,
+};
 
 const TIME_SIGNATURES: [(&str, u32); 4] = [("2/4", 2), ("3/4", 3), ("4/4", 4), ("6/8", 6)];
 
@@ -709,18 +711,31 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
         glib::ControlFlow::Continue
     });
 
-    let volume_adjustment =
-        gtk::Adjustment::new(f64::from(params.volume()), 0.0, 1.0, 0.01, 0.05, 0.0);
+    let volume_adjustment = gtk::Adjustment::new(
+        f64::from(params.volume()),
+        0.0,
+        f64::from(MAX_VOLUME),
+        0.01,
+        0.05,
+        0.0,
+    );
     let volume = gtk::Scale::new(gtk::Orientation::Horizontal, Some(&volume_adjustment));
-    volume.set_digits(2);
+    volume.set_digits(0);
+    // Show the value as a percentage so the boost range above 100% reads
+    // naturally instead of as a bare multiplier.
+    volume.set_format_value_func(move |_, value| format!("{:.0}%", value * 100.0));
     volume.set_hexpand(true);
     let params_for_volume = params.clone();
+    let initial_volume_icon = volume_icon_name(f64::from(params.volume()));
+    let low_volume = gtk::Image::from_icon_name(initial_volume_icon);
+    let volume_icon = low_volume.clone();
     volume.connect_value_changed(move |scale| {
-        params_for_volume.set_volume(scale.value() as f32);
+        let value = scale.value();
+        params_for_volume.set_volume(value as f32);
+        volume_icon.set_icon_name(Some(volume_icon_name(value)));
     });
 
     let volume_row = gtk::Box::new(gtk::Orientation::Horizontal, 12);
-    let low_volume = gtk::Image::from_icon_name("audio-volume-low-symbolic");
     volume_row.append(&low_volume);
     volume_row.append(&volume);
 
@@ -729,6 +744,20 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
     card.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
     card.append(&volume_row);
     card
+}
+
+/// Picks the loudspeaker icon for the current volume, including the
+/// over-amplified glyph once the slider passes unity gain.
+fn volume_icon_name(value: f64) -> &'static str {
+    if value <= 0.0 {
+        "audio-volume-muted-symbolic"
+    } else if value <= 0.5 {
+        "audio-volume-low-symbolic"
+    } else if value <= 1.0 {
+        "audio-volume-high-symbolic"
+    } else {
+        "audio-volume-overamplified-symbolic"
+    }
 }
 
 fn build_beat_dots(params: &Arc<SharedParams>) -> gtk::Box {

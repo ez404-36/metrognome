@@ -168,7 +168,7 @@ impl Scheduler {
                 }
             }
 
-            let value = T::from_f32((mixed * master_gain).clamp(-1.0, 1.0));
+            let value = T::from_f32(limit(mixed * master_gain));
             frame.fill(value);
         }
 
@@ -194,6 +194,22 @@ fn sample_period(bpm: f64, sample_rate: u32) -> f64 {
     }
 
     sample_rate as f64 * 60.0 / bpm
+}
+
+/// Soft-knee limiter. Input up to the knee passes through untouched (so
+/// ordinary 0-100% playback stays bit-exact); louder input bends smoothly
+/// toward full scale instead of hard-clipping, which keeps boosted playback
+/// (>100%) free of harsh discontinuities.
+fn limit(sample: f32) -> f32 {
+    const KNEE: f32 = 0.95;
+
+    let magnitude = sample.abs();
+    if magnitude <= KNEE {
+        return sample;
+    }
+
+    let excess = ((magnitude - KNEE) / (1.0 - KNEE)).tanh();
+    sample.signum() * (KNEE + (1.0 - KNEE) * excess)
 }
 
 pub trait OutputSample: Copy {
@@ -250,6 +266,55 @@ mod tests {
             .all(|sample| (*sample - 0.9 * gain).abs() < 1e-4));
         // current_beat reports the beat that was just scheduled.
         assert_eq!(params.current_beat(), 0);
+    }
+
+    #[test]
+    fn limiter_is_transparent_below_the_knee() {
+        for sample in [-0.94_f32, -0.5, 0.0, 0.5, 0.94] {
+            assert_eq!(limit(sample), sample);
+        }
+    }
+
+    #[test]
+    fn limiter_bends_smoothly_above_the_knee() {
+        // The knee maps to itself, so boosted waveforms have no jump where
+        // limiting starts.
+        assert_eq!(limit(0.95), 0.95);
+        assert!((limit(0.96) - 0.95).abs() < 0.01);
+
+        // Louder input keeps compressing toward full scale without ever
+        // exceeding it, and the curve is symmetric.
+        for amplified in [1.0_f32, 1.2, 1.6, 4.0, 100.0] {
+            assert!(limit(amplified) <= 1.0);
+            assert!(limit(amplified) > 0.95);
+            assert_eq!(limit(-amplified), -limit(amplified));
+        }
+        assert!((limit(1.0) - 0.988).abs() < 0.001);
+        assert!((limit(4.0) - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn boosted_volume_is_soft_limited_instead_of_hard_clipped() {
+        let params = SharedParams::new();
+        params.set_bpm(120);
+        params.sample_rate.store(48_000, Ordering::Relaxed);
+        params.set_volume(2.0);
+        params.running.store(true, Ordering::Relaxed);
+        let bank = SoundBank {
+            normal: vec![0.1; 64],
+            first_source: vec![0.3; 64],
+            first: vec![0.5; 64],
+        };
+        let mut scheduler = Scheduler::new(0, 4);
+        let mut output = vec![0.0_f32; 20_000];
+
+        scheduler.render(&params, &bank, &mut output, 1);
+
+        // A hard clamp would flatten the boosted downbeat to exactly 1.0;
+        // the soft knee bends it just below full scale instead.
+        assert!((output[1] - limit(0.5 * params.volume())).abs() < 1e-4);
+        assert!(output[1] < 0.999);
+        assert!(output.iter().all(|sample| sample.abs() <= 1.0));
     }
 
     #[test]
