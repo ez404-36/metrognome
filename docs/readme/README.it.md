@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Variazioni fluide del tempo e tap tempo.
 - 🥁 **Misurazioni personalizzabili** — Supporto per 2/4, 3/4, 4/4 e 6/8.
 - 🎯 **Disattivazione dei battiti** — Possibilità di silenziare il suono di qualsiasi battito.
-- 🔊 **19 campioni integrati.**
+- 🔊 **18 campioni integrati.**
 
 ## In programma
 - 🎛 **I tuoi suoni** — Importa file WAV PCM a 16 bit o in virgola mobile; Takto esegue downmix, resampling e normalizzazione.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Questo evita deriva ed errore temporale accumulato, anche ai tempi elevati, e le variazioni di tempo non richiedono riavvii: il battito in attesa resta nella sua posizione pianificata e il nuovo periodo si applica dal battito successivo.
-
-## Risorse audio
-
-Il preset Classic usa campioni OGG Vorbis CC0 1.0 incorporati da Kenney “Interface Sounds”. I dettagli sono in [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Licenza
 

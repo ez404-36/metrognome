@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Akıcı tempo değişimi ve tap tempo.
 - 🥁 **Özelleştirilebilir ölçüler** — 2/4, 3/4, 4/4 ve 6/8 ölçüleri desteklenir.
 - 🎯 **Vuruşları susturma** — Herhangi bir vuruşun sesi kapatılabilir.
-- 🔊 **19 yerleşik örnek.**
+- 🔊 **18 yerleşik örnek.**
 
 ## Planlanan
 - 🎛 **Kendi sesleriniz** — 16 bit PCM ya da kayan nokta WAV dosyaları içe aktarın; Takto indirmix, yeniden örnekleme ve normalleştirme yapar.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Bu, yüksek temposlarda bile sürüklenmeyi ve birikmiş zaman hatasını önler ve tempo değişiklikleri yeniden başlatma gerektirmez: bekleyen vuruş planlandığı yerde kalır, yeni periyot bir sonraki vuruştan itibaren uygulanır.
-
-## Ses varlıkları
-
-Classic ön ayarı, Kenney “Interface Sounds” paketinden gömülü CC0 1.0 OGG Vorbis örneklerini kullanır. Ayrıntılar [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md) içindedir.
 
 ## Lisans
 

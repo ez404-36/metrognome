@@ -24,19 +24,17 @@ enum SettingsText {
     Settings,
     Language,
     Sample,
-    ClassicBundled,
     PlayMeasure,
     HighlightFirstBeat,
     AboutTakto,
 }
 
 /// One row per `Language`, one column per `SettingsText`.
-const SETTINGS_TEXTS: [[&str; 7]; 25] = [
+const SETTINGS_TEXTS: [[&str; 6]; 25] = [
     [
         "Settings",
         "Language",
         "Sample",
-        "Classic (bundled)",
         "Play measure",
         "Highlight first beat",
         "About Takto",
@@ -45,7 +43,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "设置",
         "语言",
         "样本",
-        "经典（内置）",
         "播放一小节",
         "突出第一拍",
         "关于 Takto",
@@ -54,7 +51,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "सेटिंग्स",
         "भाषा",
         "सैंपल",
-        "क्लासिक (बिल्ट-इन)",
         "एक माप बजाएँ",
         "पहला बीट हाइलाइट करें",
         "Takto के बारे में",
@@ -63,7 +59,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Ajustes",
         "Idioma",
         "Muestra",
-        "Clásica (incluida)",
         "Reproducir compás",
         "Resaltar primer tiempo",
         "Acerca de Takto",
@@ -72,7 +67,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Paramètres",
         "Langue",
         "Échantillon",
-        "Classique (intégré)",
         "Jouer une mesure",
         "Mettre en valeur le premier temps",
         "À propos de Takto",
@@ -81,7 +75,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "الإعدادات",
         "اللغة",
         "العينة",
-        "كلاسيكي (مدمج)",
         "تشغيل ميزان",
         "تمييز النبضة الأولى",
         "حول Takto",
@@ -90,7 +83,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "সেটিংস",
         "ভাষা",
         "স্যাম্পল",
-        "ক্লাসিক (অন্তর্ভুক্ত)",
         "মাপ বাজান",
         "প্রথম বিট হাইলাইট করুন",
         "Takto সম্পর্কে",
@@ -99,7 +91,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Configurações",
         "Idioma",
         "Amostra",
-        "Clássico (integrado)",
         "Tocar compasso",
         "Destacar primeiro tempo",
         "Sobre o Takto",
@@ -108,7 +99,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Настройки",
         "Язык",
         "Семпл",
-        "Classic (встроенный)",
         "Воспроизвести такт",
         "Выделять первый удар",
         "О программе",
@@ -117,7 +107,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "ترتیبات",
         "زبان",
         "سیمپل",
-        "کلاسک (شامل)",
         "میزان چلائیں",
         "پہلی دھن نمایاں کریں",
         "Takto کے بارے میں",
@@ -126,7 +115,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Einstellungen",
         "Sprache",
         "Sample",
-        "Klassisch (integriert)",
         "Takt abspielen",
         "Ersten Schlag hervorheben",
         "Über Takto",
@@ -135,7 +123,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "設定",
         "言語",
         "サンプル",
-        "クラシック（内蔵）",
         "1小節を再生",
         "最初のビートを強調",
         "Takto について",
@@ -144,7 +131,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "ਸੈਟਿੰਗਾਂ",
         "ਭਾਸ਼ਾ",
         "ਸੈਂਪਲ",
-        "ਕਲਾਸਿਕ (ਸ਼ਾਮਲ)",
         "ਤਾਲ ਚਲਾਓ",
         "ਪਹਿਲਾ ਬੀਟ ਉਭਾਰੋ",
         "Takto ਬਾਰੇ",
@@ -153,7 +139,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "सेटिंग्ज",
         "भाषा",
         "नमुना",
-        "क्लासिक (अंतर्भूत)",
         "ताल वाजवा",
         "पहिला ठोका ठळक करा",
         "Takto विषयी",
@@ -162,7 +147,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "సెట్టింగ్‌లు",
         "భాష",
         "సాంపిల్",
-        "క్లాసిక్ (అంతర్భుతం)",
         "తాళం వాయించు",
         "మొదటి బీట్ హైలైట్ చేయండి",
         "Takto గురించి",
@@ -171,7 +155,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Ayarlar",
         "Dil",
         "Örnek",
-        "Klasik (yerleşik)",
         "Ölçüyü çal",
         "İlk vurguyu öne çıkar",
         "Takto Hakkında",
@@ -180,7 +163,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "설정",
         "언어",
         "샘플",
-        "클래식(내장)",
         "마디 재생",
         "첫 박자 강조",
         "Takto 정보",
@@ -189,7 +171,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Cài đặt",
         "Ngôn ngữ",
         "Mẫu âm thanh",
-        "Cổ điển (nhúng)",
         "Phát một ô nhịp",
         "Làm nổi bật nhịp đầu",
         "Giới thiệu Takto",
@@ -198,7 +179,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Impostazioni",
         "Lingua",
         "Campione",
-        "Classico (integrato)",
         "Riproduci misura",
         "Evidenzia primo battito",
         "Informazioni su Takto",
@@ -207,7 +187,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Pengaturan",
         "Bahasa",
         "Sampel",
-        "Classic (bawaan)",
         "Putar birama",
         "Sorot ketukan pertama",
         "Tentang Takto",
@@ -216,7 +195,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Ustawienia",
         "Język",
         "Próbka",
-        "Classic (wbudowany)",
         "Zagraj takt",
         "Wyróżnij pierwsze uderzenie",
         "O Takto",
@@ -225,7 +203,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Налаштування",
         "Мова",
         "Семпл",
-        "Classic (вбудований)",
         "Відтворити такт",
         "Виділяти перший удар",
         "Про програму",
@@ -234,7 +211,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Instellingen",
         "Taal",
         "Voorbeeld",
-        "Classic (ingebed)",
         "Maat afspelen",
         "Eerste slag markeren",
         "Over Takto",
@@ -243,7 +219,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "การตั้งค่า",
         "ภาษา",
         "ตัวอย่างเสียง",
-        "คลาสสิก (ในตัว)",
         "เล่นหนึ่งห้อง",
         "เน้นจังหวะแรก",
         "เกี่ยวกับ Takto",
@@ -252,7 +227,6 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Mipangilio",
         "Lugha",
         "Sampuli",
-        "Classic (ndani)",
         "Cheza kipimo",
         "Angazia mdundo wa kwanza",
         "Kuhusu Takto",
@@ -415,7 +389,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
         eprintln!("Saved sample failed to load: {error:#}");
         params.set_sample(0);
         if let Err(error) = load_sample(&engine, 0) {
-            eprintln!("Bundled sample failed to load: {error:#}");
+            eprintln!("First candidate sample failed to load: {error:#}");
         }
     }
 
@@ -1086,8 +1060,7 @@ fn build_settings_modal(
     sample_title.add_css_class("settings-section-title");
     content.append(&sample_title);
 
-    let mut sample_labels = vec!["Classic (bundled)"];
-    sample_labels.extend(SoundBank::candidate_labels());
+    let sample_labels = SoundBank::candidate_labels();
     let preview_busy = Rc::new(Cell::new(false));
     let sample_select = gtk::DropDown::from_strings(sample_labels.as_slice());
     sample_select.set_tooltip_text(Some(settings_text(params.language(), SettingsText::Sample)));
@@ -1161,7 +1134,6 @@ fn build_settings_modal(
     let header_title_for_language = header_title.clone();
     let language_title_for_language = language_title.clone();
     let sample_title_for_language = sample_title.clone();
-    let sample_select_for_language = sample_select.clone();
     let play_button_for_language = play_button.clone();
     let first_beat_for_language = first_beat.clone();
     let about_button_for_language = about_button.clone();
@@ -1180,19 +1152,6 @@ fn build_settings_modal(
         first_beat_for_language
             .set_title(settings_text(language, SettingsText::HighlightFirstBeat));
         about_button_for_language.set_label(about_text(language));
-
-        // `Classic (bundled)` is generated by the UI; candidate labels come
-        // from user filenames and must not be translated.
-        if let Some(sample_model) = sample_select_for_language
-            .model()
-            .and_then(|model| model.downcast::<gtk::StringList>().ok())
-        {
-            sample_model.splice(
-                0,
-                1,
-                &[settings_text(language, SettingsText::ClassicBundled)],
-            );
-        }
     });
 
     let engine_for_list = engine.clone();
@@ -1334,11 +1293,7 @@ fn apply_pointer_cursors(widget: &gtk::Widget) {
 
 fn load_sample(engine: &Rc<RefCell<AudioEngine>>, position: usize) -> anyhow::Result<()> {
     let sample_rate = engine.borrow().sample_rate;
-    let result = if position == 0 {
-        SoundBank::embedded(sample_rate)
-    } else {
-        SoundBank::candidate(position - 1, sample_rate)
-    };
+    let result = SoundBank::candidate(position, sample_rate);
 
     engine.borrow().set_sound_bank(result?);
     Ok(())

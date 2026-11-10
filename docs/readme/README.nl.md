@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Vloeiende tempowijzigingen en tap tempo.
 - 🥁 **Aanpasbare maatsoorten** — Maatsoorten 2/4, 3/4, 4/4 en 6/8 worden ondersteund.
 - 🎯 **Slagen dempen** — Het geluid van elke slag kan worden uitgeschakeld.
-- 🔊 **19 ingebouwde samples.**
+- 🔊 **18 ingebouwde samples.**
 
 ## Gepland
 - 🎛 **Eigen geluiden** — Importeer 16-bits PCM- of floating-point-WAV-bestanden; Takto mixt, resampelt en normaliseert.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Zo worden drift en opgetelde tijdfouten vermeden, ook bij hoge tempi, en tempowijzigingen vereisen geen herstart: de wachtende slag blijft op zijn geplande positie en het nieuwe interval geldt vanaf de volgende slag.
-
-## Audio-assets
-
-Het Classic-preset gebruikt ingesloten CC0 1.0 OGG Vorbis-samples van Kenney “Interface Sounds”. Details staan in [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Licentie
 

@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Mabadiliko laini ya tempo na tap tempo.
 - 🥁 **Vipimo vya wakati vinavyoweza kubadilishwa** — Vipimo 2/4, 3/4, 4/4 na 6/8 vinaungwa mkono.
 - 🎯 **Kuzima mdundo** — Inawezekana kuzima sauti ya mdundo wowote.
-- 🔊 **Sampuli 19 zilizojengwa ndani.**
+- 🔊 **Sampuli 18 zilizojengwa ndani.**
 
 ## Iliyopangwa
 - 🎛 **Sauti zako** — Ingiza faili za WAV za PCM biti 16 au floating-point; Takto hufanya downmix, resample na normalization.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Hii huondoa drift na kosa la muda linalojikusanya, hata kwenye tempo za juu, na mabadiliko ya tempo yanafanyika bila kuanzisha upya: mdundo unaosubiri unabaki alipopangwa, na kipindi kipya kinaanza kwenye mdundo ujao.
-
-## Vipengele vya sauti
-
-Preset ya Classic inatumia sampuli za OGG Vorbis CC0 1.0 zilizowekwa ndani kutoka Kenney “Interface Sounds”. Maelezo yako kwenye [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Leseni
 

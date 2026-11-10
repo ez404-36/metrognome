@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Flüssige Tempoänderungen und Tap-Tempo.
 - 🥁 **Anpassbare Taktarten** — 2/4, 3/4, 4/4 und 6/8 werden unterstützt.
 - 🎯 **Stummschaltung einzelner Schläge** — Der Klang jedes beliebigen Schlags lässt sich ausschalten.
-- 🔊 **19 eingebaute Samples.**
+- 🔊 **18 eingebaute Samples.**
 
 ## Geplant
 - 🎛 **Eigene Sounds** — 16-Bit-PCM- oder Floating-Point-WAV-Dateien importieren; Takto mischt, resampelt und normalisiert sie.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 So werden Drift und kumulierte Zeitfehler vermieden, auch bei hohen Tempi, und Tempoänderungen bleiben ohne Neustart möglich: Der ausstehende Schlag bleibt an seiner geplanten Position, das neue Intervall gilt ab dem nächsten Schlag.
-
-## Audio-Assets
-
-Das Classic-Preset verwendet eingebettete CC0-1.0-OGG-Vorbis-Samples von Kenney „Interface Sounds“. Details stehen in [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Lizenz
 

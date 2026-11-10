@@ -51,7 +51,7 @@
 - 🎚 **20–300 BPM** — Smooth tempo changes and tap tempo.
 - 🥁 **Custom time signatures** — 2/4, 3/4, 4/4, and 6/8 are supported.
 - 🎯 **Beat muting** — Turn off the sound on any beat.
-- 🔊 **19 built-in samples.**
+- 🔊 **18 built-in samples.**
 
 ## Planned
 - 🎛 **Your sounds** — Import 16-bit PCM or floating-point WAV files; Takto downmixes, resamples, and normalizes them.
@@ -99,10 +99,6 @@ Audio callback
 This avoids drift and accumulated timing error, including at high tempos, and
 keeps tempo changes restart-free: the pending hit stays where it was scheduled,
 and the new period applies from the next beat.
-
-## Audio assets
-
-The Classic preset uses embedded CC0 1.0 OGG Vorbis samples from Kenney “Interface Sounds”. Details are in [`assets/audio/LICENSE.md`](assets/audio/LICENSE.md).
 
 ## Releases
 

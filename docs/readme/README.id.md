@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Perubahan tempo halus dan tap tempo.
 - 🥁 **Ukuran birama yang dapat disesuaikan** — Mendukung ukuran 2/4, 3/4, 4/4, dan 6/8.
 - 🎯 **Bisukan ketukan** — Dapat mematikan suara pada ketukan mana pun.
-- 🔊 **19 sampel bawaan.**
+- 🔊 **18 sampel bawaan.**
 
 ## Direncanakan
 - 🎛 **Suara Anda** — Impor berkas WAV PCM 16-bit atau floating-point; Takto melakukan downmix, resampling, dan normalisasi.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Ini mencegah drift dan kesalahan waktu yang menumpuk, termasuk pada tempo tinggi, dan perubahan tempo tanpa perlu memulai ulang: hit yang tertunda tetap di posisi yang dijadwalkan, periode baru berlaku mulai ketukan berikutnya.
-
-## Aset audio
-
-Preset Classic menggunakan sampel OGG Vorbis CC0 1.0 tersemat dari Kenney “Interface Sounds”. Detail ada di [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Lisensi
 

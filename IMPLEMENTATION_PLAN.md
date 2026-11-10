@@ -70,8 +70,9 @@ Audio callback
 
 - WAV на первом этапе.
 - Реализовано: 16-bit PCM и floating-point WAV, даунмикс, ресемплинг и нормализация.
-- Реализовано: встроенные OGG-сэмплы по умолчанию (Kenney "Interface Sounds",
-  CC0 1.0; см. `assets/audio/LICENSE.md`), декодирование через `symphonia`.
+- Реализовано: встроенный банк сэмплов из 18 кандидатов (Freesound, CC0 1.0;
+  см. `assets/audio/LICENSE.md` и `candidates/MANIFEST.md`), декодирование
+  через `symphonia`.
 - Добавлено UI-меню пресетов и импорта обычного/акцентного WAV.
 - Позже: FLAC, MP3 и OGG-импорт пользовательских файлов.
 - Декодирование вне аудиопотока.

@@ -324,7 +324,7 @@ mod tests {
         params
             .running
             .store(true, std::sync::atomic::Ordering::Relaxed);
-        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
+        let bank = SoundBank::preset(SoundPreset::Woodblock, 48_000);
         let mut scheduler = Scheduler::new(0, 4);
         // Ten events at 9600 frames each.
         let mut output = vec![0.0_f32; 96_000];
@@ -343,7 +343,7 @@ mod tests {
         params
             .running
             .store(true, std::sync::atomic::Ordering::Relaxed);
-        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
+        let bank = SoundBank::preset(SoundPreset::Woodblock, 48_000);
         let mut scheduler = Scheduler::new(0, 4);
         let mut output = vec![0.0_f32; 144_000];
 
@@ -373,7 +373,7 @@ mod tests {
         params
             .running
             .store(true, std::sync::atomic::Ordering::Relaxed);
-        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
+        let bank = SoundBank::preset(SoundPreset::Woodblock, 48_000);
         let mut scheduler = Scheduler::new(0, 4);
 
         // Long enough to pass several event positions after the startup delay.

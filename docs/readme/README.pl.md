@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Płynna zmiana tempa i tap tempo.
 - 🥁 **Konfigurowalne metrum** — Obsługiwane metra: 2/4, 3/4, 4/4 i 6/8.
 - 🎯 **Wyciszanie uderzeń** — Można wyciszyć dźwięk dowolnego uderzenia.
-- 🔊 **19 wbudowanych sampli.**
+- 🔊 **18 wbudowanych sampli.**
 
 ## Planowane
 - 🎛 **Własne dźwięki** — Import plików WAV PCM 16-bit lub zmiennoprzecinkowych; Takto miesza, resampluje i normalizuje.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 To zapobiega dryfowi i narastającemu błędowi czasu, także przy wysokich tempach, a zmiany tempa nie wymagają restartu: oczekujące uderzenie zostaje na zaplanowanej pozycji, a nowy okres obowiązuje od następnego uderzenia.
-
-## Zasoby audio
-
-Preset Classic używa wbudowanych próbek OGG Vorbis CC0 1.0 z pakietu Kenney „Interface Sounds”. Szczegóły znajdują się w [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Licencja
 

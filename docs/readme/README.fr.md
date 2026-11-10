@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Changements de tempo fluides et tap tempo.
 - 🥁 **Mesures personnalisables** — Prise en charge des mesures 2/4, 3/4, 4/4 et 6/8.
 - 🎯 **Coupure des temps** — Possibilité de couper le son de n’importe quel temps.
-- 🔊 **19 échantillons intégrés.**
+- 🔊 **18 échantillons intégrés.**
 
 ## Prévu
 - 🎛 **Vos sons** — Importez des fichiers WAV PCM 16 bits ou flottants ; Takto les mélange, rééchantillonne et normalise.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Cela évite la dérive et l’erreur de temps accumulée, y compris aux tempos élevés, et les changements de tempo ne nécessitent aucun redémarrage : le coup en attente reste à sa position planifiée, et le nouvel intervalle s’applique à partir du coup suivant.
-
-## Ressources audio
-
-Le préréglage Classic utilise des échantillons OGG Vorbis CC0 1.0 intégrés de Kenney « Interface Sounds ». Les détails sont dans [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Licence
 

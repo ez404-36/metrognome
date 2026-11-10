@@ -150,8 +150,7 @@ pub struct SharedParams {
     /// Number of immediate one-shot clicks requested by the UI.
     pub one_shot_pending: AtomicU32,
     pub highlight_first: AtomicBool,
-    /// Selected click sample: 0 is the bundled bank, higher values index
-    /// the candidate bank.
+    /// Selected click sample: index into the candidate bank.
     pub sample: AtomicUsize,
     /// Selected interface language as its position in `LANGUAGES`.
     pub language: AtomicUsize,
@@ -297,8 +296,8 @@ pub struct AppSettings {
     pub accents: Option<Vec<bool>>,
     #[serde(default = "default_highlight_first")]
     pub highlight_first: bool,
-    /// Selected click sample position: 0 is the bundled bank, values above
-    /// zero index the candidate bank. `None` comes from older saves.
+    /// Selected click sample position: index into the candidate bank.
+    /// `None` comes from older saves and resolves to the first candidate.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sample: Option<usize>,
     /// Interface language. The serde default keeps saves made before this
@@ -497,7 +496,7 @@ mod tests {
         assert_eq!(params.beat_count(), 16);
         assert_eq!(params.states(), default_states(16));
         // The sample index is restored raw; the UI's load_sample falls back
-        // to the bundled bank when the candidate index is out of range.
+        // to the first candidate when the candidate index is out of range.
         assert_eq!(params.sample(), 99_999);
     }
 

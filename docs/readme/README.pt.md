@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Mudanças suaves de tempo e tap tempo.
 - 🥁 **Compassos personalizáveis** — Compatibilidade com 2/4, 3/4, 4/4 e 6/8.
 - 🎯 **Silenciamento de batidas** — É possível desativar o som de qualquer batida.
-- 🔊 **19 amostras integradas.**
+- 🔊 **18 amostras integradas.**
 
 ## Planejado
 - 🎛 **Seus sons** — Importe arquivos WAV PCM de 16 bits ou de ponto flutuante; o Takto mistura, reamostra e normaliza.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Isso evita desvio e erro de tempo acumulado, inclusive em tempos altos, e as mudanças de tempo não exigem reinício: o golpe pendente fica onde foi agendado e o novo período se aplica a partir do golpe seguinte.
-
-## Recursos de áudio
-
-A predefinição Classic usa amostras OGG Vorbis CC0 1.0 incorporadas de Kenney “Interface Sounds”. Detalhes em [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Licença
 

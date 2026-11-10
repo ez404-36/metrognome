@@ -51,8 +51,11 @@ impl AudioEngine {
         let sample_rate = config.sample_rate.0;
         let params = Arc::new(SharedParams::new());
         params.sample_rate.store(sample_rate, Ordering::Relaxed);
+        // Transient initial bank only: the UI loads the persisted sample
+        // before any widget (or sound) exists, and the headless smoke test
+        // overrides it through settings or --preset.
         let bank = Arc::new(ArcSwap::new(Arc::new(SoundBank::preset(
-            SoundPreset::Classic,
+            SoundPreset::Woodblock,
             sample_rate,
         ))));
         let started = Arc::new(AtomicBool::new(false));

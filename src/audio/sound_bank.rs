@@ -37,11 +37,6 @@ pub struct SoundBank {
 impl SoundBank {
     pub fn preset(preset: SoundPreset, sample_rate: u32) -> Self {
         match preset {
-            SoundPreset::Classic => Self::embedded(sample_rate).unwrap_or_else(|_| Self {
-                normal: synthetic_click(sample_rate, 580.0, 0.052, 0.62),
-                first_source: synthetic_click(sample_rate, 820.0, 0.085, 0.88),
-                first: synthetic_click(sample_rate, 1_150.0, 0.110, 0.95),
-            }),
             SoundPreset::Woodblock => Self {
                 normal: synthetic_click(sample_rate, 330.0, 0.038, 0.68),
                 first_source: synthetic_click(sample_rate, 540.0, 0.062, 0.92),
@@ -58,18 +53,6 @@ impl SoundBank {
                 first: synthetic_click(sample_rate, 830.0, 0.135, 0.85),
             },
         }
-    }
-
-    pub fn embedded(sample_rate: u32) -> Result<Self> {
-        let accent =
-            decode_ogg_bytes(include_bytes!("../../assets/audio/accent.ogg"), sample_rate)?;
-        let mut first = derive_first_sound(&accent, sample_rate);
-        emphasize_first_sound(&mut first, &accent);
-        Ok(Self {
-            normal: decode_ogg_bytes(include_bytes!("../../assets/audio/tick.ogg"), sample_rate)?,
-            first,
-            first_source: accent,
-        })
     }
 
     pub fn candidate(index: usize, sample_rate: u32) -> Result<Self> {
@@ -117,32 +100,9 @@ pub fn derive_first_sound(accent: &[f32], sample_rate: u32) -> Vec<f32> {
     pitched.into_iter().map(|sample| sample * 1.4).collect()
 }
 
-/// Raises the Classic downbeat to a consistent loudness. The bundled accent
-/// has a higher crest factor than the candidate accents, so a fixed gain made
-/// its first hit almost indistinguishable once the final output was clipped.
-fn emphasize_first_sound(first: &mut [f32], first_source: &[f32]) {
-    let target_rms = rms(first_source) * 2.5;
-    let current_rms = rms(first).max(f32::EPSILON);
-    let gain = (target_rms / current_rms).min(2.5);
-
-    for sample in first {
-        // Soft-limit the boosted transient instead of clipping it at the DAC.
-        *sample = ((*sample * gain).tanh() * 0.95).clamp(-0.95, 0.95);
-    }
-}
-
-fn rms(samples: &[f32]) -> f32 {
-    if samples.is_empty() {
-        return 0.0;
-    }
-
-    (samples.iter().map(|sample| *sample * *sample).sum::<f32>() / samples.len() as f32).sqrt()
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "ui", allow(dead_code))]
 pub enum SoundPreset {
-    Classic,
     Woodblock,
     Digital,
     Soft,
@@ -150,11 +110,10 @@ pub enum SoundPreset {
 
 #[cfg_attr(feature = "ui", allow(dead_code))]
 impl SoundPreset {
-    pub const ALL: [Self; 4] = [Self::Classic, Self::Woodblock, Self::Digital, Self::Soft];
+    pub const ALL: [Self; 3] = [Self::Woodblock, Self::Digital, Self::Soft];
 
     pub const fn title(self) -> &'static str {
         match self {
-            Self::Classic => "Classic",
             Self::Woodblock => "Woodblock",
             Self::Digital => "Digital",
             Self::Soft => "Soft",
@@ -218,6 +177,9 @@ fn downmix_to_mono(samples: Vec<f32>, channels: usize) -> Vec<f32> {
         .collect()
 }
 
+// Only the UI candidate bank decodes OGG bytes; the headless smoke-test
+// binary consumes WAV files and synthetic presets.
+#[cfg_attr(not(feature = "ui"), allow(dead_code))]
 pub fn decode_ogg_bytes(bytes: &[u8], target_sample_rate: u32) -> Result<Vec<f32>> {
     let source = MediaSourceStream::new(
         Box::new(std::io::Cursor::new(bytes.to_vec())),
@@ -375,42 +337,16 @@ fn synthetic_click(sample_rate: u32, frequency: f32, duration: f32, gain: f32) -
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn embedded_classic_sound_is_short_and_bounded() {
-        let bank = SoundBank::preset(SoundPreset::Classic, 48_000);
-        let peak = |samples: &[f32]| {
-            samples
-                .iter()
-                .fold(0.0_f32, |peak, sample| peak.max(sample.abs()))
-        };
-        let first_rms = rms(&bank.first);
-        let first_source_rms = rms(&bank.first_source);
-
-        assert!(
-            (400..=900).contains(&bank.normal.len()),
-            "unexpected embedded tick length: {}",
-            bank.normal.len()
-        );
-        assert!(bank.normal.iter().all(|sample| sample.abs() <= 1.0));
-        assert!(bank.normal.iter().any(|sample| sample.abs() > 0.1));
-        assert!(bank.first_source.iter().any(|sample| sample.abs() > 0.1));
-        assert!(
-            first_rms > first_source_rms * 1.5,
-            "Classic first RMS {first_rms} must be clearly above source RMS {first_source_rms}"
-        );
-        assert!(
-            peak(&bank.first) <= 0.95,
-            "Classic first hit must stay below full scale"
-        );
-    }
-}
-
-#[cfg(test)]
 mod candidate_tests {
     use super::*;
+
+    fn rms(samples: &[f32]) -> f32 {
+        if samples.is_empty() {
+            return 0.0;
+        }
+
+        (samples.iter().map(|sample| *sample * *sample).sum::<f32>() / samples.len() as f32).sqrt()
+    }
 
     #[test]
     fn candidates_decode_and_derive_a_louder_first_sound() {

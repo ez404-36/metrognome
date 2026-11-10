@@ -50,7 +50,7 @@
 - 🎚 **20–300 BPM** — Thay đổi tempo mượt mà và tap tempo.
 - 🥁 **Số nhịp tùy chỉnh** — Hỗ trợ kiểu 2/4, 3/4, 4/4 và 6/8.
 - 🎯 **Tắt nhịp** — Có thể tắt âm thanh của bất kỳ nhịp nào.
-- 🔊 **19 mẫu âm thanh tích hợp.**
+- 🔊 **18 mẫu âm thanh tích hợp.**
 
 ## Được lên kế hoạch
 - 🎛 **Âm thanh của bạn** — Nhập tệp WAV PCM 16-bit hoặc dấu phẩy động; Takto tự downmix, resample và chuẩn hóa.
@@ -83,10 +83,6 @@ Audio callback
 ```
 
 Điều này tránh trôi nhịp và sai số thời gian tích lũy, kể cả ở tempo cao, và việc đổi tempo không cần khởi động lại: cú đánh đang chờ giữ nguyên vị trí đã lên lịch, chu kỳ mới áp dụng từ nhịp tiếp theo.
-
-## Tài nguyên âm thanh
-
-Preset Classic dùng các mẫu OGG Vorbis CC0 1.0 nhúng từ Kenney “Interface Sounds”. Chi tiết nằm trong [`assets/audio/LICENSE.md`](../../assets/audio/LICENSE.md).
 
 ## Giấy phép
 

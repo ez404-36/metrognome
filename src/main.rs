@@ -47,7 +47,7 @@ fn apply_audio_options(
 ) -> anyhow::Result<()> {
     use audio::sound_bank::{SoundBank, SoundPreset};
 
-    let mut preset = SoundPreset::Classic;
+    let mut preset = SoundPreset::Woodblock;
     let mut normal_path = None;
     let mut accent_path = None;
     let mut index = 0;
