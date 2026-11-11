@@ -4,6 +4,8 @@ All notable changes to Takto are documented in this file. The format is based on
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-11
+
 ### Added
 
 - Tempo presets: the traditional Italian tempo term for the current BPM (Grave through Prestissimo, modern non-overlapping ranges) is shown above the tempo slider and follows every tempo change, including tap tempo. Clicking the term opens a compact dropdown, drawn over the slider, listing every marking with its BPM range; the active one is checked, and selecting another sets the tempo to that range's midpoint.
@@ -90,7 +92,8 @@ Initial release (under the original name Metrognome).
 - Synthetic click noise removed and round tap forced. (#113d405)
 - Build against GTK 4.14 and use the libadwaita toolbar layout; tightened desktop layout and centered playback controls. (#22dc3e0, #df84a3f, #d03ec7e, #b787feb)
 
-[Unreleased]: https://github.com/ez404-36/takto/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/ez404-36/takto/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/ez404-36/takto/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ez404-36/takto/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ez404-36/takto/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ez404-36/takto/compare/v0.1.1...v0.1.2
