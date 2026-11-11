@@ -804,7 +804,7 @@ pub fn launch() -> anyhow::Result<()> {
     register_icon_resources();
 
     let app = Application::builder()
-        .application_id("io.github.ez404_36.Takto.Probe")
+        .application_id("io.github.ez404_36.Takto")
         .build();
 
     app.connect_activate(|app| {
