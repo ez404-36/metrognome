@@ -25,6 +25,95 @@ pub fn default_states(beats: u32) -> Vec<BeatState> {
     (0..beats).map(|_| BeatState::Enabled).collect()
 }
 
+/// One tempo marking and its inclusive BPM range. Ranges follow the modern
+/// convention and are contiguous (each range starts right after the previous
+/// one ends), so every BPM maps to exactly one marking.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TempoRange {
+    pub name: &'static str,
+    pub min_bpm: u32,
+    pub max_bpm: u32,
+}
+
+impl TempoRange {
+    /// Midpoint of the inclusive range. Selecting a marking from the tempo
+    /// selector places the tempo at this point.
+    pub fn default_bpm(self) -> u32 {
+        (self.min_bpm + self.max_bpm) / 2
+    }
+}
+
+/// The full tempo table, ordered from slowest to fastest. The names are kept
+/// in Italian on purpose: they are the international convention and read the
+/// same in every interface language.
+pub const TEMPO_MARKINGS: [TempoRange; 10] = [
+    TempoRange {
+        name: "Grave",
+        min_bpm: 20,
+        max_bpm: 39,
+    },
+    TempoRange {
+        name: "Largo",
+        min_bpm: 40,
+        max_bpm: 59,
+    },
+    TempoRange {
+        name: "Larghetto",
+        min_bpm: 60,
+        max_bpm: 65,
+    },
+    TempoRange {
+        name: "Adagio",
+        min_bpm: 66,
+        max_bpm: 75,
+    },
+    TempoRange {
+        name: "Andante",
+        min_bpm: 76,
+        max_bpm: 107,
+    },
+    TempoRange {
+        name: "Moderato",
+        min_bpm: 108,
+        max_bpm: 119,
+    },
+    TempoRange {
+        name: "Allegro",
+        min_bpm: 120,
+        max_bpm: 155,
+    },
+    TempoRange {
+        name: "Vivace",
+        min_bpm: 156,
+        max_bpm: 175,
+    },
+    TempoRange {
+        name: "Presto",
+        min_bpm: 176,
+        max_bpm: 199,
+    },
+    TempoRange {
+        name: "Prestissimo",
+        min_bpm: 200,
+        max_bpm: 300,
+    },
+];
+
+/// Traditional Italian tempo marking for the given tempo. Every boundary
+/// belongs to the faster marking (76 is Andante, 108 is Moderato, ...);
+/// values below the first threshold (defensive: the engine clamps to
+/// 20..=300) also read as Grave.
+pub fn tempo_marking(bpm: u32) -> &'static str {
+    let mut marking = TEMPO_MARKINGS[0].name;
+    for range in TEMPO_MARKINGS {
+        if bpm < range.min_bpm {
+            break;
+        }
+        marking = range.name;
+    }
+    marking
+}
+
 /// Interface languages exposed by the settings modal. The array order is the
 /// persisted atomic index; `English` is deliberately first so first launches
 /// and legacy settings files use English by default.
@@ -421,6 +510,76 @@ mod tests {
     use std::sync::Mutex;
 
     static CONFIG_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    #[test]
+    fn tempo_marking_matches_modern_ranges() {
+        // Boundaries belong to the faster marking: [min, max).
+        assert_eq!(tempo_marking(20), "Grave");
+        assert_eq!(tempo_marking(39), "Grave");
+        assert_eq!(tempo_marking(40), "Largo");
+        assert_eq!(tempo_marking(60), "Larghetto");
+        assert_eq!(tempo_marking(66), "Adagio");
+        assert_eq!(tempo_marking(76), "Andante");
+        assert_eq!(tempo_marking(107), "Andante");
+        assert_eq!(tempo_marking(108), "Moderato");
+        assert_eq!(tempo_marking(120), "Allegro");
+        assert_eq!(tempo_marking(155), "Allegro");
+        assert_eq!(tempo_marking(156), "Vivace");
+        assert_eq!(tempo_marking(176), "Presto");
+        assert_eq!(tempo_marking(200), "Prestissimo");
+        assert_eq!(tempo_marking(300), "Prestissimo");
+    }
+
+    #[test]
+    fn tempo_marking_covers_the_whole_slider_range_without_gaps() {
+        let markings: Vec<&str> = TEMPO_MARKINGS.iter().map(|m| m.name).collect();
+
+        for bpm in 20..=300 {
+            assert!(
+                markings.contains(&tempo_marking(bpm)),
+                "unexpected marking for {bpm} BPM"
+            );
+        }
+    }
+
+    #[test]
+    fn tempo_markings_are_contiguous_across_the_slider_range() {
+        let mut ranges = TEMPO_MARKINGS.iter();
+
+        let first = ranges.next().expect("the tempo table must not be empty");
+        assert_eq!(first.min_bpm, 20);
+
+        let mut previous = *first;
+        for range in ranges {
+            assert_eq!(
+                range.min_bpm,
+                previous.max_bpm + 1,
+                "gap or overlap between {} and {}",
+                previous.name,
+                range.name
+            );
+            previous = *range;
+        }
+
+        assert_eq!(previous.max_bpm, 300);
+    }
+
+    #[test]
+    fn tempo_presets_default_to_the_range_midpoint() {
+        let default_bpm = |name: &str| {
+            TEMPO_MARKINGS
+                .iter()
+                .find(|marking| marking.name == name)
+                .expect("the tempo table should contain every marking")
+                .default_bpm()
+        };
+
+        assert_eq!(default_bpm("Grave"), 29);
+        assert_eq!(default_bpm("Larghetto"), 62);
+        assert_eq!(default_bpm("Andante"), 91);
+        assert_eq!(default_bpm("Allegro"), 137);
+        assert_eq!(default_bpm("Prestissimo"), 250);
+    }
 
     #[test]
     fn states_are_clamped_and_preserved() {

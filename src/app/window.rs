@@ -11,7 +11,8 @@ use gtk::{gdk, gio, glib, CssProvider, IconTheme, STYLE_PROVIDER_PRIORITY_APPLIC
 use crate::audio::engine::AudioEngine;
 use crate::audio::sound_bank::SoundBank;
 use crate::model::{
-    default_states, AppSettings, BeatState, Language, SharedParams, LANGUAGES, MAX_VOLUME,
+    default_states, tempo_marking, AppSettings, BeatState, Language, SharedParams, LANGUAGES,
+    MAX_VOLUME, TEMPO_MARKINGS,
 };
 use crate::update::{self, AssetKind, InstallContext, Release};
 
@@ -801,8 +802,9 @@ impl ErrorToast {
 
 pub fn launch() -> anyhow::Result<()> {
     register_icon_resources();
+
     let app = Application::builder()
-        .application_id("io.github.ez404_36.Takto")
+        .application_id("io.github.ez404_36.Takto.Probe")
         .build();
 
     app.connect_activate(|app| {
@@ -888,7 +890,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
     });
 
     vbox.append(&build_pattern_row(&params));
-    vbox.append(&build_tempo_card(&params));
+    vbox.append(&build_tempo_card(&window, &overlay, &params));
     vbox.append(&build_beat_dots(&params));
     vbox.append(&build_controls(&window, &engine, &params, &toast, &updates));
 
@@ -1068,7 +1070,216 @@ fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::Box {
     row
 }
 
-fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
+/// Builds the inline tempo selector: an expandable list of every marking
+/// with its inclusive BPM range, a check on the active one, and
+/// click-to-select that jumps to the range midpoint. The list lives in a
+/// box shown and hidden inside the card itself instead of a popover, so it
+/// works the same on every compositor and never fights window grabs.
+/// Selecting a row drives the same UI updates as the adjusters so every
+/// view stays in sync immediately.
+/// Builds the compact tempo selector popover: one row per marking with its
+/// inclusive BPM range, a check on the active one, and click-to-select that
+/// jumps to the range midpoint. Selecting a row drives the same UI updates
+/// as the adjusters so every view stays in sync immediately.
+///
+/// The popover is driven manually instead of through a `MenuButton`: it is
+/// presented with `autohide` off (no seat grab) and closed by the button,
+/// by a row selection or by a click anywhere else in the window. This keeps
+/// it open reliably on Wayland, where a popup grab can be rejected and
+/// instantly collapse an auto-hidden popover.
+/// Builds the compact tempo selector: a floating list that appears inside
+/// the card right under the marking (drawn by a `gtk::Overlay`, not a
+/// native popover surface, so no compositor grab can dismiss it). One row
+/// per marking with its inclusive BPM range, a check on the active one,
+/// and click-to-select that jumps to the range midpoint. Selecting a row
+/// drives the same UI updates as the adjusters so every view stays in sync
+/// immediately.
+fn build_tempo_selector(
+    overlay: &gtk::Overlay,
+    catcher: &gtk::Button,
+    button: &gtk::Button,
+    params: &Arc<SharedParams>,
+    bpm_label: &gtk::Label,
+    adjustment: &gtk::Adjustment,
+    tempo_label: &gtk::Label,
+) {
+    let selector = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    selector.add_css_class("tempo-list-container");
+
+    let list = gtk::ListBox::new();
+    list.set_selection_mode(gtk::SelectionMode::None);
+    list.add_css_class("tempo-list");
+
+    let mut checks = Vec::new();
+    for marking in TEMPO_MARKINGS {
+        // A plain compact row instead of an ActionRow: no extra row
+        // padding, so all ten markings fit the panel without scrolling.
+        let row = gtk::ListBoxRow::builder()
+            .activatable(true)
+            .selectable(false)
+            .build();
+        let row_box = gtk::Box::new(gtk::Orientation::Horizontal, 8);
+        let title = gtk::Label::new(Some(&format!(
+            "{} ({}–{})",
+            marking.name, marking.min_bpm, marking.max_bpm
+        )));
+        title.set_xalign(0.0);
+        title.set_hexpand(true);
+        row_box.append(&title);
+        let check = gtk::Image::from_icon_name("object-select-symbolic");
+        row_box.append(&check);
+        row.set_child(Some(&row_box));
+        list.append(&row);
+
+        checks.push(check);
+    }
+
+    // A single activation handler for all compact rows: the row index maps
+    // straight into the tempo table.
+    let selector_for_row = selector.clone();
+    let catcher_for_row = catcher.clone();
+    let button_for_row = button.clone();
+    let params_for_row = params.clone();
+    let bpm_label_for_row = bpm_label.clone();
+    let adjustment_for_row = adjustment.clone();
+    let tempo_label_for_row = tempo_label.clone();
+    list.connect_row_activated(move |_, row| {
+        let marking = TEMPO_MARKINGS[row.index() as usize];
+        // Clicking the marking that is already active must not move the
+        // tempo: 120 BPM Allegro stays 120. Just close the panel.
+        if tempo_marking(params_for_row.bpm()) != marking.name {
+            let default_bpm = marking.default_bpm();
+            params_for_row.set_bpm(default_bpm);
+            bpm_label_for_row.set_text(&default_bpm.to_string());
+            adjustment_for_row.set_value(f64::from(default_bpm));
+            tempo_label_for_row.set_text(tempo_marking(default_bpm));
+        }
+        // Return focus to the marking button first: hiding widgets that
+        // hold focus triggers GTK's "broken active state" warnings.
+        button_for_row.grab_focus();
+        selector_for_row.set_visible(false);
+        catcher_for_row.set_visible(false);
+    });
+
+    // The floating panel: shown and hidden inside the overlay, anchored
+    // under the marking button (margins are computed when it opens). The
+    // list scrolls past a compact cap so the panel can never overflow the
+    // window bottom.
+    let scrolled = gtk::ScrolledWindow::builder()
+        .hscrollbar_policy(gtk::PolicyType::Never)
+        .vscrollbar_policy(gtk::PolicyType::Automatic)
+        .max_content_height(280)
+        .propagate_natural_height(true)
+        .build();
+    scrolled.set_child(Some(&list));
+    selector.append(&scrolled);
+    selector.set_halign(gtk::Align::Start);
+    selector.set_valign(gtk::Align::Start);
+    selector.set_visible(false);
+    overlay.add_overlay(&selector);
+
+    // The catcher is an invisible full-window layer shown while the panel
+    // is open: any press on it (i.e., anywhere outside the panel) closes
+    // the panel — modal-popover behavior without a Wayland popup grab.
+    let catcher_for_click = catcher.clone();
+    let selector_for_click = selector.clone();
+    let catcher_click = gtk::GestureClick::new();
+    catcher_click.set_button(0);
+    catcher_click.connect_pressed(move |_, _, _, _| {
+        selector_for_click.set_visible(false);
+        catcher_for_click.set_visible(false);
+    });
+    catcher.add_controller(catcher_click);
+
+    // Refresh the checkmark on every open so it always reflects the tempo
+    // as of the moment the user looks at the list.
+    let selector_for_toggle = selector.clone();
+    let catcher_for_toggle = catcher.clone();
+    let overlay_for_toggle = overlay.clone();
+    let params_for_toggle = params.clone();
+    let button_for_toggle = button.clone();
+    let checks_for_toggle = checks;
+    button.connect_clicked(move |_| {
+        let open = !selector_for_toggle.is_visible();
+        selector_for_toggle.set_visible(open);
+        catcher_for_toggle.set_visible(open);
+
+        if open {
+            // Anchor the panel's top-left corner right below the button
+            // (margins are in overlay coordinates), but never let it spill
+            // past the overlay's bottom edge.
+            if let Some(origin) = button_for_toggle
+                .compute_point(&overlay_for_toggle, &gtk::graphene::Point::new(0.0, 0.0))
+            {
+                let below_button = origin.y().round() as i32 + button_for_toggle.height() + 4;
+                let max_top = overlay_for_toggle.height() - 280 - 16;
+                selector_for_toggle.set_margin_top(below_button.min(max_top.max(0)));
+                selector_for_toggle.set_margin_start(origin.x().round() as i32);
+            }
+
+            let current = tempo_marking(params_for_toggle.bpm());
+            for (marking, check) in TEMPO_MARKINGS.iter().zip(&checks_for_toggle) {
+                check.set_visible(marking.name == current);
+            }
+        }
+    });
+
+    // A click on the catcher (anywhere outside the panel) closes it.
+    let catcher_for_click = catcher.clone();
+    let selector_for_click = selector.clone();
+    let button_for_click = button.clone();
+    catcher.connect_clicked(move |_| {
+        button_for_click.grab_focus();
+        catcher_for_click.set_visible(false);
+        selector_for_click.set_visible(false);
+    });
+}
+
+#[cfg(all(test, feature = "ui"))]
+fn find_tempo_button(widget: &gtk::Widget) -> Option<gtk::Button> {
+    if let Some(button) = widget.downcast_ref::<gtk::Button>() {
+        if button
+            .css_classes()
+            .contains(&"tempo-selector-button".into())
+        {
+            return Some(button.clone());
+        }
+    }
+    let mut child = widget.first_child();
+    while let Some(current) = child {
+        if let Some(found) = find_tempo_button(&current) {
+            return Some(found);
+        }
+        child = current.next_sibling();
+    }
+    None
+}
+
+#[cfg(all(test, feature = "ui"))]
+fn find_tempo_selector(widget: &gtk::Widget) -> Option<gtk::Box> {
+    if let Some(box_widget) = widget.downcast_ref::<gtk::Box>() {
+        if box_widget
+            .css_classes()
+            .contains(&"tempo-list-container".into())
+        {
+            return Some(box_widget.clone());
+        }
+    }
+    let mut child = widget.first_child();
+    while let Some(current) = child {
+        if let Some(found) = find_tempo_selector(&current) {
+            return Some(found);
+        }
+        child = current.next_sibling();
+    }
+    None
+}
+
+fn build_tempo_card(
+    _window: &adw::ApplicationWindow,
+    overlay: &gtk::Overlay,
+    params: &Arc<SharedParams>,
+) -> gtk::Box {
     let card = gtk::Box::new(gtk::Orientation::Vertical, 14);
     card.add_css_class("metro-card");
     card.add_css_class("card");
@@ -1096,7 +1307,29 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
     adjusters.append(&decrease);
     top.append(&adjusters);
 
+    // The traditional tempo marking for the current BPM, shown to the left
+    // above the slider. Clicking it opens the tempo selector; the adjusters
+    // and the slider update it instantly, while the poll below is the
+    // catch-all for every other source (tap tempo, settings restores) so
+    // the marking never falls behind.
+    let tempo_label = gtk::Label::new(Some(tempo_marking(params.bpm())));
+    tempo_label.add_css_class("tempo-marking-label");
+
+    // A flat button so the marking reads as a plain label at rest but
+    // still gets a hover highlight, the pointer cursor and keyboard
+    // activation like any other GNOME control.
+    let tempo_button = gtk::Button::new();
+    tempo_button.set_child(Some(&tempo_label));
+    tempo_button.add_css_class("flat");
+    tempo_button.add_css_class("tempo-selector-button");
+    tempo_button.set_halign(gtk::Align::Start);
+    tempo_button.set_valign(gtk::Align::Start);
     let adjustment = gtk::Adjustment::new(f64::from(params.bpm()), 20.0, 300.0, 1.0, 5.0, 0.0);
+
+    // The marking belongs visually to the slider, so they share one tight
+    // group instead of the card's wide 14px rhythm.
+    let tempo_area = gtk::Box::new(gtk::Orientation::Vertical, 4);
+    tempo_area.append(&tempo_button);
     let slider = gtk::Scale::new(gtk::Orientation::Horizontal, Some(&adjustment));
     slider.set_digits(0);
     slider.set_hexpand(true);
@@ -1105,38 +1338,67 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
     slider.add_mark(140.0, gtk::PositionType::Bottom, Some("140"));
     slider.add_mark(200.0, gtk::PositionType::Bottom, Some("200"));
     slider.add_mark(260.0, gtk::PositionType::Bottom, Some("260"));
+    tempo_area.append(&slider);
+
+    // Invisible full-window catcher shown while the panel is open: any
+    // click outside the panel lands here and simply closes the panel
+    // (modal-popover behavior without a Wayland popup grab).
+    let tempo_catcher = gtk::Button::new();
+    tempo_catcher.add_css_class("tempo-catcher");
+    // The catcher must never take keyboard focus: hiding a focused widget
+    // breaks GTK's active-state accounting (Gtk-WARNING noise).
+    tempo_catcher.set_can_focus(false);
+    tempo_catcher.set_focusable(false);
+    tempo_catcher.set_visible(false);
+    overlay.add_overlay(&tempo_catcher);
+    build_tempo_selector(
+        overlay,
+        &tempo_catcher,
+        &tempo_button,
+        params,
+        &bpm,
+        &adjustment,
+        &tempo_label,
+    );
 
     let bpm_for_plus = bpm.clone();
+    let tempo_for_plus = tempo_label.clone();
     let adjustment_for_plus = adjustment.clone();
     let params_for_plus = params.clone();
     increase.connect_clicked(move |_| {
         let next = params_for_plus.bpm().saturating_add(1).min(300);
         params_for_plus.set_bpm(next);
         bpm_for_plus.set_text(&next.to_string());
+        tempo_for_plus.set_text(tempo_marking(next));
         adjustment_for_plus.set_value(f64::from(next));
     });
 
     let bpm_for_minus = bpm.clone();
+    let tempo_for_minus = tempo_label.clone();
     let adjustment_for_minus = adjustment.clone();
     let params_for_minus = params.clone();
     decrease.connect_clicked(move |_| {
         let next = params_for_minus.bpm().saturating_sub(1).max(20);
         params_for_minus.set_bpm(next);
         bpm_for_minus.set_text(&next.to_string());
+        tempo_for_minus.set_text(tempo_marking(next));
         adjustment_for_minus.set_value(f64::from(next));
     });
 
     let bpm_for_scale = bpm.clone();
+    let tempo_for_scale = tempo_label.clone();
     let params_for_scale = params.clone();
     slider.connect_value_changed(move |scale| {
         params_for_scale.set_bpm(scale.value().round() as u32);
         // Show the clamped value so dragging to the slider's edge cannot
         // briefly display a BPM the scheduler will never use.
         bpm_for_scale.set_text(&params_for_scale.bpm().to_string());
+        tempo_for_scale.set_text(tempo_marking(params_for_scale.bpm()));
     });
 
     let bpm_for_poll = bpm.clone();
     let adjustment_for_poll = adjustment.clone();
+    let tempo_for_poll = tempo_label.clone();
     let params_for_poll = params.clone();
     glib::timeout_add_local(Duration::from_millis(100), move || {
         let shown = bpm_for_poll.text().parse::<u32>().unwrap_or_default();
@@ -1145,6 +1407,7 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
         if shown != actual {
             bpm_for_poll.set_text(&actual.to_string());
             adjustment_for_poll.set_value(f64::from(actual));
+            tempo_for_poll.set_text(tempo_marking(actual));
         }
 
         glib::ControlFlow::Continue
@@ -1179,7 +1442,7 @@ fn build_tempo_card(params: &Arc<SharedParams>) -> gtk::Box {
     volume_row.append(&volume);
 
     card.append(&top);
-    card.append(&slider);
+    card.append(&tempo_area);
     card.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
     card.append(&volume_row);
     card
@@ -1820,31 +2083,94 @@ fn load_css() {
     }
 }
 
+/// Initializes GTK exactly once for every UI test, no matter which test
+/// thread gets there first: parallel tests race gtk::init for the default
+/// main context and fail when they call it concurrently.
 #[cfg(all(test, feature = "ui"))]
-mod icon_resource_tests {
-    use super::*;
+fn ensure_gtk() {
+    static GTK_INIT: std::sync::Once = std::sync::Once::new();
+    GTK_INIT.call_once(|| {
+        gtk::init().expect("GTK should initialize in the test harness");
+    });
+}
 
-    #[test]
-    fn compiled_icons_resolve_from_the_application_resource_path() {
-        if !gtk::is_initialized() {
-            gtk::init().expect("GTK should initialize in the test harness");
-        }
+#[cfg(all(test, feature = "ui"))]
+#[test]
+fn ui_widget_checks() {
+    // GTK tests must all run on the thread that initialized GTK, so every
+    // widget check lives in this single test instead of parallel ones.
+    ensure_gtk();
+    run_icon_resource_checks();
+    run_tempo_selector_checks();
+}
 
-        register_icon_resources();
+#[cfg(all(test, feature = "ui"))]
+fn run_icon_resource_checks() {
+    register_icon_resources();
 
-        let theme = gtk::IconTheme::new();
-        theme.add_resource_path(crate::app::style::ICON_RESOURCE_PATH);
+    let theme = gtk::IconTheme::new();
+    theme.add_resource_path(crate::app::style::ICON_RESOURCE_PATH);
 
-        for name in ["takto", "takto-symbolic", "takto-header"] {
-            theme.lookup_icon(
-                name,
-                &[],
-                32,
-                1,
-                gtk::TextDirection::Ltr,
-                gtk::IconLookupFlags::empty(),
-            );
-            assert!(theme.has_icon(name), "{name} was not registered");
-        }
+    for name in ["takto", "takto-symbolic", "takto-header"] {
+        theme.lookup_icon(
+            name,
+            &[],
+            32,
+            1,
+            gtk::TextDirection::Ltr,
+            gtk::IconLookupFlags::empty(),
+        );
+        assert!(theme.has_icon(name), "{name} was not registered");
     }
+}
+
+#[cfg(all(test, feature = "ui"))]
+fn run_tempo_selector_checks() {
+    let params = Arc::new(SharedParams::new());
+    let app = gtk::Application::new(Some("io.github.takto.UiTest"), Default::default());
+    let window = adw::ApplicationWindow::new(&app);
+    let overlay = gtk::Overlay::new();
+    window.set_content(Some(&overlay));
+    let _card = build_tempo_card(&window, &overlay, &params);
+    overlay.set_child(Some(&_card));
+
+    let selector = find_tempo_selector(overlay.upcast_ref())
+        .expect("the window overlay should contain the selector list");
+
+    fn find_list(widget: &gtk::Widget) -> Option<gtk::ListBox> {
+        if let Some(list) = widget.downcast_ref::<gtk::ListBox>() {
+            return Some(list.clone());
+        }
+        let mut child = widget.first_child();
+        while let Some(current) = child {
+            if let Some(found) = find_list(&current) {
+                return Some(found);
+            }
+            child = current.next_sibling();
+        }
+        None
+    }
+
+    let list = find_list(selector.upcast_ref()).expect("the selector should contain the list");
+    let mut rows = 0usize;
+    let mut child = list.first_child();
+    while let Some(current) = child {
+        if current.downcast_ref::<gtk::ListBoxRow>().is_some() {
+            rows += 1;
+        }
+        child = current.next_sibling();
+    }
+    assert_eq!(
+        rows,
+        TEMPO_MARKINGS.len(),
+        "the selector should list every tempo marking"
+    );
+    assert!(
+        !selector.is_visible(),
+        "the selector starts hidden inside the overlay"
+    );
+    assert!(
+        find_tempo_button(overlay.upcast_ref()).is_some(),
+        "the tempo marking button should exist"
+    );
 }

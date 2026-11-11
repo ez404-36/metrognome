@@ -6,6 +6,7 @@ All notable changes to Takto are documented in this file. The format is based on
 
 ### Added
 
+- Tempo presets: the traditional Italian tempo term for the current BPM (Grave through Prestissimo, modern non-overlapping ranges) is shown above the tempo slider and follows every tempo change, including tap tempo. Clicking the term opens a compact dropdown, drawn over the slider, listing every marking with its BPM range; the active one is checked, and selecting another sets the tempo to that range's midpoint.
 - In-app updates: shortly after launch the app checks the latest published GitHub Release and shows a banner when a newer version exists. One click downloads the matching artifact and installs it — `.deb` installs go through `pkexec apt-get install`, AppImages are replaced in place with a restart prompt, and Flatpak/development builds open the release page instead. A manual "Check for updates" row was added to the settings modal.
 
 ## [0.1.4] - 2026-11-10
