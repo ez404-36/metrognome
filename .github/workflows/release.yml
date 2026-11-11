@@ -149,6 +149,21 @@ jobs:
           }
 
           release_id="$(find_id_retry)"
+
+          # Release notes come straight from the tag's CHANGELOG.md section
+          # so the GitHub release body always mirrors the changelog.
+          notes_file="$(mktemp)"
+          section_header="## [${tag#v}]"
+          awk -v header="$section_header" '
+            index($0, header) == 1 { found = 1; print; next }
+            /^## / && found { exit }
+            found { print }
+          ' CHANGELOG.md > "$notes_file"
+          # Fallback stub in case the changelog section is missing.
+          if [ ! -s "$notes_file" ]; then
+            printf 'Takto %s — .deb package, portable AppImage and Flatpak bundle.\n' "$tag" > "$notes_file"
+          fi
+
           if [ -z "$release_id" ]; then
             # `gh release create` prints the release's HTML URL on success,
             # which the API also exposes verbatim as `html_url`; map it back
@@ -158,7 +173,7 @@ jobs:
               --repo "$repo" \
               --draft \
               --title "Takto $tag" \
-              --notes "Takto $tag — .deb package and portable AppImage.")"
+              --notes-file "$notes_file")"
             echo "Created draft release: $release_url"
             url_id="$(gh api --paginate "repos/$repo/releases" \
               -q ".[] | select(.html_url == \"$release_url\") | .id" 2>/dev/null \
