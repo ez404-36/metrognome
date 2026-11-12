@@ -4,6 +4,8 @@ All notable changes to Takto are documented in this file. The format is based on
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-12
+
 ### Added
 
 - Custom time signatures: any meter from 1/2 to 16/16. The meter row shows up to 4 chips; a pencil button opens a sizes editor where presets and custom meters can be shown or hidden, reordered by drag-and-drop, and custom meters can be added (beats 1–16, beat unit 2/4/8/16 with a live preview), edited in place, or removed. The active meter always keeps its chip, switching meters mid-playback keeps the tempo, and all choices persist across restarts. Old settings files load unchanged: a saved 6 beats resolves to 6/8, everything else to quarter notes. BPM still means the rate of every tick; the beat unit is the written label only.
@@ -102,7 +104,8 @@ Initial release (under the original name Metrognome).
 - Synthetic click noise removed and round tap forced. (#113d405)
 - Build against GTK 4.14 and use the libadwaita toolbar layout; tightened desktop layout and centered playback controls. (#22dc3e0, #df84a3f, #d03ec7e, #b787feb)
 
-[Unreleased]: https://github.com/ez404-36/takto/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/ez404-36/takto/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/ez404-36/takto/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ez404-36/takto/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ez404-36/takto/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ez404-36/takto/compare/v0.1.3...v0.1.4
