@@ -154,8 +154,10 @@ jobs:
           # so the GitHub release body always mirrors the changelog.
           notes_file="$(mktemp)"
           section_header="## [${tag#v}]"
+          # The section header itself is skipped: the release title already
+          # carries the version.
           awk -v header="$section_header" '
-            index($0, header) == 1 { found = 1; print; next }
+            index($0, header) == 1 { found = 1; next }
             /^## / && found { exit }
             found { print }
           ' CHANGELOG.md > "$notes_file"
