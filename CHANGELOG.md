@@ -4,6 +4,12 @@ All notable changes to Takto are documented in this file. The format is based on
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-11-12
+
+### Fixed
+
+- The v0.1.5 Linux packages were built with a leftover temporary application id (`…Takto.Probe`): the app ran without its name and icon. Rebuilt with the correct `io.github.ez404_36.Takto` id, and the release notes now come from the matching CHANGELOG.md section instead of a placeholder.
+
 ## [0.1.5] - 2026-11-11
 
 ### Added
@@ -92,7 +98,8 @@ Initial release (under the original name Metrognome).
 - Synthetic click noise removed and round tap forced. (#113d405)
 - Build against GTK 4.14 and use the libadwaita toolbar layout; tightened desktop layout and centered playback controls. (#22dc3e0, #df84a3f, #d03ec7e, #b787feb)
 
-[Unreleased]: https://github.com/ez404-36/takto/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/ez404-36/takto/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/ez404-36/takto/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ez404-36/takto/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ez404-36/takto/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ez404-36/takto/compare/v0.1.2...v0.1.3
