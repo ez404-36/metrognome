@@ -49,7 +49,7 @@
 ## Highlights
 
 - 🎚 **20–300 BPM** — Smooth tempo changes and tap tempo.
-- 🥁 **Custom time signatures** — 2/4, 3/4, 4/4, and 6/8 are supported.
+- 🥁 **Custom time signatures** — Any meter from 1/2 to 16/16; pick up to 4 quick chips.
 - 🎯 **Beat muting** — Turn off the sound on any beat.
 - 🔊 **18 built-in samples.**
 - 🔄 **In-app updates** — Takto checks the latest GitHub Release at launch and installs updates with one click.
@@ -115,6 +115,13 @@ Audio callback
 This avoids drift and accumulated timing error, including at high tempos, and
 keeps tempo changes restart-free: the pending hit stays where it was scheduled,
 and the new period applies from the next beat.
+
+Time signatures follow the same simple rule: the numerator is the number of
+ticks per measure (up to 16), and BPM is the rate of every tick. The written
+beat unit (`/2`, `/4`, `/8`, `/16`) is just the label — 6/8 at 140 BPM means
+140 eighth-note ticks per minute. The pencil button next to the meter chips
+opens the sizes editor, where you choose which chips sit in the bar (drag to
+reorder them), add custom meters, or edit and remove existing ones.
 
 ## Releases
 

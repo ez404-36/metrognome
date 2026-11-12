@@ -1,10 +1,83 @@
-use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
+use std::sync::{
+    atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering},
+    Mutex, MutexGuard,
+};
 
 pub const MAX_BEATS: u32 = 16;
 /// Upper volume multiplier. 1.0 is unity (100%); values above it boost the
 /// click through the renderer's soft limiter, mirroring GNOME's
 /// over-amplification idea.
 pub const MAX_VOLUME: f32 = 2.0;
+
+/// Built-in meters, always available in the sizes dialog. The first number
+/// is the beat count, the second the written beat unit.
+pub const PRESET_METERS: [(u32, u32); 4] = [(2, 4), (3, 4), (4, 4), (6, 8)];
+
+/// Sanity cap on the user-defined meter list.
+pub const MAX_CUSTOM_METERS: usize = 8;
+
+/// How many meter chips the main window shows at once.
+pub const MAX_VISIBLE_METERS: usize = 4;
+
+/// Beat units a custom meter may use, indexed by the packed code stored in
+/// the pattern atomic. The unit is purely the written signature: BPM always
+/// means the rate of each tick (see README "How it works").
+pub const METER_DENOMINATORS: [u32; 4] = [2, 4, 8, 16];
+
+/// Packed-code fallback for unsupported units (e.g. values from corrupt
+/// saves): 4, the most common written unit.
+const DEFAULT_DENOMINATOR_CODE: u32 = 1;
+
+pub fn meter_label(beats: u32, denominator: u32) -> String {
+    format!("{beats}/{denominator}")
+}
+
+pub fn is_preset_meter(beats: u32, denominator: u32) -> bool {
+    PRESET_METERS.contains(&(beats, denominator))
+}
+
+/// Maps a written unit onto its packed code; unsupported values degrade to
+/// the default unit instead of corrupting the atomic.
+pub fn denominator_code(denominator: u32) -> u32 {
+    METER_DENOMINATORS
+        .iter()
+        .position(|&unit| unit == denominator)
+        .unwrap_or(DEFAULT_DENOMINATOR_CODE as usize) as u32
+}
+
+pub fn denominator_from_code(code: u32) -> u32 {
+    METER_DENOMINATORS
+        .get(code as usize)
+        .copied()
+        .unwrap_or(METER_DENOMINATORS[DEFAULT_DENOMINATOR_CODE as usize])
+}
+
+/// Clamps an arbitrary unit onto the supported set so list entries loaded
+/// from disk can never hold an unwritable denominator.
+pub fn normalize_denominator(denominator: u32) -> u32 {
+    denominator_from_code(denominator_code(denominator))
+}
+
+/// Outcome of adding a user-defined meter.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MeterChange {
+    /// The meter was appended to the custom list.
+    Added,
+    /// The meter already exists as a preset or custom entry.
+    Exists,
+    /// The custom list is at its cap.
+    Full,
+}
+
+/// Outcome of rewriting an existing custom meter.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MeterUpdate {
+    Updated,
+    /// The new value collides with a preset or another custom meter.
+    Duplicate,
+    /// The index is stale (the entry was removed elsewhere).
+    NotFound,
+}
 
 /// Per-beat playback state. The application exposes two states: `Enabled`
 /// beats sound (the plain tick, or the special first-beat sound when the
@@ -244,6 +317,13 @@ pub struct SharedParams {
     /// Selected interface language as its position in `LANGUAGES`.
     pub language: AtomicUsize,
     pub sample_rate: AtomicU32,
+    /// User-defined meters as `(beats, denominator)` pairs. UI-only state:
+    /// the audio thread never reads it, but it lives here so the persistence
+    /// snapshot covers it like every other setting.
+    custom_meters: Mutex<Vec<(u32, u32)>>,
+    /// Meters shown as chips in the main window, in display order. Capped at
+    /// `MAX_VISIBLE_METERS`; the active meter must always be a member.
+    visible_meters: Mutex<Vec<(u32, u32)>>,
 }
 
 #[allow(dead_code)]
@@ -253,7 +333,7 @@ impl SharedParams {
             running: AtomicBool::new(false),
             bpm: AtomicU32::new(140),
             volume: AtomicU32::new(f32::to_bits(0.85)),
-            pattern: AtomicU32::new(pack_pattern(4, 0b1111)),
+            pattern: AtomicU32::new(pack_pattern(4, DEFAULT_DENOMINATOR_CODE, 0b1111)),
             current_beat: AtomicU32::new(0),
             preview_generation: AtomicU32::new(0),
             one_shot_pending: AtomicU32::new(0),
@@ -261,6 +341,8 @@ impl SharedParams {
             sample: AtomicUsize::new(0),
             language: AtomicUsize::new(Language::default().index()),
             sample_rate: AtomicU32::new(48_000),
+            custom_meters: Mutex::new(Vec::new()),
+            visible_meters: Mutex::new(PRESET_METERS.to_vec()),
         }
     }
 
@@ -287,27 +369,55 @@ impl SharedParams {
         pattern_count(self.pattern.load(Ordering::Relaxed))
     }
 
-    /// Reads the meter as one atomic value: `(active_mask, beat_count)`.
+    /// Reads the meter as one atomic value: `(beats, denominator)`.
+    pub fn meter(&self) -> (u32, u32) {
+        let packed = self.pattern.load(Ordering::Relaxed);
+        (
+            pattern_count(packed),
+            denominator_from_code(pattern_denominator_code(packed)),
+        )
+    }
+
+    /// Low-level read for the audio thread: `(active_mask, beat_count)`.
     pub fn pattern(&self) -> (u32, u32) {
         let packed = self.pattern.load(Ordering::Relaxed);
         (packed & PATTERN_MASK, pattern_count(packed))
     }
 
-    pub fn set_states(&self, beats: u32, states: &[BeatState]) {
+    pub fn set_meter(&self, beats: u32, denominator: u32) {
+        let packed = self.pattern.load(Ordering::Relaxed);
         let beats = beats.clamp(1, MAX_BEATS);
-        let mut active_mask = 0_u32;
+        // Bits beyond the new beat count would be invisible to the scheduler,
+        // but clearing them keeps the atomic self-describing.
+        let active_mask = (packed & PATTERN_MASK) & ((1_u32 << beats) - 1);
+        self.pattern.store(
+            pack_pattern(beats, denominator_code(denominator), active_mask),
+            Ordering::Relaxed,
+        );
+    }
 
-        for (index, state) in states.iter().enumerate().take(beats as usize) {
-            match state {
-                BeatState::Enabled | BeatState::Normal => {
-                    active_mask |= 1 << index;
-                }
-                BeatState::Muted => {}
-            }
-        }
+    /// One atomic switch to a new meter with a fresh pattern, so the audio
+    /// thread can never observe a beat count from one meter with a mask from
+    /// another.
+    pub fn set_meter_and_states(&self, beats: u32, denominator: u32, states: &[BeatState]) {
+        self.pattern.store(
+            pack_pattern(
+                beats,
+                denominator_code(denominator),
+                states_to_mask(beats, states),
+            ),
+            Ordering::Relaxed,
+        );
+    }
 
-        self.pattern
-            .store(pack_pattern(beats, active_mask), Ordering::Relaxed);
+    /// Rewrites the active mask while keeping the current meter. Used by the
+    /// beat toggles, which never change the meter.
+    pub fn set_states(&self, beats: u32, states: &[BeatState]) {
+        let denominator = pattern_denominator_code(self.pattern.load(Ordering::Relaxed));
+        self.pattern.store(
+            pack_pattern(beats, denominator, states_to_mask(beats, states)),
+            Ordering::Relaxed,
+        );
     }
 
     pub fn states(&self) -> Vec<BeatState> {
@@ -351,17 +461,215 @@ impl SharedParams {
     pub fn set_language(&self, language: Language) {
         self.language.store(language.index(), Ordering::SeqCst);
     }
+
+    /// Poisoning only happens on a panic while holding the guard; recovering
+    /// the (still structurally valid) list beats crashing the UI thread.
+    fn lock_meters<'a>(&self, list: &'a Mutex<Vec<(u32, u32)>>) -> MutexGuard<'a, Vec<(u32, u32)>> {
+        list.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    /// Whether the pair is a preset or a user-defined meter.
+    pub fn known_meter(&self, beats: u32, denominator: u32) -> bool {
+        is_preset_meter(beats, denominator) || self.custom_meters().contains(&(beats, denominator))
+    }
+
+    pub fn custom_meters(&self) -> Vec<(u32, u32)> {
+        self.lock_meters(&self.custom_meters).clone()
+    }
+
+    /// Meters shown as chips, in display order.
+    pub fn visible_meters(&self) -> Vec<(u32, u32)> {
+        self.lock_meters(&self.visible_meters).clone()
+    }
+
+    /// Enables or disables one chip. Returns `false` (and changes nothing)
+    /// when the meter is unknown or the row is already full.
+    pub fn set_meter_visible(&self, beats: u32, denominator: u32, visible: bool) -> bool {
+        if !self.known_meter(beats, denominator) {
+            return false;
+        }
+
+        let mut visible_meters = self.lock_meters(&self.visible_meters);
+        if visible {
+            if visible_meters.contains(&(beats, denominator)) {
+                return true;
+            }
+            if visible_meters.len() >= MAX_VISIBLE_METERS {
+                return false;
+            }
+            visible_meters.push((beats, denominator));
+            true
+        } else {
+            visible_meters.retain(|&meter| meter != (beats, denominator));
+            true
+        }
+    }
+
+    /// Reorders the visible chips (`remove(from)` + `insert(to)` semantics).
+    pub fn move_visible_meter(&self, from: usize, to: usize) {
+        let mut visible_meters = self.lock_meters(&self.visible_meters);
+        if from >= visible_meters.len() || to >= visible_meters.len() || from == to {
+            return;
+        }
+        let meter = visible_meters.remove(from);
+        visible_meters.insert(to, meter);
+    }
+
+    /// Replaces the visible list, dropping unknown meters and duplicates and
+    /// enforcing the cap. Used by both the sizes dialog and the load path.
+    pub fn set_visible_meters(&self, meters: &[(u32, u32)]) {
+        let mut kept: Vec<(u32, u32)> = Vec::with_capacity(MAX_VISIBLE_METERS);
+        for &(beats, denominator) in meters {
+            if self.known_meter(beats, denominator) && !kept.contains(&(beats, denominator)) {
+                kept.push((beats, denominator));
+            }
+            if kept.len() == MAX_VISIBLE_METERS {
+                break;
+            }
+        }
+        *self.lock_meters(&self.visible_meters) = kept;
+    }
+
+    /// Replaces the custom list, dropping preset duplicates and normalizing
+    /// values. Used by the load path; the dialog goes through `add`/`update`.
+    pub fn set_custom_meters(&self, meters: &[(u32, u32)]) {
+        let mut kept: Vec<(u32, u32)> = Vec::with_capacity(MAX_CUSTOM_METERS);
+        for &(beats, denominator) in meters {
+            let beats = beats.clamp(1, MAX_BEATS);
+            let denominator = normalize_denominator(denominator);
+            if !is_preset_meter(beats, denominator) && !kept.contains(&(beats, denominator)) {
+                kept.push((beats, denominator));
+            }
+            if kept.len() == MAX_CUSTOM_METERS {
+                break;
+            }
+        }
+        *self.lock_meters(&self.custom_meters) = kept;
+        // The visible list may now reference dropped meters; re-sanitize it.
+        let visible = self.visible_meters();
+        self.set_visible_meters(&visible);
+    }
+
+    /// Adds a user-defined meter. Existing presets and duplicates keep the
+    /// list clean so the dialog can just enable their visibility instead.
+    pub fn add_custom_meter(&self, beats: u32, denominator: u32) -> MeterChange {
+        let beats = beats.clamp(1, MAX_BEATS);
+        let denominator = normalize_denominator(denominator);
+        let mut custom_meters = self.lock_meters(&self.custom_meters);
+        if is_preset_meter(beats, denominator) || custom_meters.contains(&(beats, denominator)) {
+            return MeterChange::Exists;
+        }
+        if custom_meters.len() >= MAX_CUSTOM_METERS {
+            return MeterChange::Full;
+        }
+        custom_meters.push((beats, denominator));
+        MeterChange::Added
+    }
+
+    /// Rewrites one custom meter. The visible chip keeps its position; the
+    /// active meter follows its chip so the audio pattern always matches a
+    /// meter that still exists.
+    pub fn update_custom_meter(&self, index: usize, beats: u32, denominator: u32) -> MeterUpdate {
+        let beats = beats.clamp(1, MAX_BEATS);
+        let denominator = normalize_denominator(denominator);
+        let old = {
+            let mut custom_meters = self.lock_meters(&self.custom_meters);
+            if index >= custom_meters.len() {
+                return MeterUpdate::NotFound;
+            }
+            let current = custom_meters[index];
+            if current == (beats, denominator) {
+                return MeterUpdate::Updated;
+            }
+            if is_preset_meter(beats, denominator)
+                || custom_meters
+                    .iter()
+                    .enumerate()
+                    .any(|(other, &meter)| other != index && meter == (beats, denominator))
+            {
+                return MeterUpdate::Duplicate;
+            }
+            custom_meters[index] = (beats, denominator);
+            current
+        };
+
+        let mut visible_meters = self.lock_meters(&self.visible_meters);
+        if let Some(position) = visible_meters.iter().position(|&meter| meter == old) {
+            visible_meters[position] = (beats, denominator);
+        }
+        drop(visible_meters);
+
+        if self.meter() == old {
+            self.set_meter(beats, denominator);
+        }
+        MeterUpdate::Updated
+    }
+
+    /// Removes a custom meter (and its chip). Returns the removed pair so the
+    /// dialog can pick a fallback when it was the active meter.
+    pub fn remove_custom_meter(&self, index: usize) -> Option<(u32, u32)> {
+        let removed = {
+            let mut custom_meters = self.lock_meters(&self.custom_meters);
+            if index >= custom_meters.len() {
+                return None;
+            }
+            custom_meters.remove(index)
+        };
+        self.lock_meters(&self.visible_meters)
+            .retain(|&meter| meter != removed);
+        Some(removed)
+    }
+
+    /// Whether `(beats, denominator)` would collide with a preset or another
+    /// custom meter. `skip_index` excludes one custom entry (the one being
+    /// edited).
+    pub fn meter_conflicts(&self, skip_index: Option<usize>, beats: u32, denominator: u32) -> bool {
+        let beats = beats.clamp(1, MAX_BEATS);
+        let denominator = normalize_denominator(denominator);
+        if is_preset_meter(beats, denominator) {
+            return true;
+        }
+        self.custom_meters()
+            .into_iter()
+            .enumerate()
+            .any(|(index, meter)| Some(index) != skip_index && meter == (beats, denominator))
+    }
 }
 
 const PATTERN_MASK: u32 = 0xFFFF;
 const PATTERN_COUNT_SHIFT: u32 = 16;
+const PATTERN_COUNT_MASK: u32 = 0x1F;
+const PATTERN_DENOMINATOR_SHIFT: u32 = 21;
+const PATTERN_DENOMINATOR_MASK: u32 = 0x7;
 
-fn pack_pattern(count: u32, active_mask: u32) -> u32 {
-    ((count & PATTERN_MASK) << PATTERN_COUNT_SHIFT) | (active_mask & PATTERN_MASK)
+fn pack_pattern(count: u32, denominator_code: u32, active_mask: u32) -> u32 {
+    (count.clamp(1, MAX_BEATS) << PATTERN_COUNT_SHIFT)
+        | ((denominator_code & PATTERN_DENOMINATOR_MASK) << PATTERN_DENOMINATOR_SHIFT)
+        | (active_mask & PATTERN_MASK)
 }
 
 fn pattern_count(packed: u32) -> u32 {
-    ((packed >> PATTERN_COUNT_SHIFT) & PATTERN_MASK).clamp(1, MAX_BEATS)
+    ((packed >> PATTERN_COUNT_SHIFT) & PATTERN_COUNT_MASK).clamp(1, MAX_BEATS)
+}
+
+fn pattern_denominator_code(packed: u32) -> u32 {
+    (packed >> PATTERN_DENOMINATOR_SHIFT) & PATTERN_DENOMINATOR_MASK
+}
+
+fn states_to_mask(beats: u32, states: &[BeatState]) -> u32 {
+    let beats = beats.clamp(1, MAX_BEATS);
+    let mut active_mask = 0_u32;
+
+    for (index, state) in states.iter().enumerate().take(beats as usize) {
+        match state {
+            BeatState::Enabled | BeatState::Normal => {
+                active_mask |= 1 << index;
+            }
+            BeatState::Muted => {}
+        }
+    }
+
+    active_mask
 }
 
 impl Default for SharedParams {
@@ -377,6 +685,17 @@ pub struct AppSettings {
     pub bpm: u32,
     pub volume: f32,
     pub beats: u32,
+    /// Written beat unit of the active meter. `None` comes from saves made
+    /// before custom meters existed; `beats == 6` meant 6/8 back then, so the
+    /// load path resolves it to 8 instead of silently rewriting it as 6/4.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub denominator: Option<u32>,
+    /// User-defined meters as `(beats, denominator)` pairs.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub custom_signatures: Option<Vec<(u32, u32)>>,
+    /// Meters shown as chips in the main window, in display order.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub visible_meters: Option<Vec<(u32, u32)>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub states: Option<Vec<BeatState>>,
     /// Legacy per-beat flags from older versions (true = accented, false =
@@ -401,6 +720,9 @@ impl Default for AppSettings {
             bpm: 140,
             volume: 0.85,
             beats: 4,
+            denominator: Some(4),
+            custom_signatures: Some(Vec::new()),
+            visible_meters: Some(PRESET_METERS.to_vec()),
             states: Some(default_states(4)),
             accents: None,
             highlight_first: true,
@@ -438,10 +760,14 @@ impl AppSettings {
     /// bug caught by `every_setting_survives_a_save_and_reload`.
     #[cfg_attr(not(feature = "ui"), allow(dead_code))]
     pub fn from_params(params: &SharedParams) -> Self {
+        let (beats, denominator) = params.meter();
         Self {
             bpm: params.bpm(),
             volume: params.volume(),
-            beats: params.beat_count(),
+            beats,
+            denominator: Some(denominator),
+            custom_signatures: Some(params.custom_meters()),
+            visible_meters: Some(params.visible_meters()),
             states: Some(params.states()),
             accents: None,
             highlight_first: params.highlight_first(),
@@ -497,7 +823,19 @@ impl AppSettings {
     pub fn apply_to(&self, params: &SharedParams) {
         params.set_bpm(self.bpm);
         params.set_volume(self.volume);
-        params.set_states(self.beats, &self.effective_states());
+        params.set_custom_meters(self.custom_signatures.as_deref().unwrap_or(&[]));
+        // Saves made before custom meters existed have no chip list: show the
+        // four presets instead of an empty bar. A corrupt list that
+        // sanitization empties falls back the same way.
+        let visible_meters = self.visible_meters.as_deref().unwrap_or(&PRESET_METERS);
+        params.set_visible_meters(visible_meters);
+        if params.visible_meters().is_empty() {
+            params.set_visible_meters(&PRESET_METERS);
+        }
+        let denominator = self
+            .denominator
+            .unwrap_or(if self.beats == 6 { 8 } else { 4 });
+        params.set_meter_and_states(self.beats, denominator, &self.effective_states());
         params.set_highlight_first(self.highlight_first);
         params.set_sample(self.sample.unwrap_or(0));
         params.set_language(self.language);
@@ -641,6 +979,9 @@ mod tests {
             bpm: 0,
             volume: 5.0,
             beats: 999,
+            denominator: None,
+            custom_signatures: None,
+            visible_meters: None,
             states: None,
             accents: None,
             highlight_first: true,
@@ -685,6 +1026,9 @@ mod tests {
             bpm: 183,
             volume: 0.42,
             beats: 3,
+            denominator: Some(4),
+            custom_signatures: Some(Vec::new()),
+            visible_meters: Some(PRESET_METERS.to_vec()),
             states: Some(vec![
                 BeatState::Enabled,
                 BeatState::Muted,
@@ -759,6 +1103,9 @@ mod tests {
             bpm: 140,
             volume: 0.8,
             beats: 4,
+            denominator: None,
+            custom_signatures: None,
+            visible_meters: None,
             states: None,
             accents: Some(vec![true, false, false, false]),
             highlight_first: true,
@@ -783,6 +1130,9 @@ mod tests {
             bpm: 140,
             volume: 0.8,
             beats: 3,
+            denominator: None,
+            custom_signatures: None,
+            visible_meters: None,
             states: Some(vec![
                 BeatState::Enabled,
                 BeatState::Normal,
@@ -816,9 +1166,14 @@ mod tests {
                 BeatState::Enabled,
             ],
         );
+        source.set_meter(6, 8);
         source.set_highlight_first(false);
         source.set_sample(4);
         source.set_language(Language::Ukrainian);
+        assert_eq!(source.add_custom_meter(7, 8), MeterChange::Added);
+        assert_eq!(source.add_custom_meter(5, 4), MeterChange::Added);
+        source.set_visible_meters(&[(7, 8), (4, 4), (3, 4), (2, 4)]);
+        source.move_visible_meter(0, 2);
 
         // A JSON round trip simulates writing and reading settings.json.
         let saved = AppSettings::from_params(&source);
@@ -834,7 +1189,10 @@ mod tests {
         assert_eq!(restored.bpm(), source.bpm());
         assert_eq!(restored.volume(), source.volume());
         assert_eq!(restored.beat_count(), source.beat_count());
+        assert_eq!(restored.meter(), source.meter());
         assert_eq!(restored.states(), source.states());
+        assert_eq!(restored.custom_meters(), source.custom_meters());
+        assert_eq!(restored.visible_meters(), source.visible_meters());
         assert_eq!(restored.highlight_first(), source.highlight_first());
         assert_eq!(restored.sample(), source.sample());
         assert_eq!(restored.language(), source.language());
@@ -849,5 +1207,176 @@ mod tests {
         for (index, (language, _, _)) in LANGUAGES.iter().enumerate() {
             assert_eq!(language.index(), index);
         }
+    }
+
+    #[test]
+    fn meter_packing_round_trips_beats_denominator_and_states() {
+        let params = SharedParams::new();
+        params.set_meter_and_states(
+            7,
+            8,
+            &[
+                BeatState::Enabled,
+                BeatState::Muted,
+                BeatState::Enabled,
+                BeatState::Enabled,
+                BeatState::Enabled,
+                BeatState::Enabled,
+                BeatState::Muted,
+            ],
+        );
+
+        assert_eq!(params.meter(), (7, 8));
+        assert_eq!(params.beat_count(), 7);
+        assert_eq!(params.pattern(), (0b0111101, 7));
+
+        // The beat toggles rewrite the mask without touching the meter, so
+        // 6/4 and 6/8 stay distinguishable chips.
+        params.set_states(7, &default_states(7));
+        assert_eq!(params.meter(), (7, 8));
+        assert_eq!(params.states(), default_states(7));
+    }
+
+    #[test]
+    fn meter_values_are_clamped() {
+        let params = SharedParams::new();
+        params.set_meter(0, 5);
+        assert_eq!(params.meter(), (1, 4));
+
+        params.set_meter(MAX_BEATS + 10, 16);
+        assert_eq!(params.meter(), (MAX_BEATS, 16));
+
+        assert_eq!(normalize_denominator(3), 4);
+        assert_eq!(denominator_from_code(99), 4);
+    }
+
+    #[test]
+    fn legacy_saves_without_denominator_keep_six_eighth() {
+        // Old saves stored only a beat count: a 6 was 6/8, everything else
+        // read as quarter notes.
+        let text = r#"{"bpm": 140, "volume": 0.8, "beats": 6, "highlight_first": true}"#;
+        let loaded: AppSettings = serde_json::from_str(text).unwrap();
+        let params = SharedParams::new();
+        loaded.apply_to(&params);
+        assert_eq!(params.meter(), (6, 8));
+
+        let text = r#"{"bpm": 140, "volume": 0.8, "beats": 4, "highlight_first": true}"#;
+        let loaded: AppSettings = serde_json::from_str(text).unwrap();
+        let params = SharedParams::new();
+        loaded.apply_to(&params);
+        assert_eq!(params.meter(), (4, 4));
+    }
+
+    #[test]
+    fn legacy_saves_show_the_default_preset_chips() {
+        let text = r#"{"bpm": 140, "volume": 0.8, "beats": 4, "highlight_first": true}"#;
+        let loaded: AppSettings = serde_json::from_str(text).unwrap();
+        let params = SharedParams::new();
+        loaded.apply_to(&params);
+
+        assert_eq!(params.visible_meters(), PRESET_METERS.to_vec());
+        assert_eq!(params.meter(), (4, 4));
+        assert!(params.custom_meters().is_empty());
+    }
+
+    #[test]
+    fn corrupt_visible_lists_fall_back_to_presets() {
+        // Both entries are unknown meters, so sanitization empties the bar.
+        let text = r#"{
+            "bpm": 140,
+            "volume": 0.8,
+            "beats": 4,
+            "highlight_first": true,
+            "visible_meters": [[9, 9], [8, 3]]
+        }"#;
+        let loaded: AppSettings = serde_json::from_str(text).unwrap();
+        let params = SharedParams::new();
+        loaded.apply_to(&params);
+
+        assert_eq!(params.visible_meters(), PRESET_METERS.to_vec());
+    }
+
+    #[test]
+    fn custom_meter_list_dedupes_and_caps() {
+        let params = SharedParams::new();
+
+        // Presets and duplicates never enter the list.
+        assert_eq!(params.add_custom_meter(4, 4), MeterChange::Exists);
+        assert_eq!(params.add_custom_meter(7, 8), MeterChange::Added);
+        assert_eq!(params.add_custom_meter(7, 8), MeterChange::Exists);
+        assert_eq!(params.custom_meters(), vec![(7, 8)]);
+
+        // Invalid units normalize onto the supported set.
+        assert_eq!(params.add_custom_meter(9, 5), MeterChange::Added);
+        assert!(params.custom_meters().contains(&(9, 4)));
+
+        while params.custom_meters().len() < MAX_CUSTOM_METERS {
+            let beats = (params.custom_meters().len() + 8) as u32;
+            assert_eq!(params.add_custom_meter(beats, 8), MeterChange::Added);
+        }
+        assert_eq!(params.add_custom_meter(16, 8), MeterChange::Full);
+        assert_eq!(params.custom_meters().len(), MAX_CUSTOM_METERS);
+    }
+
+    #[test]
+    fn update_custom_meter_rejects_duplicates_and_follows_the_active_meter() {
+        let params = SharedParams::new();
+        assert_eq!(params.add_custom_meter(7, 8), MeterChange::Added);
+        assert_eq!(params.add_custom_meter(9, 8), MeterChange::Added);
+        params.set_meter_and_states(7, 8, &default_states(7));
+
+        // Colliding with a preset or another custom entry is rejected so the
+        // dialog can keep Save disabled instead of guessing a merge.
+        assert_eq!(params.update_custom_meter(0, 4, 4), MeterUpdate::Duplicate);
+        assert_eq!(params.update_custom_meter(0, 9, 8), MeterUpdate::Duplicate);
+        assert_eq!(params.update_custom_meter(9, 8, 8), MeterUpdate::NotFound);
+
+        assert_eq!(params.update_custom_meter(0, 5, 4), MeterUpdate::Updated);
+        assert_eq!(params.custom_meters()[0], (5, 4));
+        // The chip label followed the edit while it was the active meter.
+        assert_eq!(params.meter(), (5, 4));
+        assert_eq!(params.beat_count(), 5);
+
+        // Rewriting a meter to its own value is a valid no-op.
+        assert_eq!(params.update_custom_meter(0, 5, 4), MeterUpdate::Updated);
+    }
+
+    #[test]
+    fn remove_custom_meter_cascades_visibility() {
+        let params = SharedParams::new();
+        assert_eq!(params.add_custom_meter(7, 8), MeterChange::Added);
+        // Free a visible slot first: the default row is full with presets.
+        params.set_visible_meters(&[(4, 4), (3, 4), (2, 4)]);
+        assert!(params.set_meter_visible(7, 8, true));
+        assert!(params.visible_meters().contains(&(7, 8)));
+
+        assert_eq!(params.remove_custom_meter(0), Some((7, 8)));
+        assert_eq!(params.remove_custom_meter(0), None);
+        assert!(!params.visible_meters().contains(&(7, 8)));
+    }
+
+    #[test]
+    fn visible_meters_are_validated_capped_and_ordered() {
+        let params = SharedParams::new();
+        assert_eq!(params.add_custom_meter(7, 8), MeterChange::Added);
+
+        // Unknown meters and duplicates are dropped, order is preserved.
+        params.set_visible_meters(&[(7, 8), (9, 8), (4, 4), (4, 4), (3, 4), (2, 4), (6, 8)]);
+        assert_eq!(
+            params.visible_meters(),
+            vec![(7, 8), (4, 4), (3, 4), (2, 4)]
+        );
+
+        params.move_visible_meter(3, 0);
+        assert_eq!(
+            params.visible_meters(),
+            vec![(2, 4), (7, 8), (4, 4), (3, 4)]
+        );
+
+        // Disabling frees the slot for another chip.
+        assert!(params.set_meter_visible(2, 4, false));
+        assert!(params.set_meter_visible(6, 8, true));
+        assert_eq!(params.visible_meters().last(), Some(&(6, 8)));
+        assert!(!params.set_meter_visible(1, 1, true));
     }
 }

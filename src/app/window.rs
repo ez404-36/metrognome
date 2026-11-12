@@ -11,12 +11,11 @@ use gtk::{gdk, gio, glib, CssProvider, IconTheme, STYLE_PROVIDER_PRIORITY_APPLIC
 use crate::audio::engine::AudioEngine;
 use crate::audio::sound_bank::SoundBank;
 use crate::model::{
-    default_states, tempo_marking, AppSettings, BeatState, Language, SharedParams, LANGUAGES,
-    MAX_VOLUME, TEMPO_MARKINGS,
+    default_states, meter_label, tempo_marking, AppSettings, BeatState, Language, MeterChange,
+    MeterUpdate, SharedParams, LANGUAGES, MAX_BEATS, MAX_CUSTOM_METERS, MAX_VOLUME,
+    METER_DENOMINATORS, PRESET_METERS, TEMPO_MARKINGS,
 };
 use crate::update::{self, AssetKind, InstallContext, Release};
-
-const TIME_SIGNATURES: [(&str, u32); 4] = [("2/4", 2), ("3/4", 3), ("4/4", 4), ("6/8", 6)];
 
 /// Visible settings-modal copy. Keeping the native language in the selector
 /// while translating the surrounding controls makes a language switch obvious
@@ -30,10 +29,27 @@ enum SettingsText {
     HighlightFirstBeat,
     AboutTakto,
     CheckForUpdates,
+    EditSizes,
+    ShownInTheBar,
+    HiddenSizes,
+    UpToFourChips,
+    CurrentMeterVisible,
+    AddCustomSize,
+    EditCustomSize,
+    AddButton,
+    SaveButton,
+    CancelButton,
+    RemoveButton,
+    EditButton,
+    BeatsLabel,
+    UnitLabel,
+    SizeExists,
 }
 
-/// One row per `Language`, one column per `SettingsText`.
-const SETTINGS_TEXTS: [[&str; 7]; 25] = [
+/// One row per `Language`, one column per `SettingsText`. New columns keep
+/// their English text until they are translated; the Russian row is filled
+/// in as the reference for the remaining localizations.
+const SETTINGS_TEXTS: [[&str; 22]; 25] = [
     [
         "Settings",
         "Language",
@@ -42,6 +58,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Highlight first beat",
         "About Takto",
         "Check for updates",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "设置",
@@ -51,6 +82,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "突出第一拍",
         "关于 Takto",
         "检查更新",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "सेटिंग्स",
@@ -60,6 +106,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "पहला बीट हाइलाइट करें",
         "Takto के बारे में",
         "अपडेट के लिए जाँच करें",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Ajustes",
@@ -69,6 +130,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Resaltar primer tiempo",
         "Acerca de Takto",
         "Buscar actualizaciones",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Paramètres",
@@ -78,6 +154,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Mettre en valeur le premier temps",
         "À propos de Takto",
         "Rechercher des mises à jour",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "الإعدادات",
@@ -87,6 +178,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "تمييز النبضة الأولى",
         "حول Takto",
         "التحقق من التحديثات",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "সেটিংস",
@@ -96,6 +202,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "প্রথম বিট হাইলাইট করুন",
         "Takto সম্পর্কে",
         "আপডেট চেক করুন",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Configurações",
@@ -105,6 +226,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Destacar primeiro tempo",
         "Sobre o Takto",
         "Verificar atualizações",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Настройки",
@@ -114,6 +250,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Выделять первый удар",
         "О программе",
         "Проверить обновления",
+        "Изменить размеры",
+        "В ряду",
+        "Скрытые",
+        "Максимум 4 чипа",
+        "Текущий размер всегда в ряду",
+        "Свой размер",
+        "Правка размера",
+        "Добавить",
+        "Сохранить",
+        "Отмена",
+        "Удалить",
+        "Править",
+        "Доли",
+        "Единица",
+        "Такой размер уже есть",
     ],
     [
         "ترتیبات",
@@ -123,6 +274,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "پہلی دھن نمایاں کریں",
         "Takto کے بارے میں",
         "تازہ کاریں چیک کریں",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Einstellungen",
@@ -132,6 +298,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Ersten Schlag hervorheben",
         "Über Takto",
         "Nach Updates suchen",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "設定",
@@ -141,6 +322,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "最初のビートを強調",
         "Takto について",
         "アップデートを確認",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "ਸੈਟਿੰਗਾਂ",
@@ -150,6 +346,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "ਪਹਿਲਾ ਬੀਟ ਉਭਾਰੋ",
         "Takto ਬਾਰੇ",
         "ਅੱਪਡੇਟ ਚੈੱਕ ਕਰੋ",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "सेटिंग्ज",
@@ -159,6 +370,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "पहिला ठोका ठळक करा",
         "Takto विषयी",
         "अपडेट तपासा",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "సెట్టింగ్‌లు",
@@ -168,6 +394,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "మొదటి బీట్ హైలైట్ చేయండి",
         "Takto గురించి",
         "అప్‌డేట్‌లను తనిఖీ చేయండి",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Ayarlar",
@@ -177,6 +418,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "İlk vurguyu öne çıkar",
         "Takto Hakkında",
         "Güncellemeleri denetle",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "설정",
@@ -186,6 +442,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "첫 박자 강조",
         "Takto 정보",
         "업데이트 확인",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Cài đặt",
@@ -195,6 +466,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Làm nổi bật nhịp đầu",
         "Giới thiệu Takto",
         "Kiểm tra cập nhật",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Impostazioni",
@@ -204,6 +490,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Evidenzia primo battito",
         "Informazioni su Takto",
         "Verifica aggiornamenti",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Pengaturan",
@@ -213,6 +514,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Sorot ketukan pertama",
         "Tentang Takto",
         "Periksa pembaruan",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Ustawienia",
@@ -222,6 +538,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Wyróżnij pierwsze uderzenie",
         "O Takto",
         "Sprawdź aktualizacje",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Налаштування",
@@ -231,6 +562,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Виділяти перший удар",
         "Про програму",
         "Перевірити оновлення",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Instellingen",
@@ -240,6 +586,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Eerste slag markeren",
         "Over Takto",
         "Controleren op updates",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "การตั้งค่า",
@@ -249,6 +610,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "เน้นจังหวะแรก",
         "เกี่ยวกับ Takto",
         "ตรวจสอบการอัปเดต",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
     [
         "Mipangilio",
@@ -258,6 +634,21 @@ const SETTINGS_TEXTS: [[&str; 7]; 25] = [
         "Angazia mdundo wa kwanza",
         "Kuhusu Takto",
         "Angalia masasisho",
+        "Edit sizes",
+        "Shown in the bar",
+        "Hidden",
+        "Up to 4 chips",
+        "Current meter stays visible",
+        "Add custom size",
+        "Edit custom size",
+        "Add",
+        "Save",
+        "Cancel",
+        "Remove",
+        "Edit",
+        "Beats",
+        "Unit",
+        "This size already exists",
     ],
 ];
 
@@ -889,7 +1280,7 @@ fn build_window(app: &Application) -> adw::ApplicationWindow {
         );
     });
 
-    vbox.append(&build_pattern_row(&params));
+    vbox.append(&build_pattern_row(&window, &params));
     vbox.append(&build_tempo_card(&window, &overlay, &params));
     vbox.append(&build_beat_dots(&params));
     vbox.append(&build_controls(&window, &engine, &params, &toast, &updates));
@@ -1032,14 +1423,83 @@ fn choose_wav(
     );
 }
 
-fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::Box {
+fn build_pattern_row(window: &adw::ApplicationWindow, params: &Arc<SharedParams>) -> gtk::Box {
     let row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
     row.set_valign(gtk::Align::Center);
     row.set_halign(gtk::Align::Center);
 
+    let chips = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    row.append(&chips);
+
+    let pencil = gtk::Button::from_icon_name("document-edit-symbolic");
+    pencil.add_css_class("flat");
+    pencil.set_valign(gtk::Align::Center);
+    pencil.set_cursor_from_name(Some("pointer"));
+    pencil.set_tooltip_text(Some(settings_text(
+        params.language(),
+        SettingsText::EditSizes,
+    )));
+    let window_for_dialog = window.clone();
+    let params_for_dialog = params.clone();
+    pencil.connect_clicked(move |_| {
+        let dialog = build_sizes_dialog(&window_for_dialog, &params_for_dialog);
+        dialog.present();
+    });
+    row.append(&pencil);
+
+    rebuild_pattern_chips(&chips, params);
+
+    // The sizes dialog edits the visible meter set from outside this row, so
+    // a light poll keeps the chips in sync the same way the beat dots track
+    // the audio thread. Rebuilding is cheap: at most four buttons.
+    let chips_for_poll = chips;
+    let params_for_poll = params.clone();
+    let signature = Rc::new(RefCell::new(pattern_row_signature(params)));
+    let signature_for_poll = signature.clone();
+    glib::timeout_add_local(Duration::from_millis(150), move || {
+        let desired = pattern_row_signature(&params_for_poll);
+        if signature_for_poll.borrow().as_str() != desired.as_str() {
+            rebuild_pattern_chips(&chips_for_poll, &params_for_poll);
+            *signature_for_poll.borrow_mut() = desired;
+        }
+        glib::ControlFlow::Continue
+    });
+
+    row
+}
+
+/// Fingerprint of everything the chip row renders: the visible meter set in
+/// display order plus the active meter. When it changes, the chips rebuild.
+fn pattern_row_signature(params: &Arc<SharedParams>) -> String {
+    let mut signature = params
+        .visible_meters()
+        .iter()
+        .map(|&(beats, denominator)| format!("{beats}/{denominator}"))
+        .collect::<Vec<_>>()
+        .join(",");
+    signature.push_str(&format!("|{:?}", params.meter()));
+    signature
+}
+
+fn rebuild_pattern_chips(row: &gtk::Box, params: &Arc<SharedParams>) {
+    // GTK's child list is live: removing a widget while iterating it shifts
+    // the remaining indices and can leave stale buttons in the row. Snapshot
+    // the children first so every old chip is removed reliably.
+    let old_children: Vec<gtk::glib::Object> = row
+        .observe_children()
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect();
+    for child in old_children {
+        if let Some(button) = child.downcast_ref::<gtk::ToggleButton>() {
+            row.remove(button);
+        }
+    }
+
+    let active_meter = params.meter();
     let mut first = None;
-    for (label, beats) in TIME_SIGNATURES {
-        let button = gtk::ToggleButton::with_label(label);
+    for &(beats, denominator) in &params.visible_meters() {
+        let button = gtk::ToggleButton::with_label(&meter_label(beats, denominator));
         button.add_css_class("pill-button");
         button.set_width_request(68);
         button.set_hexpand(false);
@@ -1050,24 +1510,528 @@ fn build_pattern_row(params: &Arc<SharedParams>) -> gtk::Box {
             first = Some(button.clone());
         }
 
-        // Restore the active pill to the persisted meter instead of always
-        // defaulting to 4/4 after restart. Do this before installing the
-        // handler so restoring state cannot replace the saved beat pattern.
-        if beats == params.beat_count() {
+        // Restore the active pill to the persisted meter before installing
+        // the handler so restoring cannot replace the saved beat pattern.
+        if (beats, denominator) == active_meter {
             button.set_active(true);
         }
 
         let params = params.clone();
         button.connect_toggled(move |toggle| {
             if toggle.is_active() {
-                params.set_states(beats, &default_states(beats));
+                params.set_meter_and_states(beats, denominator, &default_states(beats));
             }
         });
 
         row.append(&button);
     }
+}
 
-    row
+/// Which custom entry the editor section is rewriting. `None` means it is in
+/// "add" mode.
+struct SizesDialog {
+    params: Arc<SharedParams>,
+    shown_list: gtk::ListBox,
+    hidden_list: gtk::ListBox,
+    editor_title: gtk::Label,
+    beats_spin: gtk::SpinButton,
+    unit_buttons: Vec<(u32, gtk::ToggleButton)>,
+    preview_label: gtk::Label,
+    exists_hint: gtk::Label,
+    add_button: gtk::Button,
+    save_button: gtk::Button,
+    cancel_button: gtk::Button,
+    editing: Cell<Option<usize>>,
+}
+
+impl SizesDialog {
+    fn editor_value(&self) -> (u32, u32) {
+        let beats = self.beats_spin.value() as u32;
+        let denominator = self
+            .unit_buttons
+            .iter()
+            .find(|(_, button)| button.is_active())
+            .map(|(unit, _)| *unit)
+            .unwrap_or(4);
+        (beats, denominator)
+    }
+
+    fn set_editor_value(&self, beats: u32, denominator: u32) {
+        self.beats_spin
+            .set_value(f64::from(beats.clamp(1, MAX_BEATS)));
+        for (unit, button) in &self.unit_buttons {
+            button.set_active(*unit == denominator);
+        }
+    }
+
+    fn sync_editor(self: &Rc<Self>) {
+        let (beats, denominator) = self.editor_value();
+        self.preview_label
+            .set_text(&meter_label(beats, denominator));
+
+        match self.editing.get() {
+            None => {
+                self.editor_title.set_text(settings_text(
+                    self.params.language(),
+                    SettingsText::AddCustomSize,
+                ));
+                self.add_button.set_visible(true);
+                self.save_button.set_visible(false);
+                self.cancel_button.set_visible(false);
+                self.exists_hint.set_visible(false);
+                // The model keeps the cap; a full list disables the button so
+                // the click can never be a silent no-op.
+                self.add_button
+                    .set_sensitive(self.params.custom_meters().len() < MAX_CUSTOM_METERS);
+            }
+            Some(index) => {
+                self.editor_title.set_text(settings_text(
+                    self.params.language(),
+                    SettingsText::EditCustomSize,
+                ));
+                self.add_button.set_visible(false);
+                self.save_button.set_visible(true);
+                self.cancel_button.set_visible(true);
+                let duplicate = self.params.meter_conflicts(Some(index), beats, denominator);
+                self.save_button.set_sensitive(!duplicate);
+                self.exists_hint.set_visible(duplicate);
+            }
+        }
+    }
+
+    fn rebuild_lists(self: &Rc<Self>) {
+        clear_list(&self.shown_list);
+        clear_list(&self.hidden_list);
+
+        let active = self.params.meter();
+        let visible = self.params.visible_meters();
+        let customs = self.params.custom_meters();
+
+        for (position, &(beats, denominator)) in visible.iter().enumerate() {
+            let custom_index = customs
+                .iter()
+                .position(|&meter| meter == (beats, denominator));
+            self.append_meter_row(
+                &self.shown_list,
+                beats,
+                denominator,
+                true,
+                Some(position),
+                custom_index,
+                active,
+            );
+        }
+
+        // Hidden rows keep the canonical order: presets first, then custom
+        // meters in the order they were added.
+        for &(beats, denominator) in &PRESET_METERS {
+            if !visible.contains(&(beats, denominator)) {
+                self.append_meter_row(
+                    &self.hidden_list,
+                    beats,
+                    denominator,
+                    false,
+                    None,
+                    None,
+                    active,
+                );
+            }
+        }
+        for (custom_index, &(beats, denominator)) in customs.iter().enumerate() {
+            if !visible.contains(&(beats, denominator)) {
+                self.append_meter_row(
+                    &self.hidden_list,
+                    beats,
+                    denominator,
+                    false,
+                    None,
+                    Some(custom_index),
+                    active,
+                );
+            }
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn append_meter_row(
+        self: &Rc<Self>,
+        list: &gtk::ListBox,
+        beats: u32,
+        denominator: u32,
+        visible_row: bool,
+        drag_index: Option<usize>,
+        custom_index: Option<usize>,
+        active: (u32, u32),
+    ) {
+        let state = Rc::clone(self);
+        let row = adw::ActionRow::builder()
+            .title(meter_label(beats, denominator))
+            .build();
+
+        // The visibility switch moves a meter between the two groups. The
+        // active meter cannot leave the bar: hiding it would leave playback
+        // running with no chip pressed.
+        let switch = gtk::Switch::new();
+        switch.set_valign(gtk::Align::Center);
+        switch.set_active(visible_row);
+        if active == (beats, denominator) {
+            switch.set_sensitive(false);
+            switch.set_tooltip_text(Some(settings_text(
+                self.params.language(),
+                SettingsText::CurrentMeterVisible,
+            )));
+        }
+        {
+            let state = state.clone();
+            let switch_for_toggle = switch.clone();
+            switch.connect_active_notify(move |_| {
+                let enabled = switch_for_toggle.is_active();
+                // The model refuses to enable a fifth chip; the rebuild then
+                // resets the switch to the real state.
+                state.params.set_meter_visible(beats, denominator, enabled);
+                state.rebuild_lists();
+            });
+        }
+        row.add_suffix(&switch);
+
+        if let Some(custom_index) = custom_index {
+            let edit = gtk::Button::from_icon_name("document-edit-symbolic");
+            edit.add_css_class("flat");
+            edit.set_valign(gtk::Align::Center);
+            edit.set_cursor_from_name(Some("pointer"));
+            edit.set_tooltip_text(Some(settings_text(
+                self.params.language(),
+                SettingsText::EditButton,
+            )));
+            {
+                let state = state.clone();
+                edit.connect_clicked(move |_| {
+                    state.editing.set(Some(custom_index));
+                    state.set_editor_value(beats, denominator);
+                    state.sync_editor();
+                });
+            }
+            row.add_suffix(&edit);
+
+            let remove = gtk::Button::from_icon_name("user-trash-symbolic");
+            remove.add_css_class("flat");
+            remove.set_valign(gtk::Align::Center);
+            remove.set_cursor_from_name(Some("pointer"));
+            remove.set_tooltip_text(Some(settings_text(
+                self.params.language(),
+                SettingsText::RemoveButton,
+            )));
+            {
+                let state = state.clone();
+                remove.connect_clicked(move |_| {
+                    let removed = state.params.remove_custom_meter(custom_index);
+                    if let Some(removed) = removed {
+                        if state.params.meter() == removed {
+                            pick_fallback_meter(&state.params);
+                        }
+                    }
+                    // A removal shifts later custom indices, so an editor
+                    // session pointing past it must be repaired or dropped.
+                    if let Some(editing) = state.editing.get() {
+                        if editing == custom_index {
+                            state.editing.set(None);
+                        } else if editing > custom_index {
+                            state.editing.set(Some(editing - 1));
+                        }
+                    }
+                    state.sync_editor();
+                    state.rebuild_lists();
+                });
+            }
+            row.add_suffix(&remove);
+        }
+
+        if let Some(drag_index) = drag_index {
+            attach_drag_reorder(&state, &row, drag_index);
+        }
+
+        list.append(&row);
+    }
+}
+
+fn build_sizes_dialog(parent: &adw::ApplicationWindow, params: &Arc<SharedParams>) -> adw::Window {
+    let language = params.language();
+    let dialog = adw::Window::new();
+    dialog.set_transient_for(Some(parent));
+    dialog.set_modal(true);
+    dialog.set_destroy_with_parent(true);
+    dialog.set_title(Some(settings_text(language, SettingsText::EditSizes)));
+    dialog.set_default_width(380);
+
+    // Same close handling as the settings window: hide instead of destroy so
+    // a future presentation rebuilds a native surface cleanly.
+    let dialog_for_close = dialog.clone();
+    dialog.connect_close_request(move |_| {
+        dialog_for_close.set_visible(false);
+        glib::Propagation::Stop
+    });
+
+    let toolbar = adw::ToolbarView::new();
+    let header = adw::HeaderBar::new();
+    let header_title = gtk::Label::new(Some(settings_text(language, SettingsText::EditSizes)));
+    header.set_title_widget(Some(&header_title));
+    toolbar.add_top_bar(&header);
+
+    let content = gtk::Box::new(gtk::Orientation::Vertical, 14);
+    content.set_margin_top(18);
+    content.set_margin_bottom(24);
+    content.set_margin_start(18);
+    content.set_margin_end(18);
+
+    let shown_title = gtk::Label::new(Some(settings_text(language, SettingsText::ShownInTheBar)));
+    shown_title.set_halign(gtk::Align::Start);
+    shown_title.add_css_class("settings-section-title");
+    content.append(&shown_title);
+
+    let shown_list = gtk::ListBox::new();
+    shown_list.set_selection_mode(gtk::SelectionMode::None);
+    shown_list.add_css_class("boxed-list");
+    content.append(&shown_list);
+
+    let shown_hint = gtk::Label::new(Some(settings_text(language, SettingsText::UpToFourChips)));
+    shown_hint.set_halign(gtk::Align::Start);
+    shown_hint.add_css_class("caption");
+    content.append(&shown_hint);
+
+    let hidden_title = gtk::Label::new(Some(settings_text(language, SettingsText::HiddenSizes)));
+    hidden_title.set_halign(gtk::Align::Start);
+    hidden_title.add_css_class("settings-section-title");
+    content.append(&hidden_title);
+
+    let hidden_list = gtk::ListBox::new();
+    hidden_list.set_selection_mode(gtk::SelectionMode::None);
+    hidden_list.add_css_class("boxed-list");
+    content.append(&hidden_list);
+
+    let editor_title = gtk::Label::new(Some(settings_text(language, SettingsText::AddCustomSize)));
+    editor_title.set_halign(gtk::Align::Start);
+    editor_title.add_css_class("settings-section-title");
+    content.append(&editor_title);
+
+    let beats_spin = gtk::SpinButton::with_range(1.0, f64::from(MAX_BEATS), 1.0);
+    beats_spin.set_value(4.0);
+    beats_spin.set_width_request(72);
+
+    let mut unit_buttons: Vec<(u32, gtk::ToggleButton)> = Vec::new();
+    let mut first_unit = None;
+    for &unit in &METER_DENOMINATORS {
+        let button = gtk::ToggleButton::with_label(&unit.to_string());
+        button.set_width_request(40);
+        if let Some(previous) = first_unit.as_ref() {
+            button.set_group(Some(previous));
+        } else {
+            first_unit = Some(button.clone());
+        }
+        if unit == 4 {
+            button.set_active(true);
+        }
+        unit_buttons.push((unit, button));
+    }
+
+    let beats_label = gtk::Label::new(Some(settings_text(language, SettingsText::BeatsLabel)));
+    beats_label.add_css_class("caption");
+    beats_label.set_valign(gtk::Align::Center);
+    let unit_label = gtk::Label::new(Some(settings_text(language, SettingsText::UnitLabel)));
+    unit_label.add_css_class("caption");
+    unit_label.set_valign(gtk::Align::Center);
+
+    let editor_row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    editor_row.set_halign(gtk::Align::Center);
+    editor_row.append(&beats_label);
+    editor_row.append(&beats_spin);
+    editor_row.append(&unit_label);
+    for (_, button) in &unit_buttons {
+        editor_row.append(button);
+    }
+    content.append(&editor_row);
+
+    let preview_label = gtk::Label::new(Some("4/4"));
+    preview_label.add_css_class("title-2");
+    preview_label.set_halign(gtk::Align::Center);
+    content.append(&preview_label);
+
+    let exists_hint = gtk::Label::new(Some(settings_text(language, SettingsText::SizeExists)));
+    exists_hint.set_halign(gtk::Align::Center);
+    exists_hint.add_css_class("caption");
+    exists_hint.add_css_class("warning");
+    exists_hint.set_visible(false);
+    content.append(&exists_hint);
+
+    let cancel_button =
+        gtk::Button::with_label(settings_text(language, SettingsText::CancelButton));
+    cancel_button.add_css_class("flat");
+    cancel_button.set_visible(false);
+    let add_button = gtk::Button::with_label(settings_text(language, SettingsText::AddButton));
+    add_button.add_css_class("suggested-action");
+    let save_button = gtk::Button::with_label(settings_text(language, SettingsText::SaveButton));
+    save_button.add_css_class("suggested-action");
+    save_button.set_visible(false);
+
+    let buttons_row = gtk::Box::new(gtk::Orientation::Horizontal, 8);
+    buttons_row.set_halign(gtk::Align::End);
+    buttons_row.append(&cancel_button);
+    buttons_row.append(&add_button);
+    buttons_row.append(&save_button);
+    content.append(&buttons_row);
+
+    toolbar.set_content(Some(&content));
+    dialog.set_content(Some(&toolbar));
+
+    let state = Rc::new(SizesDialog {
+        params: params.clone(),
+        shown_list,
+        hidden_list,
+        editor_title,
+        beats_spin,
+        unit_buttons,
+        preview_label,
+        exists_hint,
+        add_button,
+        save_button,
+        cancel_button,
+        editing: Cell::new(None),
+    });
+
+    {
+        let state = state.clone();
+        let spin = state.beats_spin.clone();
+        spin.connect_value_changed(move |_| {
+            state.sync_editor();
+        });
+    }
+    {
+        let state = state.clone();
+        let buttons = state.unit_buttons.clone();
+        for (_, button) in buttons {
+            let state = state.clone();
+            let button_for_toggle = button.clone();
+            button.connect_toggled(move |_| {
+                // Only react to the button switching on: the one switching
+                // off fires first and would read a valueless editor for a
+                // moment.
+                if button_for_toggle.is_active() {
+                    state.sync_editor();
+                }
+            });
+        }
+    }
+    {
+        let state = state.clone();
+        let add = state.add_button.clone();
+        add.connect_clicked(move |_| {
+            let (beats, denominator) = state.editor_value();
+            let change = state.params.add_custom_meter(beats, denominator);
+            if change != MeterChange::Full {
+                // Presets and duplicates surface by enabling their visibility;
+                // new meters appear as soon as the row has a free slot.
+                state.params.set_meter_visible(beats, denominator, true);
+            }
+            state.rebuild_lists();
+        });
+    }
+    {
+        let state = state.clone();
+        let save = state.save_button.clone();
+        save.connect_clicked(move |_| {
+            if let Some(index) = state.editing.get() {
+                let (beats, denominator) = state.editor_value();
+                if state.params.update_custom_meter(index, beats, denominator)
+                    == MeterUpdate::Updated
+                {
+                    state.editing.set(None);
+                    state.sync_editor();
+                    state.rebuild_lists();
+                }
+            }
+        });
+    }
+    {
+        let state = state.clone();
+        let cancel = state.cancel_button.clone();
+        cancel.connect_clicked(move |_| {
+            state.editing.set(None);
+            state.sync_editor();
+        });
+    }
+
+    state.rebuild_lists();
+    state.sync_editor();
+
+    dialog
+}
+
+fn clear_list(list: &gtk::ListBox) {
+    let old_children: Vec<gtk::glib::Object> = list
+        .observe_children()
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect();
+    for child in old_children {
+        if let Some(row) = child.downcast_ref::<gtk::ListBoxRow>() {
+            list.remove(row);
+        }
+    }
+}
+
+fn attach_drag_reorder(state: &Rc<SizesDialog>, row: &adw::ActionRow, index: usize) {
+    let drag = gtk::DragSource::new();
+    drag.set_actions(gdk::DragAction::MOVE);
+    let index_for_drag = index as u32;
+    drag.connect_prepare(move |_, _x, _y| {
+        let value = index_for_drag.to_value();
+        Some(gdk::ContentProvider::for_value(&value))
+    });
+    row.add_controller(drag);
+
+    let target = gtk::DropTarget::new(glib::Type::U32, gdk::DragAction::MOVE);
+    let state_for_drop = state.clone();
+    let index_for_drop = index;
+    target.connect_drop(move |target, value, _x, y| {
+        let Ok(from) = value.get::<u32>() else {
+            return false;
+        };
+        let from = from as usize;
+        let height = target.widget().map(|widget| widget.height()).unwrap_or(0);
+        // Dropping onto the lower half of a row inserts after it.
+        let mut to = if y > f64::from(height) / 2.0 {
+            index_for_drop + 1
+        } else {
+            index_for_drop
+        };
+        if from < to {
+            to -= 1;
+        }
+        state_for_drop.params.move_visible_meter(from, to);
+        state_for_drop.rebuild_lists();
+        true
+    });
+    row.add_controller(target);
+}
+
+/// After removing the active custom meter, fall back to 4/4 when it is on
+/// the bar, else to the first visible chip. With nothing visible, restore
+/// the default preset so playback never runs without a chip.
+fn pick_fallback_meter(params: &SharedParams) {
+    let visible = params.visible_meters();
+    let target = if visible.contains(&(4, 4)) {
+        Some((4, 4))
+    } else {
+        visible.first().copied()
+    };
+    match target {
+        Some((beats, denominator)) => {
+            params.set_meter_and_states(beats, denominator, &default_states(beats));
+        }
+        None => {
+            params.set_meter_visible(4, 4, true);
+            params.set_meter_and_states(4, 4, &default_states(4));
+        }
+    }
 }
 
 /// Builds the inline tempo selector: an expandable list of every marking

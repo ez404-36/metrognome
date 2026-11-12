@@ -4,6 +4,10 @@ All notable changes to Takto are documented in this file. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- Custom time signatures: any meter from 1/2 to 16/16. The meter row shows up to 4 chips; a pencil button opens a sizes editor where presets and custom meters can be shown or hidden, reordered by drag-and-drop, and custom meters can be added (beats 1–16, beat unit 2/4/8/16 with a live preview), edited in place, or removed. The active meter always keeps its chip, switching meters mid-playback keeps the tempo, and all choices persist across restarts. Old settings files load unchanged: a saved 6 beats resolves to 6/8, everything else to quarter notes. BPM still means the rate of every tick; the beat unit is the written label only.
+
 ## [0.1.6] - 2026-11-12
 
 ### Fixed
